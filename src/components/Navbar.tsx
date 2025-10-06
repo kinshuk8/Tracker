@@ -74,10 +74,10 @@ export default function Navbar() {
           visible={visible}
         />
         <div className="hidden items-center gap-2 lg:flex">
-          <NavbarButton href="/auth/login" as={Link} variant="secondary">
+          <NavbarButton href="/sign-in" as={Link} variant="secondary">
             Login
           </NavbarButton>
-          <NavbarButton href="/auth/signup" as={Link}>
+          <NavbarButton href="/sign-up" as={Link}>
             Sign Up
           </NavbarButton>
         </div>

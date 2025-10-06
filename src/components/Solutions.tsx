@@ -9,7 +9,6 @@ const solutions = [
   {
     title: "Automation Services",
     desc: "Providing smart IoT solutions that enhance automation in homes and industries for efficiency and comfort.",
-    img: "https://images.unsplash.com/photo-1598970605070-bd23a5080b87?auto=format&fit=crop&w=1000&q=60",
   },
 ];
 

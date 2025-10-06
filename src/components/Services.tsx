@@ -6,7 +6,6 @@ const services = [
     icon: <FaCogs className="text-4xl" />,
     title: "Software Development Services",
     desc: "End-to-end software solutions tailored to meet unique client requirements and ensure quality.",
-    img: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=60",
   },
   {
     icon: <FaNetworkWired className="text-4xl" />,
@@ -18,7 +17,6 @@ const services = [
     icon: <FaHome className="text-4xl" />,
     title: "Smart IoT Solutions",
     desc: "Automated & integrated IoT solutions for homes, industries and enterprises.",
-    img: "https://images.unsplash.com/photo-1603791452906-bb9d23ef6e8e?auto=format&fit=crop&w=800&q=60",
   },
 ];
 

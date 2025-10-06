@@ -1,45 +1,66 @@
 import Image from "next/image";
+import { Counter } from "@/components/ui/Counter";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { TextGenerateEffect } from "@/components/ui/text-generate-effect";
 
-const AboutStats = () => {
+const stats = [
+  { value: "150+", label: "Projects Completed" },
+  { value: "15+", label: "Trusted Clients" },
+  { value: "99%", label: "Satisfaction Rate" },
+];
+
+export default function AboutStats() {
+  const headline = "Driving Innovation with Tailored Tech Solutions.";
+  const subheadline =
+    "At VMK NEXGEN SOLUTIONS, we empower businesses with bespoke technology strategies. From cutting-edge software development to robust networking and scalable IoT implementations, our expertise delivers measurable impact and unlocks true potential.";
+
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 py-20 sm:py-24 grid md:grid-cols-2 gap-12 lg:gap-16 items-start">
-      <div>
-        <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold mb-5 sm:mb-6 leading-snug">
-          Innovative Technology Consultancy Solutions
-        </h2>
-        <p className="text-slate-600 leading-relaxed mb-8 sm:mb-10 text-sm sm:text-base">
-          At VMK NEXGEN SOLUTIONS, we deliver customized technology solutions,
-          specializing in software development, testing, networking, and IoT
-          consultancy to empower businesses of all sizes and industries.
-        </p>
-        <div className="flex gap-12 sm:gap-16">
-          <div>
-            <p className="text-4xl font-bold text-blue-600">150+</p>
-            <p className="mt-2 text-sm uppercase tracking-wide text-slate-500">
-              Proven Expertise
-            </p>
+    <section className="dark:bg-black bg-white">
+      <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-24 items-center px-4 sm:px-6 py-20 sm:py-32">
+        {/* Left Column: Content */}
+        <div className="flex flex-col justify-center">
+          <TextGenerateEffect
+            words={headline}
+            className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-neutral-800 dark:text-white !leading-tight"
+          />
+          <p className="mt-6 text-lg text-neutral-600 dark:text-neutral-300">
+            {subheadline}
+          </p>
+
+          {/* Stats */}
+          <div className="mt-10 flex flex-wrap gap-8 sm:gap-12">
+            {stats.map((stat) => (
+              <div key={stat.label}>
+                <p className="text-4xl font-extrabold text-brand-purple">
+                  <Counter value={stat.value} />
+                </p>
+                <p className="mt-1 text-sm uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                  {stat.label}
+                </p>
+              </div>
+            ))}
           </div>
-          <div>
-            <p className="text-4xl font-bold text-blue-600">15</p>
-            <p className="mt-2 text-sm uppercase tracking-wide text-slate-500">
-              Trusted Clients
-            </p>
-          </div>
+
+          <Button
+            asChild
+            size="lg"
+            className="mt-12 w-fit bg-brand-purple hover:bg-brand-purple/90 text-white"
+          >
+            <Link href="/services">Explore Our Services</Link>
+          </Button>
         </div>
-      </div>
-      <div>
-        <div className="aspect-[16/9] rounded-2xl overflow-hidden shadow-xl ring-1 ring-slate-200">
+
+        {/* Right Column: Visual */}
+        <div className="relative w-full h-80 sm:h-96 lg:h-[450px]">
           <Image
-            src="https://images.unsplash.com/photo-1555421689-03ac6361ade1?auto=format&fit=crop&w=1200&q=60"
-            alt="consultancy"
-            width={1200}
-            height={675}
-            className="w-full h-full object-cover"
+            src="/assets/welcome-image.svg"
+            alt="Abstract visualization of data networks and technology"
+            fill
+            className="object-contain" // <-- FIXED: Use object-contain to show the whole image
           />
         </div>
       </div>
     </section>
   );
-};
-
-export default AboutStats;
+}

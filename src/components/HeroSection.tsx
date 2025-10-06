@@ -14,7 +14,7 @@ const containerVariants: Variants = {
   visible: {
     opacity: 1,
     transition: {
-      delayChildren: 0.5, // Delay children to start after typewriter
+      delayChildren: 0.8, // Delay children to start after typewriter
       staggerChildren: 0.3,
     },
   },
