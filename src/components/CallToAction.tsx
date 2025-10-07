@@ -19,7 +19,7 @@ export default function CallToAction() {
                 Ready to Start Your Project?
               </h2>
               <p className="mt-4 text-slate-600 dark:text-slate-300 max-w-2xl text-base sm:text-lg">
-                Let's talk about how our expertise can help you achieve your goals.
+                Let&apos;s talk about how our expertise can help you achieve your goals.
               </p>
             </div>
 

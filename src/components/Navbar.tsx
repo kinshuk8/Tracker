@@ -3,11 +3,37 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion";
+import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { UserButton, SignedIn, SignedOut } from "@clerk/nextjs";
+import { } from "lucide-react";
 import Logo from "../../public/assets/company-logo.svg";
+
+// Custom authentication components
+const AuthComponents = () => {
+  return (
+    <>
+      <SignedOut>
+        <Button asChild variant="ghost" className="dark:text-neutral-300">
+          <Link href="/sign-in">Login</Link>
+        </Button>
+        <Button asChild size="sm" className="bg-indigo-600 hover:bg-indigo-700">
+          <Link href="/sign-up">Sign Up</Link>
+        </Button>
+      </SignedOut>
+      <SignedIn>
+        <UserButton
+          appearance={{
+            elements: {
+              avatarBox: "w-8 h-8"
+            }
+          }}
+        />
+      </SignedIn>
+    </>
+  );
+};
 
 const navLinks = [
   { name: "Home", href: "/" },
@@ -74,15 +100,10 @@ export default function Navbar() {
           ))}
         </div>
         <div className="flex items-center gap-2 pl-4 flex-shrink-0">
-          <Button asChild variant="ghost" className="dark:text-neutral-300">
-            <Link href="/sign-in">Login</Link>
-          </Button>
-          <Button asChild size="sm" className="bg-indigo-600 hover:bg-indigo-700">
-            <Link href="/sign-up">Sign Up</Link>
-          </Button>
+          <AuthComponents />
         </div>
       </motion.nav>
-      {/* Mobile Navbar... */}
+      {/* TODO: Mobile Navbar... */}
     </header>
   );
 }

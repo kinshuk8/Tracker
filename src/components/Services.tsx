@@ -1,4 +1,4 @@
-import Image from "next/image";
+
 import Link from "next/link";
 import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
 import { Cog, Network, Home } from "lucide-react"; // Using lucide-react for consistency
@@ -15,7 +15,7 @@ const services = [
     icon: <Network className="h-8 w-8 text-brand-purple" />,
     title: "Networking Consultancy",
     desc: "Designing secure, scalable, and efficient network infrastructures for modern businesses.",
-    img: "/images/placeholder-network.png", // Placeholder image path
+    img: "/assets/undraw_server-status.svg", 
   },
   {
     icon: <Home className="h-8 w-8 text-brand-purple" />,
@@ -72,14 +72,14 @@ export default function Services() {
                   </div>
                 </CardItem>
                 <div className="flex justify-end items-center mt-8">
-                  <CardItem
-                    translateZ={20}
-                    as={Link}
-                    href="/services"
-                    className="px-4 py-2 rounded-xl text-xs font-normal dark:text-white"
-                  >
-                    Learn more →
-                  </CardItem>
+                  <Link href="/services">
+                    <CardItem
+                      translateZ={20}
+                      className="px-4 py-2 rounded-xl text-xs font-normal dark:text-white"
+                    >
+                      Learn more →
+                    </CardItem>
+                  </Link>
                 </div>
               </CardBody>
             </CardContainer>

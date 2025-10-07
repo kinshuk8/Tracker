@@ -6,7 +6,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useSignIn } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { cn } from "@/lib/utils";
+
 import { Toaster, toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
@@ -24,7 +24,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SocialLogins } from "./SocialLogins";
 
-export default function SignInForm() {
+export default function SignInForm({ hideCard = false }: { hideCard?: boolean }) {
   const { isLoaded, signIn, setActive } = useSignIn();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -52,15 +52,14 @@ export default function SignInForm() {
       if (result.status === "complete") {
         await setActive({ session: result.createdSessionId });
         toast.success("Sign in successful! Redirecting...");
-        setTimeout(() => {
-          router.push("/dashboard");
-        }, 1000);
+        // Use replace instead of push to avoid back button issues
+        router.replace("/");
       } else {
         console.error(JSON.stringify(result, null, 2));
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       const errorMessage =
-        err.errors?.[0]?.longMessage ||
+        (err as { errors?: { longMessage: string }[] })?.errors?.[0]?.longMessage ||
         "Invalid email or password. Please try again.";
       toast.error(errorMessage);
     } finally {
@@ -72,14 +71,16 @@ export default function SignInForm() {
     <>
       <Toaster position="top-center" richColors />
       <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold tracking-tight">
-            Welcome Back
-          </CardTitle>
-          <CardDescription>
-            Sign in to continue to your dashboard
-          </CardDescription>
-        </CardHeader>
+        {!hideCard && (
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl font-bold tracking-tight">
+              Welcome Back
+            </CardTitle>
+            <CardDescription>
+              Sign in to continue to your dashboard
+            </CardDescription>
+          </CardHeader>
+        )}
         <CardContent>
           <form onSubmit={handleSubmit}>
             <div className="grid gap-4">
@@ -133,17 +134,19 @@ export default function SignInForm() {
           </div>
           <SocialLogins />
         </CardContent>
-        <CardFooter className="flex justify-center">
-          <p className="text-sm text-muted-foreground">
-            Don't have an account?{" "}
-            <Link
-              href="/sign-up"
-              className="font-semibold underline underline-offset-4"
-            >
-              Sign up
-            </Link>
-          </p>
-        </CardFooter>
+        {!hideCard && (
+          <CardFooter className="flex justify-center">
+            <p className="text-sm text-muted-foreground">
+              Don&apos;t have an account?{" "}
+              <Link
+                href="/sign-up"
+                className="font-semibold underline underline-offset-4"
+              >
+                Sign up
+              </Link>
+            </p>
+          </CardFooter>
+        )}
       </Card>
     </>
   );

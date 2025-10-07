@@ -5,7 +5,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import { HoverBorderGradient } from "@/components/ui/hover-border-gradient";
 import { CheckCircle } from "lucide-react";
 
@@ -14,7 +14,7 @@ const solutions = [
   {
     title: "Networking Expertise",
     desc: "Designing secure, scalable, and highly efficient network infrastructures tailored for diverse business needs, ensuring robust connectivity and performance.",
-    img: "https://placehold.co/1000x563/6c63ff/FFFFFF", 
+    img: "/assets/undraw_server-status.svg",
     features: [
       "Scalable Architecture Design",
       "Advanced Security Protocols",
@@ -24,7 +24,7 @@ const solutions = [
   {
     title: "Automation & IoT Services",
     desc: "Leveraging the power of the Internet of Things with our smart automation solutions to enhance efficiency and comfort for homes, industries, and enterprises.",
-    img: "https://placehold.co/1000x563/3f3d56/FFFFFF", 
+    img: "/assets/undraw_chat-with-ai.svg",
     features: [
       "Custom IoT Dashboards",
       "Sensor Integration",
@@ -50,21 +50,21 @@ export default function Solutions() {
           {solutions.map((solution, idx) => {
             const isImageFirst = idx % 2 === 0;
 
-            const textVariants = {
+            const textVariants: Variants = {
               hidden: { opacity: 0, x: isImageFirst ? -50 : 50 },
               visible: {
                 opacity: 1,
                 x: 0,
-                transition: { duration: 0.6, ease: "easeOut" },
+                transition: { duration: 0.6, ease: "easeOut" as any }, // eslint-disable-line @typescript-eslint/no-explicit-any
               },
             };
 
-            const imageVariants = {
+            const imageVariants: Variants = {
               hidden: { opacity: 0, x: isImageFirst ? 50 : -50 },
               visible: {
                 opacity: 1,
                 x: 0,
-                transition: { duration: 0.6, ease: "easeOut" },
+                transition: { duration: 0.6, ease: "easeOut" as any }, // eslint-disable-line @typescript-eslint/no-explicit-any
               },
             };
 
@@ -120,13 +120,12 @@ export default function Solutions() {
                     isImageFirst ? "md:order-1" : "md:order-2"
                   }`}
                 >
-                  <div className="aspect-video rounded-xl overflow-hidden shadow-2xl">
+                  <div className="relative w-full h-80 sm:h-96 lg:h-[450px] rounded-xl overflow-hidden">
                     <Image
                       src={solution.img}
                       alt={solution.title}
-                      width={1000}
-                      height={563}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-contain"
                     />
                   </div>
                 </motion.div>

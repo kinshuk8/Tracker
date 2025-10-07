@@ -1,9 +1,5 @@
-import SignUpForm from "../../../../components/auth/SignUpForm";
+import AuthFlow from "@/components/auth/AuthFlow";
 
-export default function SignUpPage() {
-  return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
-      <SignUpForm />
-    </div>
-  );
+export default function SignupPage() {
+  return <AuthFlow defaultTab="signup" />;
 }

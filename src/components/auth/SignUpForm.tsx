@@ -21,7 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SocialLogins } from "./SocialLogins";
 
-export default function SignUpForm() {
+export default function SignUpForm({ hideCard = false }: { hideCard?: boolean }) {
   const { isLoaded, signUp, setActive } = useSignUp();
   const router = useRouter();
   const [pendingVerification, setPendingVerification] = useState(false);
@@ -56,9 +56,9 @@ export default function SignUpForm() {
       await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
       setPendingVerification(true);
       toast.success("Verification email sent!");
-    } catch (err: any) {
+    } catch (err: unknown) {
       const errorMessage =
-        err.errors?.[0]?.longMessage || "An error occurred. Please try again.";
+        (err as { errors?: { longMessage: string }[] })?.errors?.[0]?.longMessage || "An error occurred. Please try again.";
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -78,11 +78,11 @@ export default function SignUpForm() {
       if (completeSignUp.status === "complete") {
         await setActive({ session: completeSignUp.createdSessionId });
         toast.success("Sign up successful! Redirecting...");
-        setTimeout(() => router.push("/dashboard"), 1000);
+        router.replace("/");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       const errorMessage =
-        err.errors?.[0]?.longMessage ||
+        (err as { errors?: { longMessage: string }[] })?.errors?.[0]?.longMessage ||
         "Verification failed. Please check the code and try again.";
       toast.error(errorMessage);
     } finally {
@@ -96,14 +96,16 @@ export default function SignUpForm() {
       <>
         <Toaster position="top-center" richColors />
         <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold">
-              Verify Your Email
-            </CardTitle>
-            <CardDescription>
-              Enter the 6-digit code sent to your email address.
-            </CardDescription>
-          </CardHeader>
+          {!hideCard && (
+            <CardHeader className="text-center">
+              <CardTitle className="text-2xl font-bold">
+                Verify Your Email
+              </CardTitle>
+              <CardDescription>
+                Enter the 6-digit code sent to your email address.
+              </CardDescription>
+            </CardHeader>
+          )}
           <CardContent>
             <form onSubmit={handleVerification}>
               <div className="grid gap-4">
@@ -138,14 +140,16 @@ export default function SignUpForm() {
     <>
       <Toaster position="top-center" richColors />
       <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold tracking-tight">
-            Create an Account
-          </CardTitle>
-          <CardDescription>
-            Enter your information to get started.
-          </CardDescription>
-        </CardHeader>
+        {!hideCard && (
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl font-bold tracking-tight">
+              Create an Account
+            </CardTitle>
+            <CardDescription>
+              Enter your information to get started.
+            </CardDescription>
+          </CardHeader>
+        )}
         <CardContent>
           <form onSubmit={handleSubmit}>
             <div className="grid gap-4">
@@ -211,17 +215,19 @@ export default function SignUpForm() {
           </div>
           <SocialLogins />
         </CardContent>
-        <CardFooter className="flex justify-center">
-          <p className="text-sm text-muted-foreground">
-            Already have an account?{" "}
-            <Link
-              href="/sign-in"
-              className="font-semibold underline underline-offset-4"
-            >
-              Sign in
-            </Link>
-          </p>
-        </CardFooter>
+        {!hideCard && (
+          <CardFooter className="flex justify-center">
+            <p className="text-sm text-muted-foreground">
+              Already have an account?{" "}
+              <Link
+                href="/sign-in"
+                className="font-semibold underline underline-offset-4"
+              >
+                Sign in
+              </Link>
+            </p>
+          </CardFooter>
+        )}
       </Card>
     </>
   );

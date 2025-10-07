@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { HoverBorderGradient } from "@/components/ui/hover-border-gradient";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Mail, MapPin } from "lucide-react";
 
@@ -25,6 +25,7 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 function FormField({ field, label, placeholder, type = "text", as: Component = Input }: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   field: any;
   label: string;
   placeholder: string;
@@ -56,7 +57,7 @@ export default function ContactUs() {
     defaultValues: useMemo(() => ({ name: "", email: "", subject: "", message: "" }), []),
     onSubmit: async ({ value }) => {
       await new Promise((r) => setTimeout(r, 1000));
-      toast.success("Message sent! We'll get back to you shortly.");
+      toast.success("Message sent! We&apos;ll get back to you shortly.");
       console.log("Contact submit", value);
       form.reset();
     },
@@ -71,7 +72,7 @@ export default function ContactUs() {
           if (!errors[key]) errors[key] = [];
           errors[key]!.push(issue.message);
         }
-        return errors as any;
+        return errors;
       },
     },
   });
@@ -86,11 +87,10 @@ export default function ContactUs() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
           >
-            <h1 className="text-4xl sm:text-5xl font-bold text-brand-dark dark:text-white">
-              Let's build together.
-            </h1>
-            <p className="mt-4 text-lg text-neutral-600 dark:text-neutral-300 max-w-lg">
-              Have a project in mind or just want to learn more? We'd love to hear from you.
+                          <h1 className="text-4xl sm:text-5xl font-bold text-brand-dark dark:text-white">
+                            Let&apos;s build together.
+                          </h1>            <p className="mt-4 text-lg text-neutral-600 dark:text-neutral-300 max-w-lg">
+              Have a project in mind or just want to learn more? We&apos;d love to hear from you.
             </p>
           </motion.div>
 
@@ -169,5 +169,3 @@ export default function ContactUs() {
     </section>
   );
 }
-
-
