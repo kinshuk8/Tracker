@@ -6,10 +6,10 @@ export default function CallToAction() {
     <section className="py-16 sm:py-20 bg-slate-50 dark:bg-slate-900">
       <div className="max-w-4xl mx-auto text-center px-4 sm:px-6">
         <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4 sm:mb-6">
-          Let's Build Something Great Together
+          Let&apos;s Build Something Great Together
         </h2>
         <p className="text-base sm:text-lg md:text-xl text-slate-600 dark:text-slate-400 mb-6 sm:mb-8 max-w-2xl mx-auto px-4 sm:px-0">
-          Have a project in mind? We'd love to hear from you. Get in touch and let's discuss how we can help bring your vision to life.
+          Have a project in mind? We&apos;d love to hear from you. Get in touch and let&apos;s discuss how we can help bring your vision to life.
         </p>
         <Button
           asChild
