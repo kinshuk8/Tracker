@@ -5,16 +5,15 @@ import HeroSection from "../components/HeroSection";
 import AboutStats from "../components/AboutStats";
 import Services from "../components/Services";
 import Solutions from "../components/Solutions";
-import CallToAction from "../components/CallToAction";
 import Footer from "../components/Footer";
 
 import dynamic from "next/dynamic";
 const WorldGlobe = dynamic(() => import("../components/WorldGlobe"), { ssr: false });
 
 import Projects from "../components/Projects";
-
 import Testimonials from "../components/Testimonials";
 import Branches from "../components/Branches";
+import CallToAction from "../components/CallToAction";
 
 const LandingPage = () => {
   return (

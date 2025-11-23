@@ -30,32 +30,36 @@ const testimonials = [
 
 export default function Testimonials() {
     return (
-        <section id="testimonials" className="py-20 bg-slate-50 dark:bg-slate-900/50 rounded-3xl my-12">
-            <div className="text-center mb-12">
-                <h2 className="text-3xl font-bold text-slate-900 dark:text-white sm:text-4xl">
+        <section id="testimonials" className="py-16 sm:py-20 bg-slate-50 dark:bg-slate-900/50 rounded-3xl my-12">
+            <div className="text-center mb-12 px-4">
+                <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white md:text-4xl">
                     What Our Clients Say
                 </h2>
+                <p className="mt-4 text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
+                    Trusted by industry leaders for innovative solutions
+                </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 px-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 px-4 sm:px-8">
                 {testimonials.map((testimonial, index) => (
-                    <Card key={index} className="bg-white dark:bg-black border-slate-200 dark:border-slate-800">
-
-
-                        <CardHeader className="flex flex-row items-center gap-4">
+                    <Card key={index} className="bg-white dark:bg-black border-slate-200 dark:border-slate-800 shadow-md hover:shadow-lg transition-shadow">
+                        <CardHeader className="flex flex-row items-center gap-4 pb-4">
                             <Image
                                 src={`https://api.dicebear.com/7.x/initials/svg?seed=${testimonial.name}&backgroundColor=e5e7eb`}
                                 alt={testimonial.name}
-                                width={40}
-                                height={40}
-                                className="h-10 w-10 rounded-full"
+                                width={48}
+                                height={48}
+                                className="h-12 w-12 rounded-full"
+                                unoptimized
                             />
                             <div>
-                                <CardTitle className="text-base">{testimonial.name}</CardTitle>
+                                <CardTitle className="text-base font-semibold">{testimonial.name}</CardTitle>
                                 <p className="text-sm text-slate-500 dark:text-slate-400">{testimonial.role}</p>
                             </div>
                         </CardHeader>
-                        <CardContent>
-                            <p className="text-slate-600 dark:text-slate-300">&quot;{testimonial.content}&quot;</p>
+                        <CardContent className="pt-0">
+                            <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
+                                &quot;{testimonial.content}&quot;
+                            </p>
                         </CardContent>
                     </Card>
                 ))}

@@ -46,9 +46,9 @@ export default function HeroSection() {
   return (
     <div
       id="hero"
-      className="relative flex h-screen min-h-[700px] w-full flex-col items-center justify-center overflow-hidden antialiased md:h-[90vh]"
+      className="relative flex h-screen min-h-[600px] w-full flex-col items-center justify-center overflow-hidden antialiased md:min-h-[700px] md:h-[90vh]"
     >
-      <div className="container relative z-10 mx-auto flex max-w-4xl flex-col items-center justify-center px-4">
+      <div className="container relative z-10 mx-auto flex max-w-4xl flex-col items-center justify-center px-4 sm:px-6">
         <TypewriterEffectSmooth words={words} />
 
         <motion.div
@@ -60,7 +60,7 @@ export default function HeroSection() {
           {/* Animated Subheading */}
           <motion.p
             variants={itemVariants}
-            className="mt-6 max-w-xl text-base text-slate-600 md:text-xl dark:text-slate-400"
+            className="mt-4 sm:mt-6 max-w-xl text-sm sm:text-base text-slate-600 md:text-xl dark:text-slate-400 px-4 sm:px-0"
           >
             Empowering industries with cutting-edge IoT solutions, industrial automation, and intelligent technology systems.{" "}
             <span className="font-semibold text-slate-700 dark:text-slate-300">
@@ -71,16 +71,20 @@ export default function HeroSection() {
           {/* Animated Buttons */}
           <motion.div
             variants={itemVariants}
-            className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row"
+            className="mt-6 sm:mt-8 flex flex-col items-center justify-center gap-3 sm:gap-4 w-full px-4 sm:px-0 sm:flex-row"
           >
-            <Button asChild size="lg" className="w-48 bg-white/20 backdrop-blur-lg border border-white/20 text-slate-900 dark:text-white hover:bg-white/30 shadow-lg">
+            <Button
+              asChild
+              size="lg"
+              className="w-full sm:w-48 bg-white/20 backdrop-blur-lg border border-white/20 text-slate-900 dark:text-white hover:bg-white/30 shadow-lg"
+            >
               <Link href="/dashboard">Get Started Free</Link>
             </Button>
             <Button
               asChild
               variant="outline"
               size="lg"
-              className="w-48 bg-transparent backdrop-blur-lg border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white hover:bg-slate-100/10"
+              className="w-full sm:w-48 bg-transparent backdrop-blur-lg border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white hover:bg-slate-100/10"
             >
               <Link href="#features">Learn More</Link>
             </Button>

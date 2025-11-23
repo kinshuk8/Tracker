@@ -1,33 +1,23 @@
-import { ContactButton } from "@/components/ui/contact-button";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default function CallToAction() {
   return (
-    <section className="bg-white dark:bg-black w-full">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
-        <div className="relative bg-slate-50 dark:bg-brand-dark/20 rounded-2xl p-8 md:p-12 lg:p-16 overflow-hidden">
-          {/* Subtle background pattern */}
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 w-full h-full bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] dark:bg-[radial-gradient(#3f3d56_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)]"
-          ></div>
-
-          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
-            {/* Text Content */}
-            <div className="text-center md:text-left">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-brand-dark dark:text-white">
-                Ready to Start Your Project?
-              </h2>
-              <p className="mt-4 text-slate-600 dark:text-slate-300 max-w-2xl text-base sm:text-lg">
-                Let&apos;s talk about how our expertise can help you achieve your goals.
-              </p>
-            </div>
-
-            {/* Button */}
-            <div className="flex-shrink-0">
-              <ContactButton />
-            </div>
-          </div>
-        </div>
+    <section className="py-16 sm:py-20 bg-slate-50 dark:bg-slate-900">
+      <div className="max-w-4xl mx-auto text-center px-4 sm:px-6">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4 sm:mb-6">
+          Let's Build Something Great Together
+        </h2>
+        <p className="text-base sm:text-lg md:text-xl text-slate-600 dark:text-slate-400 mb-6 sm:mb-8 max-w-2xl mx-auto px-4 sm:px-0">
+          Have a project in mind? We'd love to hear from you. Get in touch and let's discuss how we can help bring your vision to life.
+        </p>
+        <Button
+          asChild
+          size="lg"
+          className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-10 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+        >
+          <Link href="/contact">Contact Us</Link>
+        </Button>
       </div>
     </section>
   );
