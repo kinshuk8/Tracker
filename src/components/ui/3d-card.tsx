@@ -117,6 +117,8 @@ export const CardItem = ({
   rotateX?: number | string;
   rotateY?: number | string;
   rotateZ?: number | string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
 }) => {
   const ref = useRef<HTMLDivElement>(null);
   const [isMouseEntered] = useMouseEnter();
@@ -134,14 +136,16 @@ export const CardItem = ({
     handleAnimations();
   }, [isMouseEntered, handleAnimations]);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const Component = Tag as any;
   return (
-    <Tag
+    <Component
       ref={ref}
       className={cn("w-fit transition duration-200 ease-linear", className)}
       {...rest}
     >
       {children}
-    </Tag>
+    </Component>
   );
 };
 

@@ -55,8 +55,11 @@ export function HoverBorderGradient({
       return () => clearInterval(interval);
     }
   }, [hovered, duration, rotateDirection]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const Component = Tag as any;
+
   return (
-    <Tag
+    <Component
       onMouseEnter={(event: React.MouseEvent<HTMLDivElement>) => {
         console.log("hovered", event);
         setHovered(true);
@@ -98,6 +101,6 @@ export function HoverBorderGradient({
         transition={{ ease: "linear", duration: duration ?? 1 }}
       />
       <div className="bg-black absolute z-1 flex-none inset-[2px] rounded-[100px]" />
-    </Tag>
+    </Component>
   );
 }

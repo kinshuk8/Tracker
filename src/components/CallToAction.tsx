@@ -1,6 +1,5 @@
 import { ContactButton } from "@/components/ui/contact-button";
 
-
 export default function CallToAction() {
   return (
     <section className="bg-white dark:bg-black w-full">

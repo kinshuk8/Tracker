@@ -1,14 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion, useScroll, useMotionValueEvent } from "framer-motion";
+import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { UserButton, SignedIn, SignedOut } from "@clerk/nextjs";
-import { } from "lucide-react";
-import Logo from "../../public/assets/company-logo.svg";
 
 // Custom authentication components
 const AuthComponents = () => {
@@ -41,64 +40,71 @@ const navLinks = [
 ];
 
 export default function Navbar() {
-  const { scrollY } = useScroll();
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const pathname = usePathname();
 
-  useMotionValueEvent(scrollY, "change", (latest) => {
-    setIsScrolled(latest > 50);
-    if (isMobileMenuOpen) {
-      setIsMobileMenuOpen(false);
-    }
-  });
-
-  const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    if (href === "/") {
-      e.preventDefault();
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      setIsMobileMenuOpen(false);
-      return;
-    }
-    if (href.startsWith("#")) {
-      e.preventDefault();
-      const targetId = href.substring(1);
-      const targetElement = document.getElementById(targetId);
-      if (targetElement) {
-        targetElement.scrollIntoView({ behavior: "smooth" });
-      }
-      setIsMobileMenuOpen(false);
-    }
-  };
-
-  const navAnimation = {
-    top: { y: 0, paddingLeft: "1.5rem", paddingRight: "1.5rem", width: "100%", maxWidth: "1280px", borderRadius: "0px", backgroundColor: "rgba(255, 255, 255, 0)", backdropFilter: "none", boxShadow: "none", border: "1px solid rgba(0, 0, 0, 0)", },
-    scrolled: { y: 16, paddingLeft: "1rem", paddingRight: "1rem", width: "auto", maxWidth: "100%", borderRadius: "9999px", backgroundColor: "rgba(255, 255, 255, 0.8)", backdropFilter: "blur(12px)", boxShadow: "0 4px_30px rgba(0, 0, 0, 0.1)", border: "1px solid rgba(255, 255, 255, 0.3)", },
-  };
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 h-24 flex items-start justify-center">
-      <motion.nav
-        initial="top"
-        animate={isScrolled ? "scrolled" : "top"}
-        variants={navAnimation}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className={cn("relative hidden lg:flex items-center justify-between dark:bg-[rgba(0,0,0,0.8)] dark:border-[rgba(255,255,255,0.1)]")}
-      >
-        <Link href="/" onClick={(e) => handleSmoothScroll(e, "/")} className="flex items-center gap-3 flex-shrink-0 mr-4">
-          <Image src={Logo} alt="VMK EDGEMIND SOLUTIONS" width={240} height={80} className="rounded-md object-contain h-30 w-auto" />
-        </Link>
-        <div className="flex items-center gap-1">
-          {navLinks.map((link) => (
-            <Link key={link.name} href={link.href} onClick={(e) => handleSmoothScroll(e, link.href)} className={buttonVariants({ variant: "ghost", className: "dark:text-neutral-300" })}>
-              {link.name}
-            </Link>
-          ))}
+    <motion.nav
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      className={cn(
+        "fixed top-0 inset-x-0 z-50 transition-all duration-300 border-b border-transparent",
+        scrolled
+          ? "bg-white/80 dark:bg-black/80 backdrop-blur-md border-slate-200 dark:border-slate-800 shadow-sm"
+          : "bg-transparent"
+      )}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-20">
+          {/* Logo */}
+          <Link href="/" className="flex-shrink-0 flex items-center gap-2">
+            <Image
+              src="/assets/company-logo.svg"
+              alt="VMK Edgemind Solutions"
+              width={240}
+              height={80}
+              className="h-28 w-auto object-contain"
+              priority
+            />
+          </Link>
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-8">
+            {navLinks.map((link) => (
+              <Link
+                key={link.name}
+                href={link.href}
+                className={cn(
+                  "text-sm font-medium transition-colors hover:text-brand",
+                  pathname === link.href
+                    ? "text-brand font-semibold"
+                    : "text-slate-600 dark:text-slate-300"
+                )}
+              >
+                {link.name}
+              </Link>
+            ))}
+          </div>
+
+          {/* Auth Buttons */}
+          <div className="hidden md:flex items-center gap-4">
+            <AuthComponents />
+          </div>
+
+          {/* Mobile Menu Button */}
+          <div className="md:hidden flex items-center gap-4">
+            {/* Mobile menu implementation would go here */}
+          </div>
         </div>
-        <div className="flex items-center gap-2 pl-4 flex-shrink-0">
-          <AuthComponents />
-        </div>
-      </motion.nav>
-      {/* TODO: Mobile Navbar... */}
-    </header>
+      </div>
+    </motion.nav>
   );
 }

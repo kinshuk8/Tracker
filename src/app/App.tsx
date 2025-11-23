@@ -8,7 +8,8 @@ import Solutions from "../components/Solutions";
 import CallToAction from "../components/CallToAction";
 import Footer from "../components/Footer";
 
-import ThreeDCharacter from "../components/ThreeDCharacter";
+import dynamic from "next/dynamic";
+const WorldGlobe = dynamic(() => import("../components/WorldGlobe"), { ssr: false });
 
 import Projects from "../components/Projects";
 
@@ -28,7 +29,7 @@ const LandingPage = () => {
       <Navbar />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-hidden">
         <HeroSection />
-        <ThreeDCharacter />
+        <WorldGlobe />
         <AboutStats />
         <Services />
         <Solutions />

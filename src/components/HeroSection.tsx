@@ -36,11 +36,11 @@ const itemVariants: Variants = {
 export default function HeroSection() {
   // Structure the headline words for the TypewriterEffect component
   const words = [
-    { text: "Unlock" },
+    { text: "Transform" },
     { text: "Your" },
-    { text: "Team's" },
-    { text: "Full" },
-    { text: "Potential", className: "text-blue-500 dark:text-blue-500" },
+    { text: "Business" },
+    { text: "with" },
+    { text: "Innovation", className: "text-blue-500 dark:text-blue-500" },
   ];
 
   return (
@@ -62,10 +62,9 @@ export default function HeroSection() {
             variants={itemVariants}
             className="mt-6 max-w-xl text-base text-slate-600 md:text-xl dark:text-slate-400"
           >
-            Streamline projects, enhance collaboration, and track progress
-            effortlessly with our intuitive platform.{" "}
+            Empowering industries with cutting-edge IoT solutions, industrial automation, and intelligent technology systems.{" "}
             <span className="font-semibold text-slate-700 dark:text-slate-300">
-              Built for modern teams.
+              Built for the future.
             </span>
           </motion.p>
 
