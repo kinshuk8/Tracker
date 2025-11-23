@@ -87,9 +87,9 @@ export default function ContactUs() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
           >
-                          <h1 className="text-4xl sm:text-5xl font-bold text-brand-dark dark:text-white">
-                            Let&apos;s build together.
-                          </h1>            <p className="mt-4 text-lg text-neutral-600 dark:text-neutral-300 max-w-lg">
+            <h1 className="text-4xl sm:text-5xl font-bold text-brand-dark dark:text-white">
+              Let&apos;s build together.
+            </h1>            <p className="mt-4 text-lg text-neutral-600 dark:text-neutral-300 max-w-lg">
               Have a project in mind or just want to learn more? We&apos;d love to hear from you.
             </p>
           </motion.div>
@@ -111,14 +111,18 @@ export default function ContactUs() {
 
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="rounded-xl p-4 bg-white dark:bg-white/5 border border-black/10 dark:border-white/10 flex items-center gap-3">
-              <Mail className="w-5 h-5 text-indigo-500" />
+              <Mail className="w-5 h-5 text-brand" />
               <div>
                 <p className="text-sm text-neutral-600 dark:text-neutral-300">Email</p>
                 <p className="font-medium">contact@vmknexgen.com</p>
               </div>
             </div>
-            <div className="rounded-xl p-4 bg-white dark:bg-white/5 border border-black/10 dark:border-white/10 flex items-center gap-3">
-              <MapPin className="w-5 h-5 text-indigo-500" />
+            <div className="relative rounded-xl p-4 bg-white dark:bg-white/5 border border-black/10 dark:border-white/10 flex items-center gap-3">
+              <div className="absolute inset-x-20 top-0 bg-gradient-to-r from-transparent via-brand to-transparent h-[2px] w-3/4 blur-sm" />
+              <div className="absolute inset-x-20 top-0 bg-gradient-to-r from-transparent via-brand to-transparent h-px w-3/4" />
+              <div className="absolute inset-x-60 top-0 bg-gradient-to-r from-transparent via-sky-500 to-transparent h-[5px] w-1/4 blur-sm" />
+              <div className="absolute inset-x-60 top-0 bg-gradient-to-r from-transparent via-sky-500 to-transparent h-px w-1/4" />
+              <MapPin className="w-5 h-5 text-brand" />
               <div>
                 <p className="text-sm text-neutral-600 dark:text-neutral-300">Address</p>
                 <p className="font-medium">Vijayawada, AP, India</p>
@@ -156,7 +160,7 @@ export default function ContactUs() {
                 <form.Field name="message">{(field) => <FormField field={field} label="Message" placeholder="Tell us about your project..." as={Textarea} />}</form.Field>
 
                 <div className="flex justify-end">
-                  <Button type="submit" size="lg" className="bg-indigo-600 hover:bg-indigo-500 text-white" disabled={form.state.isSubmitting}>
+                  <Button type="submit" size="lg" className="bg-brand hover:bg-brand/90 text-white" disabled={form.state.isSubmitting}>
                     {form.state.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Send Message
                   </Button>

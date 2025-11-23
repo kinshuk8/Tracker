@@ -74,14 +74,14 @@ export default function HeroSection() {
             variants={itemVariants}
             className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row"
           >
-            <Button asChild size="lg" className="w-48">
+            <Button asChild size="lg" className="w-48 bg-white/20 backdrop-blur-lg border border-white/20 text-slate-900 dark:text-white hover:bg-white/30 shadow-lg">
               <Link href="/dashboard">Get Started Free</Link>
             </Button>
             <Button
               asChild
               variant="outline"
               size="lg"
-              className="w-48 border-slate-300 dark:border-slate-700"
+              className="w-48 bg-transparent backdrop-blur-lg border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white hover:bg-slate-100/10"
             >
               <Link href="#features">Learn More</Link>
             </Button>

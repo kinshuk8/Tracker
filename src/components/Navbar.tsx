@@ -15,11 +15,8 @@ const AuthComponents = () => {
   return (
     <>
       <SignedOut>
-        <Button asChild variant="ghost" className="dark:text-neutral-300">
-          <Link href="/sign-in">Login</Link>
-        </Button>
-        <Button asChild size="sm" className="bg-indigo-600 hover:bg-indigo-700">
-          <Link href="/sign-up">Sign Up</Link>
+        <Button asChild size="sm" className="bg-brand hover:bg-brand/90 text-brand-foreground">
+          <Link href="/sign-up">Get Started</Link>
         </Button>
       </SignedOut>
       <SignedIn>
@@ -39,6 +36,7 @@ const navLinks = [
   { name: "Home", href: "/" },
   { name: "Services", href: "#services" },
   { name: "Solutions", href: "#solutions" },
+  { name: "Careers", href: "/careers" },
   { name: "Contact", href: "/contact" },
 ];
 
@@ -87,10 +85,7 @@ export default function Navbar() {
         className={cn("relative hidden lg:flex items-center justify-between dark:bg-[rgba(0,0,0,0.8)] dark:border-[rgba(255,255,255,0.1)]")}
       >
         <Link href="/" onClick={(e) => handleSmoothScroll(e, "/")} className="flex items-center gap-3 flex-shrink-0 mr-4">
-          <Image src={Logo} alt="Company Logo" width={32} height={32} className="rounded-md" />
-          <motion.div className="overflow-hidden" animate={{ width: isScrolled ? 0 : "auto" }} transition={{ duration: 0.4, ease: "easeOut" }}>
-            <span className="font-semibold tracking-wide text-lg text-neutral-800 dark:text-white whitespace-nowrap">VMK NEXGEN SOLUTIONS</span>
-          </motion.div>
+          <Image src={Logo} alt="VMK EDGEMIND SOLUTIONS" width={240} height={80} className="rounded-md object-contain h-30 w-auto" />
         </Link>
         <div className="flex items-center gap-1">
           {navLinks.map((link) => (

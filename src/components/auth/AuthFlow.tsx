@@ -112,7 +112,7 @@ export default function AuthFlow({ defaultTab = "signin" }: { defaultTab?: "sign
                   <Button
                     variant="outline"
                     onClick={() => setIsSignup(true)}
-                    className="rounded-full border-2 border-white bg-transparent px-10 h-11 font-semibold text-white transition-colors hover:bg-white hover:text-indigo-600"
+                    className="rounded-full border-2 border-white bg-transparent px-10 h-11 font-semibold text-white transition-colors hover:bg-white hover:text-brand"
                   >
                     Sign Up
                   </Button>

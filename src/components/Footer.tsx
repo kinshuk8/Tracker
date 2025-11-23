@@ -34,7 +34,7 @@ export default function Footer() {
                 className="rounded-md"
               />
               <span className="text-white font-semibold">
-                VMK NEXGEN SOLUTIONS
+                VMK EDGEMIND SOLUTIONS
               </span>
             </Link>
             <p className="text-sm text-neutral-400 leading-relaxed">
@@ -125,7 +125,7 @@ export default function Footer() {
 
         {/* Copyright */}
         <div className="mt-12 pt-8 border-t border-slate-800 text-center text-xs text-slate-500">
-          © {currentYear} VMK NEXGEN SOLUTIONS. All rights reserved.
+          © {currentYear} VMK EDGEMIND SOLUTIONS. All rights reserved.
         </div>
       </div>
     </footer>

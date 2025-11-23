@@ -8,6 +8,13 @@ import Solutions from "../components/Solutions";
 import CallToAction from "../components/CallToAction";
 import Footer from "../components/Footer";
 
+import ThreeDCharacter from "../components/ThreeDCharacter";
+
+import Projects from "../components/Projects";
+
+import Testimonials from "../components/Testimonials";
+import Branches from "../components/Branches";
+
 const LandingPage = () => {
   return (
     <div className="font-sans bg-white text-slate-800">
@@ -19,11 +26,17 @@ const LandingPage = () => {
         Skip to content
       </a>
       <Navbar />
-      <HeroSection />
-      <AboutStats />
-      <Services />
-      <Solutions />
-      <CallToAction />
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-hidden">
+        <HeroSection />
+        <ThreeDCharacter />
+        <AboutStats />
+        <Services />
+        <Solutions />
+        <Projects />
+        <Testimonials />
+        <Branches />
+        <CallToAction />
+      </main>
       <Footer />
     </div>
   );
