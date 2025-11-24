@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { TextGenerateEffect } from "@/components/ui/text-generate-effect";
 
 const stats = [
-  { value: "150+", label: "Projects Completed" },
-  { value: "15+", label: "Trusted Clients" },
+  { value: "10+", label: "Projects Completed" },
+  { value: "10+", label: "Trusted Clients" },
   { value: "99%", label: "Satisfaction Rate" },
 ];
 

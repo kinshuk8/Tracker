@@ -1,4 +1,4 @@
-import Image from "next/image";
+
 import Link from "next/link";
 import { Meteors } from "@/components/ui/meteors";
 import { buttonVariants } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import {
   Phone,
 } from "lucide-react";
 
-import Logo from "../../public/assets/company-logo.svg";
+
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -26,13 +26,7 @@ export default function Footer() {
           {/* Column 1: Brand Info */}
           <div className="flex flex-col items-start">
             <Link href="/" className="flex items-center gap-3 mb-4">
-              <Image
-                src={Logo}
-                alt="VMK Nexgen Solutions Logo"
-                width={32}
-                height={32}
-                className="rounded-md"
-              />
+
               <span className="text-white font-semibold">
                 VMK EDGEMIND SOLUTIONS
               </span>
@@ -111,7 +105,7 @@ export default function Footer() {
                 <span className="sr-only">Twitter</span>
               </a>
               <a
-                href="https://instagram.com"
+                href="https://www.instagram.com/vmkedgemindsolutions/"
                 target="_blank"
                 rel="noreferrer"
                 className={buttonVariants({ variant: "ghost", size: "icon", className: "text-neutral-400 hover:text-white" })}

@@ -1,22 +1,23 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
-import { Color, Scene, Fog, PerspectiveCamera, Vector3 } from "three";
+import React, { useEffect, useRef, useState, useMemo } from "react";
+import { Color, Fog, Vector3 } from "three";
 import ThreeGlobe from "three-globe";
 import { useThree, Canvas, extend } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import countries from "@/data/globe.json";
+import { useInterval } from "@/hooks/use-interval";
+
 
 declare module "@react-three/fiber" {
     interface ThreeElements {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        threeGlobe: any;
+        threeGlobe: unknown;
     }
 }
 
 extend({ ThreeGlobe });
 
 const RING_PROPAGATION_SPEED = 3;
-const aspect = 1.2;
+
 const cameraZ = 300;
 
 type Position = {
@@ -62,7 +63,7 @@ interface WorldProps {
 
 let numbersOfRings = [0];
 
-export function Globe({ globeConfig, data }: WorldProps) {
+function Globe({ globeConfig, data }: WorldProps) {
     const [globeData, setGlobeData] = useState<
         | {
             size: number;
@@ -76,7 +77,7 @@ export function Globe({ globeConfig, data }: WorldProps) {
 
     const globeRef = useRef<ThreeGlobe>(null);
 
-    const defaultProps = {
+    const defaultProps = useMemo(() => ({
         pointSize: 1,
         atmosphereColor: "#ffffff",
         showAtmosphere: true,
@@ -91,67 +92,103 @@ export function Globe({ globeConfig, data }: WorldProps) {
         rings: 1,
         maxRings: 3,
         ...globeConfig,
-    };
-
-    const _buildMaterial = () => {
-        if (!globeRef.current) return;
-
-        const globeMaterial = globeRef.current.globeMaterial() as unknown as {
-            color: Color;
-            emissive: Color;
-            emissiveIntensity: number;
-            shininess: number;
-        };
-        globeMaterial.color = new Color(globeConfig.globeColor);
-        globeMaterial.emissive = new Color(globeConfig.emissive);
-        globeMaterial.emissiveIntensity = globeConfig.emissiveIntensity || 0.1;
-        globeMaterial.shininess = globeConfig.shininess || 0.9;
-    };
-
-    const _buildData = () => {
-        const arcs = data;
-        const points = [];
-        for (let i = 0; i < arcs.length; i++) {
-            const arc = arcs[i];
-            const rgb = hexToRgb(arc.color) as { r: number; g: number; b: number };
-            points.push({
-                size: defaultProps.pointSize,
-                order: arc.order,
-                color: (t: number) => `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${1 - t})`,
-                lat: arc.startLat,
-                lng: arc.startLng,
-            });
-            points.push({
-                size: defaultProps.pointSize,
-                order: arc.order,
-                color: (t: number) => `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${1 - t})`,
-                lat: arc.endLat,
-                lng: arc.endLng,
-            });
-        }
-
-        // remove duplicates for same lat and lng
-        const filteredPoints = points.filter(
-            (v, i, a) =>
-                a.findIndex((v2) =>
-                    ["lat", "lng"].every(
-                        (k) => v2[k as keyof typeof v2] === v[k as keyof typeof v]
-                    )
-                ) === i
-        );
-
-        setGlobeData(filteredPoints);
-    };
+    }), [globeConfig]);
 
     useEffect(() => {
+        const _buildData = () => {
+            const arcs = data;
+            const points = [];
+            for (let i = 0; i < arcs.length; i++) {
+                const arc = arcs[i];
+                const rgb = hexToRgb(arc.color) as { r: number; g: number; b: number };
+                points.push({
+                    size: defaultProps.pointSize,
+                    order: arc.order,
+                    color: (t: number) => `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${1 - t})`,
+                    lat: arc.startLat,
+                    lng: arc.startLng,
+                });
+                points.push({
+                    size: defaultProps.pointSize,
+                    order: arc.order,
+                    color: (t: number) => `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${1 - t})`,
+                    lat: arc.endLat,
+                    lng: arc.endLng,
+                });
+            }
+
+            const filteredPoints = points.filter(
+                (v, i, a) =>
+                    a.findIndex((v2) =>
+                        ["lat", "lng"].every(
+                            (k) => v2[k as keyof typeof v2] === v[k as keyof typeof v]
+                        )
+                    ) === i
+            );
+
+            setGlobeData(filteredPoints);
+        };
+
+        const _buildMaterial = () => {
+            if (!globeRef.current) return;
+
+            const globeMaterial = globeRef.current.globeMaterial() as unknown as {
+                color: Color;
+                emissive: Color;
+                emissiveIntensity: number;
+                shininess: number;
+            };
+            globeMaterial.color = new Color(globeConfig.globeColor);
+            globeMaterial.emissive = new Color(globeConfig.emissive);
+            globeMaterial.emissiveIntensity = globeConfig.emissiveIntensity || 0.1;
+            globeMaterial.shininess = globeConfig.shininess || 0.9;
+        };
+
         if (globeRef.current) {
             _buildData();
             _buildMaterial();
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [globeRef.current]);
+    }, [globeRef, data, globeConfig, defaultProps.pointSize]);
 
     useEffect(() => {
+        const startAnimation = () => {
+            if (!globeRef.current || !globeData) return;
+
+            globeRef.current
+                .arcsData(data)
+                .arcStartLat((d) => (d as Position).startLat)
+                .arcStartLng((d) => (d as Position).startLng)
+                .arcEndLat((d) => (d as Position).endLat)
+                .arcEndLng((d) => (d as Position).endLng)
+                .arcColor((e: unknown) => (e as Position).color)
+                .arcAltitude((e) => {
+                    return (e as Position).arcAlt;
+                })
+                .arcStroke(() => {
+                    return [0.32, 0.28, 0.3][Math.round(Math.random() * 2)];
+                })
+                .arcDashLength(defaultProps.arcLength)
+                .arcDashInitialGap((e) => (e as Position).order * 1)
+                .arcDashGap(15)
+                .arcDashAnimateTime(() => defaultProps.arcTime);
+
+            globeRef.current
+                .pointsData(globeData)
+                .pointColor((e: unknown) => (e as { color: string }).color)
+                .pointsMerge(true)
+                .pointAltitude(0.0)
+                .pointRadius(2);
+
+            globeRef.current
+                .ringsData([])
+                .ringColor((e: unknown) => (e as { color: string }).color)
+                .ringMaxRadius(defaultProps.maxRings)
+                .ringPropagationSpeed(RING_PROPAGATION_SPEED)
+                .ringRepeatPeriod(
+                    (defaultProps.arcTime * defaultProps.arcLength) / defaultProps.rings
+                );
+        };
+
         if (globeRef.current && globeData) {
             globeRef.current
                 .hexPolygonsData(countries.features)
@@ -160,78 +197,25 @@ export function Globe({ globeConfig, data }: WorldProps) {
                 .showAtmosphere(defaultProps.showAtmosphere)
                 .atmosphereColor(defaultProps.atmosphereColor)
                 .atmosphereAltitude(defaultProps.atmosphereAltitude)
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                .hexPolygonColor((_e) => {
+                .hexPolygonColor(() => {
                     return defaultProps.polygonColor;
                 });
             startAnimation();
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [globeData]);
+    }, [globeData, data, defaultProps]);
 
-    const startAnimation = () => {
+    useInterval(() => {
         if (!globeRef.current || !globeData) return;
+        numbersOfRings = genRandomNumbers(
+            0,
+            data.length,
+            Math.floor((data.length * 4) / 5)
+        );
 
-        globeRef.current
-            .arcsData(data)
-            .arcStartLat((d) => (d as Position).startLat)
-            .arcStartLng((d) => (d as Position).startLng)
-            .arcEndLat((d) => (d as Position).endLat)
-            .arcEndLng((d) => (d as Position).endLng)
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .arcColor((e: any) => (e as Position).color)
-            .arcAltitude((e) => {
-                return (e as Position).arcAlt;
-            })
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            .arcStroke((_e) => {
-                return [0.32, 0.28, 0.3][Math.round(Math.random() * 2)];
-            })
-            .arcDashLength(defaultProps.arcLength)
-            .arcDashInitialGap((e) => (e as Position).order * 1)
-            .arcDashGap(15)
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            .arcDashAnimateTime((_e) => defaultProps.arcTime);
-
-        globeRef.current
-            .pointsData(globeData)
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .pointColor((e) => (e as any).color)
-            .pointsMerge(true)
-            .pointAltitude(0.0)
-            .pointRadius(2);
-
-        globeRef.current
-            .ringsData([])
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .ringColor((e: any) => (t: any) => e.color(t))
-            .ringMaxRadius(defaultProps.maxRings)
-            .ringPropagationSpeed(RING_PROPAGATION_SPEED)
-            .ringRepeatPeriod(
-                (defaultProps.arcTime * defaultProps.arcLength) / defaultProps.rings
-            );
-    };
-
-    useEffect(() => {
-        if (!globeRef.current || !globeData) return;
-
-        const interval = setInterval(() => {
-            if (!globeRef.current || !globeData) return;
-            numbersOfRings = genRandomNumbers(
-                0,
-                data.length,
-                Math.floor((data.length * 4) / 5)
-            );
-
-            globeRef.current.ringsData(
-                globeData.filter((d, i) => numbersOfRings.includes(i))
-            );
-        }, 2000);
-
-        return () => {
-            clearInterval(interval);
-        };
-    }, [globeData, data]);
+        globeRef.current.ringsData(
+            globeData.filter((d, i) => numbersOfRings.includes(i))
+        );
+    }, 2000);
 
     return (
         <>
@@ -240,7 +224,7 @@ export function Globe({ globeConfig, data }: WorldProps) {
     );
 }
 
-export function WebGLRendererConfig() {
+function WebGLRendererConfig() {
     const { gl, scene } = useThree();
 
     useEffect(() => {
@@ -251,12 +235,10 @@ export function WebGLRendererConfig() {
     return null;
 }
 
-export function World(props: WorldProps) {
+function World(props: WorldProps) {
     const { globeConfig } = props;
-    const scene = new Scene();
-    scene.fog = new Fog(0xffffff, 400, 2000);
     return (
-        <Canvas scene={scene} camera={new PerspectiveCamera(50, aspect, 180, 1800)}>
+        <Canvas camera={{ fov: 50, near: 180, far: 1800 }}>
             <WebGLRendererConfig />
             <ambientLight color={globeConfig.ambientLight} intensity={0.6} />
             <directionalLight
@@ -699,27 +681,25 @@ const sampleArcs = [
     },
 ];
 
-export default function WorldGlobe() {
-    return (
-        <div className="flex flex-col items-center justify-center py-12 sm:py-20 dark:bg-black bg-white relative w-full">
-            <div className="max-w-7xl mx-auto w-full px-4">
-                {/* Text Content */}
-                <div className="text-center mb-8 sm:mb-12">
-                    <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white md:text-4xl">
-                        Global Reach
-                    </h2>
-                    <p className="mt-3 sm:mt-4 text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto px-4 sm:px-0">
-                        VMK Edgemind Solutions delivers innovative technology across continents with our established network of partners and clients
-                    </p>
-                </div>
-
-                {/* Globe Container */}
-                <div className="relative overflow-visible h-[450px] sm:h-[500px] md:h-[550px] lg:h-[600px]">
-                    <div className="absolute w-full h-full z-10">
-                        <World data={sampleArcs} globeConfig={globeConfig} />
-                    </div>
+const WorldGlobeComponent = () => (
+    <div className="flex flex-col items-center justify-center py-12 sm:py-20 dark:bg-black bg-white relative w-full">
+        <div className="max-w-7xl mx-auto w-full px-4">
+            <div className="text-center mb-8 sm:mb-12">
+                <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white md:text-4xl">
+                    Global Reach
+                </h2>
+                <p className="mt-3 sm:mt-4 text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto px-4 sm:px-0">
+                    VMK Edgemind Solutions delivers innovative technology across continents with our established network of partners and clients
+                </p>
+            </div>
+            <div className="relative overflow-visible h-[450px] sm:h-[500px] md:h-[550px] lg:h-[600px]">
+                <div className="absolute w-full h-full z-10">
+                    <World data={sampleArcs} globeConfig={globeConfig} />
                 </div>
             </div>
         </div>
-    );
-}
+    </div>
+);
+
+export default WorldGlobeComponent;
+
