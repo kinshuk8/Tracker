@@ -1,13 +1,13 @@
 import Image from "next/image";
-import { Counter } from "@/components/ui/Counter";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { TextGenerateEffect } from "@/components/ui/text-generate-effect";
+import CountUp from "@/components/CountUp";
 
 const stats = [
-  { value: "10+", label: "Projects Completed" },
-  { value: "10+", label: "Trusted Clients" },
-  { value: "99%", label: "Satisfaction Rate" },
+  { value: 10, suffix: "+", label: "Projects Completed" },
+  { value: 10, suffix: "+", label: "Trusted Clients" },
+  { value: 99, suffix: "%", label: "Satisfaction Rate" },
 ];
 
 export default function AboutStats() {
@@ -33,7 +33,15 @@ export default function AboutStats() {
             {stats.map((stat) => (
               <div key={stat.label}>
                 <p className="text-4xl font-extrabold text-brand-purple">
-                  <Counter value={stat.value} />
+                  <CountUp
+                    from={0}
+                    to={stat.value}
+                    separator=","
+                    direction="up"
+                    duration={1}
+                    className="count-up-text"
+                  />
+                  {stat.suffix}
                 </p>
                 <p className="mt-1 text-sm uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                   {stat.label}
