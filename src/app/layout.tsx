@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   title: "VMK Edgemind Solutions",
   description: "Delivering innovative software, networking & IoT solutions.",
   icons: {
-    icon: "/assets/company-logo.svg",
+    icon: "/assets/white-logo.png",
   },
 };
 

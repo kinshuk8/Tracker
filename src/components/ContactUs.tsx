@@ -114,7 +114,7 @@ export default function ContactUs() {
               <Mail className="w-5 h-5 text-brand" />
               <div>
                 <p className="text-sm text-neutral-600 dark:text-neutral-300">Email</p>
-                <p className="font-medium">contact@vmknexgen.com</p>
+                <p className="font-medium">vmkedgemind@gmail.com</p>
               </div>
             </div>
             <div className="relative rounded-xl p-4 bg-white dark:bg-white/5 border border-black/10 dark:border-white/10 flex items-center gap-3">

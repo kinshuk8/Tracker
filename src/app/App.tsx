@@ -18,7 +18,6 @@ import CallToAction from "../components/CallToAction";
 const LandingPage = () => {
   return (
     <div className="font-sans bg-white text-slate-800">
-      {/* Skip link for accessibility */}
       <a
         href="#home"
         className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 bg-blue-600 text-white px-4 py-2 rounded shadow-lg"

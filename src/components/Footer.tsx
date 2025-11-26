@@ -1,17 +1,13 @@
-
 import Link from "next/link";
 import { Meteors } from "@/components/ui/meteors";
 import { buttonVariants } from "@/components/ui/button";
 import {
   Linkedin,
-  Twitter,
   Instagram,
   MapPin,
   Mail,
   Phone,
 } from "lucide-react";
-
-
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -26,7 +22,6 @@ export default function Footer() {
           {/* Column 1: Brand Info */}
           <div className="flex flex-col items-start">
             <Link href="/" className="flex items-center gap-3 mb-4">
-
               <span className="text-white font-semibold">
                 VMK EDGEMIND SOLUTIONS
               </span>
@@ -42,17 +37,26 @@ export default function Footer() {
             <h4 className="text-white font-semibold mb-4">Company</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="#home" className="text-neutral-400 hover:text-white transition-colors">
+                <a
+                  href="#home"
+                  className="text-neutral-400 hover:text-white transition-colors"
+                >
                   Home
                 </a>
               </li>
               <li>
-                <a href="#services" className="text-neutral-400 hover:text-white transition-colors">
+                <a
+                  href="#services"
+                  className="text-neutral-400 hover:text-white transition-colors"
+                >
                   Services
                 </a>
               </li>
               <li>
-                <a href="#solutions" className="text-neutral-400 hover:text-white transition-colors">
+                <a
+                  href="#solutions"
+                  className="text-neutral-400 hover:text-white transition-colors"
+                >
                   Solutions
                 </a>
               </li>
@@ -69,14 +73,20 @@ export default function Footer() {
               </li>
               <li className="flex items-start gap-2 text-neutral-400">
                 <Mail className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                <a href="mailto:contact@vmknexgen.com" className="hover:text-white transition-colors">
-                  contact@vmknexgen.com
+                <a
+                  href="mailto:vmkedgemind@gmail.com"
+                  className="hover:text-white transition-colors"
+                >
+                  vmkedgemind@gmail.com
                 </a>
               </li>
               <li className="flex items-start gap-2 text-neutral-400">
                 <Phone className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                <a href="tel:+91123456789" className="hover:text-white transition-colors">
-                  +91 123 456 789
+                <a
+                  href="tel:+918686854024"
+                  className="hover:text-white transition-colors"
+                >
+                  +91 8686854024
                 </a>
               </li>
             </ul>
@@ -87,28 +97,27 @@ export default function Footer() {
             <h4 className="text-white font-semibold mb-4">Follow Us</h4>
             <div className="flex gap-2">
               <a
-                href="https://linkedin.com"
+                href="https://www.linkedin.com/company/vmkedgemind-solutions-private-limited/"
                 target="_blank"
                 rel="noreferrer"
-                className={buttonVariants({ variant: "ghost", size: "icon", className: "text-neutral-400 hover:text-white" })}
+                className={buttonVariants({
+                  variant: "ghost",
+                  size: "icon",
+                  className: "text-neutral-400 hover:text-white",
+                })}
               >
                 <Linkedin className="h-5 w-5" />
                 <span className="sr-only">LinkedIn</span>
               </a>
               <a
-                href="https://twitter.com"
-                target="_blank"
-                rel="noreferrer"
-                className={buttonVariants({ variant: "ghost", size: "icon", className: "text-neutral-400 hover:text-white" })}
-              >
-                <Twitter className="h-5 w-5" />
-                <span className="sr-only">Twitter</span>
-              </a>
-              <a
                 href="https://www.instagram.com/vmkedgemindsolutions/"
                 target="_blank"
                 rel="noreferrer"
-                className={buttonVariants({ variant: "ghost", size: "icon", className: "text-neutral-400 hover:text-white" })}
+                className={buttonVariants({
+                  variant: "ghost",
+                  size: "icon",
+                  className: "text-neutral-400 hover:text-white",
+                })}
               >
                 <Instagram className="h-5 w-5" />
                 <span className="sr-only">Instagram</span>

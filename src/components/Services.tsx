@@ -1,27 +1,27 @@
 
 import Link from "next/link";
+import Image from "next/image";
 import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
-import { Cog, Network, Home } from "lucide-react"; // Using lucide-react for consistency
+import { Cog, Network, Home } from "lucide-react"; 
 
-// Updated data structure with consistent properties and placeholders
 const services = [
   {
     icon: <Cog className="h-8 w-8 text-brand-purple" />,
     title: "Software Development",
     desc: "End-to-end software solutions tailored to meet unique client requirements and ensure quality.",
-    img: "/images/placeholder-dev.png", // Placeholder image path
+    img: "/assets/software-development.png",
   },
   {
     icon: <Network className="h-8 w-8 text-brand-purple" />,
     title: "Networking Consultancy",
     desc: "Designing secure, scalable, and efficient network infrastructures for modern businesses.",
-    img: "/assets/undraw_server-status.svg", 
+    img: "/assets/network-solutions.png",
   },
   {
     icon: <Home className="h-8 w-8 text-brand-purple" />,
     title: "Smart IoT Solutions",
     desc: "Automated and integrated IoT solutions for homes, industries, and enterprises.",
-    img: "/images/placeholder-iot.png", // Placeholder image path
+    img: "/assets/iot-solutions.png",
   },
 ];
 
@@ -31,7 +31,6 @@ export default function Services() {
       id="services"
       className="dark:bg-black bg-white dark:bg-grid-white/[0.05] bg-grid-black/[0.05] relative"
     >
-      {/* Radial gradient for a subtle background effect */}
       <div className="absolute pointer-events-none inset-0 flex items-center justify-center dark:bg-black bg-white [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-20 sm:py-24 relative z-10">
@@ -64,11 +63,13 @@ export default function Services() {
                   {card.desc}
                 </CardItem>
                 <CardItem translateZ="100" className="w-full mt-4">
-                  <div className="w-full h-[200px] bg-gray-200 dark:bg-zinc-800 rounded-lg flex items-center justify-center">
-                    {/* Your placeholder goes here. You can use an <Image> component once you have images. */}
-                    <span className="text-sm text-gray-400 dark:text-zinc-600">
-                      Placeholder
-                    </span>
+                  <div className="w-full h-[200px] relative rounded-lg overflow-hidden">
+                    <Image
+                      src={card.img}
+                      alt={card.title}
+                      fill
+                      className="object-contain"
+                    />
                   </div>
                 </CardItem>
                 <div className="flex justify-end items-center mt-8">
