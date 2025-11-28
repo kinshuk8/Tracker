@@ -6,8 +6,21 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { UserButton, SignedIn, SignedOut } from "@clerk/nextjs";
-import { Menu } from "lucide-react";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useUser, useClerk, SignedIn, SignedOut } from "@clerk/nextjs";
+import { LogOut, User, Menu } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -23,6 +36,52 @@ import {
   MobileNavToggle,
 } from "@/components/ui/resizable-navbar";
 
+// Custom user menu component
+const CustomUserMenu = () => {
+  const { user } = useUser();
+  const { signOut } = useClerk();
+
+  if (!user) return null;
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Avatar className="h-9 w-9 cursor-pointer border border-neutral-200 dark:border-neutral-800 hover:opacity-80 transition-opacity">
+          <AvatarImage src={user.imageUrl} alt={user.fullName || "User"} className="object-cover" />
+          <AvatarFallback className="bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300">
+            {user.firstName?.charAt(0) || "U"}
+          </AvatarFallback>
+        </Avatar>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuLabel className="font-normal">
+          <div className="flex flex-col space-y-1">
+            <p className="text-sm font-medium leading-none">{user.fullName}</p>
+            <p className="text-xs leading-none text-muted-foreground text-neutral-500">
+              {user.primaryEmailAddress?.emailAddress}
+            </p>
+          </div>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link href="/profile" className="cursor-pointer flex items-center gap-2">
+            <User className="h-4 w-4" />
+            <span>Profile</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          className="cursor-pointer text-red-600 focus:text-red-600 flex items-center gap-2"
+          onClick={() => signOut()}
+        >
+          <LogOut className="h-4 w-4" />
+          <span>Sign out</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
+
 // Custom authentication components
 const AuthComponents = () => {
   return (
@@ -34,18 +93,12 @@ const AuthComponents = () => {
             size="lg"
             className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6 py-2.5 shadow-lg hover:shadow-xl transition-all duration-200"
           >
-            <Link href="/sign-up">Get Started</Link>
+            <Link href="/sign-in">Get Started</Link>
           </Button>
         </div>
       </SignedOut>
       <SignedIn>
-        <UserButton
-          appearance={{
-            elements: {
-              avatarBox: "w-8 h-8"
-            }
-          }}
-        />
+        <CustomUserMenu />
       </SignedIn>
     </>
   );
@@ -69,7 +122,7 @@ export default function Navbar() {
       <ResizableNavbar>
         {/* Desktop Navbar */}
         <NavBody>
-          <Link href="/" className="flex-shrink-0 flex items-center gap-2 z-10">
+          <Link href="/" className="relative flex-shrink-0 flex items-center gap-2 z-50">
             <Image
               src="/assets/company-logo.svg"
               alt="VMK Edgemind Solutions"
@@ -80,7 +133,7 @@ export default function Navbar() {
             />
           </Link>
           <NavItems items={navLinks} />
-          <div className="flex items-center gap-4">
+          <div className="relative flex items-center gap-4 z-50 mt-1 mr-4">
             <AuthComponents />
           </div>
         </NavBody>

@@ -1,0 +1,122 @@
+"use client";
+
+import Link from "next/link";
+import Image from "next/image";
+import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
+import { Code, Database, BrainCircuit } from "lucide-react";
+import { motion } from "framer-motion";
+
+
+const internships = [
+  {
+    icon: <Code className="h-8 w-8 text-brand-purple" />,
+    title: "Python Internship",
+    desc: "Build a strong software foundation—work on automation, scripting, backend logic, and real-world Python applications.",
+    img: "/assets/python-internship.png",
+  },
+  {
+    icon: <Database className="h-8 w-8 text-brand-purple" />,
+    title: "MySQL Internship",
+    desc: "Master relational databases with hands-on projects in schema design, data modeling, and high-performance querying.",
+    img: "/assets/mysql-internship.png",
+  },
+  {
+    icon: <BrainCircuit className="h-8 w-8 text-brand-purple" />,
+    title: "Agentic AI Internship",
+    desc: "Step into the future of AI—build autonomous agents, LLM-powered systems, and intelligent decision-making pipelines.",
+    img: "/assets/agentic-ai-internship.png",
+  },
+];
+
+export default function Internship() {
+  return (
+    <section
+      id="internship"
+      className="relative bg-white dark:bg-black dark:bg-grid-white/[0.05] bg-grid-black/[0.05] pt-32"
+    >
+      {/* Radial mask for subtle vignette */}
+      <div className="absolute inset-0 pointer-events-none flex items-center justify-center [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-24">
+        {/* Title */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="text-center mb-20"
+        >
+          <h2 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-brand-dark dark:text-white">
+            Exclusive Internship Programs
+          </h2>
+          <p className="mt-5 text-lg sm:text-xl text-neutral-600 dark:text-neutral-300 max-w-3xl mx-auto">
+            Learn directly from industry professionals through hands-on, project-driven internships designed to accelerate your career and make your portfolio stand out.
+          </p>
+        </motion.div>
+
+        {/* Cards */}
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={{
+            visible: { transition: { staggerChildren: 0.2 } },
+          }}
+          className="grid sm:grid-cols-2 lg:grid-cols-3 gap-10"
+        >
+          {internships.map((card) => (
+            <motion.div
+              key={card.title}
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+              }}
+            >
+              <CardContainer className="inter-var w-full">
+                <CardBody className="bg-gray-50 relative group/card dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black dark:border-white/[0.2] border-black/[0.1] w-full h-auto rounded-xl p-6 border">
+                  <CardItem
+                    translateZ="50"
+                    className="text-xl font-bold text-neutral-600 dark:text-white flex items-center gap-3"
+                  >
+                    {card.icon}
+                    {card.title}
+                  </CardItem>
+
+                  <CardItem
+                    as="p"
+                    translateZ="60"
+                    className="text-neutral-500 text-sm max-w-sm mt-2 dark:text-neutral-300"
+                  >
+                    {card.desc}
+                  </CardItem>
+
+                  <CardItem translateZ="100" className="w-full mt-4">
+                    <div className="relative w-full h-[220px] rounded-xl overflow-hidden">
+                      <Image
+                        src={card.img}
+                        alt={card.title}
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover/card:scale-110"
+                      />
+                    </div>
+                  </CardItem>
+
+                  <div className="flex justify-end mt-8">
+                    <Link href="/internship">
+                      <CardItem
+                        translateZ={20}
+                        className="px-4 py-2 rounded-xl text-xs font-normal dark:text-white"
+                      >
+                        Learn More →
+                      </CardItem>
+                    </Link>
+                  </div>
+                </CardBody>
+              </CardContainer>
+            </motion.div>
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  );
+}

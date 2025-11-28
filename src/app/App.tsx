@@ -14,6 +14,7 @@ import Projects from "../components/Projects";
 import Testimonials from "../components/Testimonials";
 import Branches from "../components/Branches";
 import CallToAction from "../components/CallToAction";
+import Internship from "../components/Internship";
 
 const LandingPage = () => {
   return (
@@ -28,6 +29,7 @@ const LandingPage = () => {
       <HeroSection />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-hidden">
         <WorldGlobe />
+        <Internship />
         <AboutStats />
         <Services />
         <Solutions />

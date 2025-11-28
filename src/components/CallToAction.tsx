@@ -1,10 +1,17 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
 
 export default function CallToAction() {
   return (
     <section className="py-16 sm:py-20 bg-slate-50 dark:bg-slate-900">
-      <div className="max-w-4xl mx-auto text-center px-4 sm:px-6">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+        className="max-w-4xl mx-auto text-center px-4 sm:px-6"
+      >
         <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4 sm:mb-6">
           Let&apos;s Build Something Great Together
         </h2>
@@ -18,7 +25,7 @@ export default function CallToAction() {
         >
           <Link href="/contact">Contact Us</Link>
         </Button>
-      </div>
+      </motion.div>
     </section>
   );
 }
