@@ -32,24 +32,24 @@ export default function Internship() {
   return (
     <section
       id="internship"
-      className="relative bg-white dark:bg-black dark:bg-grid-white/[0.05] bg-grid-black/[0.05] pt-32"
+      className="relative bg-white dark:bg-black dark:bg-grid-white/[0.05] bg-grid-black/[0.05]"
     >
       {/* Radial mask for subtle vignette */}
       <div className="absolute inset-0 pointer-events-none flex items-center justify-center [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-24">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
         {/* Title */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="text-center mb-20"
+          className="text-center mb-12 sm:mb-20"
         >
-          <h2 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-brand-dark dark:text-white">
+          <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-brand-dark dark:text-white">
             Exclusive Internship Programs
           </h2>
-          <p className="mt-5 text-lg sm:text-xl text-neutral-600 dark:text-neutral-300 max-w-3xl mx-auto">
+          <p className="mt-4 sm:mt-5 text-base sm:text-xl text-neutral-600 dark:text-neutral-300 max-w-3xl mx-auto">
             Learn directly from industry professionals through hands-on, project-driven internships designed to accelerate your career and make your portfolio stand out.
           </p>
         </motion.div>
@@ -73,7 +73,7 @@ export default function Internship() {
               }}
             >
               <CardContainer className="inter-var w-full">
-                <CardBody className="bg-gray-50 relative group/card dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black dark:border-white/[0.2] border-black/[0.1] w-full h-auto rounded-xl p-6 border">
+                <CardBody className="bg-gray-50 relative group/card dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black dark:border-white/[0.2] border-black/[0.1] w-full h-auto rounded-xl p-6 border -mt-16">
                   <CardItem
                     translateZ="50"
                     className="text-xl font-bold text-neutral-600 dark:text-white flex items-center gap-3"

@@ -97,12 +97,12 @@ export default function HeroSection() {
 
           <motion.div
             variants={itemVariants}
-            className="mt-6 sm:mt-8 flex flex-col items-center justify-center gap-3 sm:gap-4 w-full px-4 sm:px-0 sm:flex-row"
+            className="mt-8 flex flex-wrap items-center justify-center gap-4 w-full"
           >
             <Button
               asChild
               size="lg"
-              className="w-full sm:w-48 bg-blue-600 hover:bg-blue-700 text-white shadow-lg"
+              className="min-w-[160px] rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition-all hover:scale-105"
             >
               <Link href="/sign-in">Get Started Free</Link>
             </Button>
@@ -110,7 +110,7 @@ export default function HeroSection() {
               asChild
               variant="outline"
               size="lg"
-              className="w-full sm:w-48 border-neutral-300 dark:border-neutral-700 text-neutral-800 dark:text-white hover:bg-neutral-100 dark:hover:bg-neutral-900"
+              className="min-w-[160px] rounded-full border-neutral-200 dark:border-neutral-800 bg-white/50 dark:bg-black/50 backdrop-blur-sm hover:bg-neutral-100 dark:hover:bg-neutral-900 transition-all hover:scale-105"
             >
               <Link href="#features">Learn More</Link>
             </Button>

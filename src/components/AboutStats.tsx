@@ -17,14 +17,14 @@ export default function AboutStats() {
 
   return (
     <section className="dark:bg-black bg-white">
-      <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-24 items-center px-4 sm:px-6 py-20 sm:py-32">
+      <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-24 items-center px-4 sm:px-6 py-10 sm:py-16">
         {/* Left Column: Content */}
         <div className="flex flex-col justify-center">
           <TextGenerateEffect
             words={headline}
-            className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-neutral-800 dark:text-white !leading-tight"
+            className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-neutral-800 dark:text-white !leading-tight"
           />
-          <p className="mt-6 text-lg text-neutral-600 dark:text-neutral-300">
+          <p className="mt-6 text-base sm:text-lg text-neutral-600 dark:text-neutral-300">
             {subheadline}
           </p>
 
@@ -32,7 +32,7 @@ export default function AboutStats() {
           <div className="mt-10 flex flex-wrap gap-8 sm:gap-12">
             {stats.map((stat) => (
               <div key={stat.label}>
-                <p className="text-4xl font-extrabold text-brand-purple">
+                <p className="text-3xl sm:text-4xl font-extrabold text-brand-purple">
                   <CountUp
                     from={0}
                     to={stat.value}
@@ -43,7 +43,7 @@ export default function AboutStats() {
                   />
                   {stat.suffix}
                 </p>
-                <p className="mt-1 text-sm uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                <p className="mt-1 text-xs sm:text-sm uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                   {stat.label}
                 </p>
               </div>
@@ -65,7 +65,7 @@ export default function AboutStats() {
             src="/assets/welcome-image.svg"
             alt="Abstract visualization of data networks and technology"
             fill
-            className="object-contain" // <-- FIXED: Use object-contain to show the whole image
+            className="object-contain"
           />
         </div>
       </div>

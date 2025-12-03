@@ -18,7 +18,7 @@ extend({ ThreeGlobe });
 
 const RING_PROPAGATION_SPEED = 3;
 
-const cameraZ = 300;
+const cameraZ = 400;
 
 type Position = {
     order: number;
@@ -228,7 +228,7 @@ function WebGLRendererConfig() {
     const { gl, scene } = useThree();
 
     useEffect(() => {
-        gl.setPixelRatio(window.devicePixelRatio);
+        gl.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         scene.fog = new Fog(0xffffff, 400, 2000);
     }, [gl, scene]);
 
@@ -682,7 +682,7 @@ const sampleArcs = [
 ];
 
 const WorldGlobeComponent = () => (
-    <div className="flex flex-col items-center justify-center py-12 sm:py-20 dark:bg-black bg-white relative w-full">
+    <div className="flex flex-col items-center justify-center py-10 sm:py-16 dark:bg-black bg-white relative w-full">
         <div className="max-w-7xl mx-auto w-full px-4">
             <div className="text-center mb-8 sm:mb-12">
                 <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white md:text-4xl">

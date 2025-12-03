@@ -36,17 +36,17 @@ const solutions = [
 export default function Solutions() {
   return (
     <section id="solutions" className="bg-white dark:bg-black w-full">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-20 sm:py-28">
-        <div className="max-w-2xl mx-auto text-center mb-16">
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-brand-dark dark:text-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
+        <div className="max-w-2xl mx-auto text-left sm:text-center mb-8">
+          <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-brand-dark dark:text-white">
             Our Core Solutions
           </h2>
-          <p className="mt-4 text-lg text-neutral-600 dark:text-neutral-300">
+          <p className="mt-4 text-base sm:text-lg text-neutral-600 dark:text-neutral-300">
             We build robust, scalable, and effective solutions to solve real-world business problems.
           </p>
         </div>
 
-        <div className="space-y-20 sm:space-y-28">
+        <div className="space-y-12 sm:space-y-20">
           {solutions.map((solution, idx) => {
             const isImageFirst = idx % 2 === 0;
 
@@ -83,7 +83,7 @@ export default function Solutions() {
                     isImageFirst ? "md:order-2" : "md:order-1"
                   }`}
                 >
-                  <h3 className="text-2xl sm:text-3xl font-bold text-brand-dark dark:text-white">
+                  <h3 className="text-xl sm:text-3xl font-bold text-brand-dark dark:text-white">
                     {solution.title}
                   </h3>
                   <p className="mt-4 text-neutral-600 dark:text-neutral-300 leading-relaxed">

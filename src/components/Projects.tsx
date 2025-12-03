@@ -31,8 +31,8 @@ const projects = [
 
 export default function Projects() {
     return (
-        <section id="projects" className="py-20">
-            <div className="text-center mb-12">
+        <section id="projects" className="py-10 sm:py-16"> {/* Reduced space */}
+            <div className="text-center mb-6">
                 <h2 className="text-3xl font-bold text-slate-900 dark:text-white sm:text-4xl">
                     Our Projects
                 </h2>
@@ -40,16 +40,18 @@ export default function Projects() {
                     Explore some of our recent work delivering cutting-edge solutions across various industries.
                 </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 max-w-7xl mx-auto px-4">
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10 max-w-7xl mx-auto px-4">
                 {projects.map((project, index) => (
                     <CardContainer key={index} className="inter-var w-full">
-                        <CardBody className="bg-gray-50 relative group/card  dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black dark:border-white/[0.2] border-black/[0.1] w-full h-auto rounded-xl p-8 border">
+                        <CardBody className="bg-gray-50 relative group/card dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black dark:border-white/[0.2] border-black/[0.1] w-full h-auto rounded-xl p-8 border">
                             <CardItem
                                 translateZ="50"
                                 className="text-xl font-bold text-neutral-600 dark:text-white"
                             >
                                 {project.title}
                             </CardItem>
+
                             <CardItem
                                 as="p"
                                 translateZ="60"
@@ -57,6 +59,7 @@ export default function Projects() {
                             >
                                 {project.description}
                             </CardItem>
+
                             <CardItem translateZ="100" className="w-full mt-4">
                                 <Image
                                     src={project.image}
@@ -66,18 +69,17 @@ export default function Projects() {
                                     alt={project.title}
                                 />
                             </CardItem>
+
                             <div className="flex justify-between items-center mt-20">
                                 <CardItem
                                     translateZ={20}
                                     className="px-4 py-2 rounded-xl text-xs font-normal dark:text-white"
                                 >
-                                    <Link
-                                        href={project.link}
-                                        target="__blank"
-                                    >
+                                    <Link href={project.link} target="__blank">
                                         Learn More →
                                     </Link>
                                 </CardItem>
+
                                 <CardItem
                                     translateZ={20}
                                     as="button"

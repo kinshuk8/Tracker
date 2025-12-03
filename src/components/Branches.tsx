@@ -32,7 +32,7 @@ const branches = [
 
 export default function Branches() {
     return (
-        <section id="branches" className="py-20">
+        <section id="branches" className="py-12 sm:py-16">
             <div className="text-center mb-12">
                 <h2 className="text-3xl font-bold text-slate-900 dark:text-white sm:text-4xl">
                     Our Global Presence
@@ -41,7 +41,7 @@ export default function Branches() {
                     Expanding our reach to serve you better across multiple locations
                 </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto px-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 max-w-7xl mx-auto px-4">
                 {branches.map((branch, index) => {
                     const Icon = branch.icon;
                     return (
