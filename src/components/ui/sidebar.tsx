@@ -1,5 +1,7 @@
 "use client";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import React, { useState, createContext, useContext } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { IconMenu2, IconX } from "@tabler/icons-react";
@@ -163,26 +165,35 @@ export const SidebarLink = ({
   className?: string;
 }) => {
   const { open, animate } = useSidebar();
+  const pathname = usePathname();
+  const isActive = pathname === link.href;
+
   return (
-    <a
+    <Link
       href={link.href}
       className={cn(
-        "flex items-center justify-start gap-2  group/sidebar py-2",
+        "flex items-center justify-start gap-2  group/sidebar py-2 px-2 rounded-md transition-colors",
+        isActive ? "bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium" : "text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800",
         className
       )}
       {...props}
     >
-      {link.icon}
+      <div className={cn(isActive ? "text-blue-600 dark:text-blue-400" : "")}>
+        {link.icon}
+      </div>
 
       <motion.span
         animate={{
           display: animate ? (open ? "inline-block" : "none") : "inline-block",
           opacity: animate ? (open ? 1 : 0) : 1,
         }}
-        className="text-neutral-700 dark:text-neutral-200 text-sm group-hover/sidebar:translate-x-1 transition duration-150 whitespace-pre inline-block !p-0 !m-0"
+        className={cn(
+          "text-sm group-hover/sidebar:translate-x-1 transition duration-150 whitespace-pre inline-block !p-0 !m-0",
+          isActive ? "text-blue-600 dark:text-blue-400" : "text-neutral-700 dark:text-neutral-200"
+        )}
       >
         {link.label}
       </motion.span>
-    </a>
+    </Link>
   );
 };

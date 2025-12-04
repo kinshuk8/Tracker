@@ -15,16 +15,21 @@ export default function CareersPage() {
                 <div className="bg-slate-100 dark:bg-slate-800 p-6 rounded-full mb-8">
                     <Construction className="w-16 h-16 text-brand" />
                 </div>
-                <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-5xl mb-4">
-                    Under Construction
+                <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-5xl mb-6">
+                    Join Our Team
                 </h1>
                 <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto mb-8">
-                    We are currently building our careers portal to bring you the best opportunities.
-                    Please check back soon!
+                    If you are interested, mail us at <a href="mailto:hr@vmkedgemindsolutions.com" className="text-brand font-semibold hover:underline">hr@vmkedgemindsolutions.com</a> with your resume and skills mentioned.
                 </p>
-                <Button asChild className="bg-brand hover:bg-brand/90 text-white">
-                    <Link href="/">Return Home</Link>
-                </Button>
+                
+                <div className="flex flex-col items-center gap-4 mt-8 pt-8 border-t border-slate-200 dark:border-slate-700 w-full max-w-md">
+                    <p className="text-slate-600 dark:text-slate-300">
+                        Also check for the internships available
+                    </p>
+                    <Button asChild className="bg-brand hover:bg-brand/90 text-white w-full sm:w-auto">
+                        <Link href="/internship/courses">Explore Internships</Link>
+                    </Button>
+                </div>
             </main>
             <Footer />
         </div>
