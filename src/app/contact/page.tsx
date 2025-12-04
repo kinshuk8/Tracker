@@ -1,7 +1,13 @@
-// pages/contact.tsx or app/contact/page.tsx
-
 import ContactUs from "@/components/ContactUs";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 export default function ContactPage() {
-  return <ContactUs />;
+  return (
+    <div className="font-sans bg-white text-slate-800">
+      <Navbar />
+      <ContactUs />
+      <Footer />
+    </div>
+  );
 }
