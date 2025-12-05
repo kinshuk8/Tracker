@@ -4,9 +4,19 @@ import { db } from "@/db";
 import { content, userProgress, users } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { notFound } from "next/navigation";
-import { currentUser } from "@clerk/nextjs/server";
+
 import MarkAsReadButton from "../../components/MarkAsReadButton";
 import Quiz from "../../components/Quiz";
+import { AlertCircle } from "lucide-react";
+
+function getYouTubeEmbedUrl(url: string): string | null {
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+
+  return (match && match[2].length === 11)
+    ? `https://www.youtube.com/embed/${match[2]}`
+    : null;
+}
 
 export default async function ModulePage({
   params,
@@ -37,11 +47,19 @@ export default async function ModulePage({
   }
 
   // Check completion status
+  // Check completion status
   let isCompleted = false;
-  const user = await currentUser();
-  if (user && user.emailAddresses[0]?.emailAddress) {
+  const { auth } = await import("@/lib/auth");
+  const { headers } = await import("next/headers");
+  const session = await auth.api.getSession({
+    headers: await headers()
+  });
+  
+  const user = session?.user;
+
+  if (user && user.email) {
     const dbUser = await db.query.users.findFirst({
-      where: eq(users.email, user.emailAddresses[0].emailAddress),
+      where: eq(users.email, user.email),
     });
 
     if (dbUser) {
@@ -78,12 +96,29 @@ export default async function ModulePage({
             <div className="whitespace-pre-wrap font-serif text-lg leading-relaxed text-slate-700">{contentItem.data}</div>
           )}
           {contentItem.type === "video" && (
-            <div className="aspect-video bg-slate-900 rounded-lg flex items-center justify-center text-white shadow-lg">
-              {/* In a real app, embed video player here */}
-              <a href={contentItem.data} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline flex flex-col items-center gap-2">
-                <span className="text-4xl">▶</span>
-                <span>Watch Video</span>
-              </a>
+            <div className="aspect-video bg-slate-900 rounded-lg flex items-center justify-center text-white shadow-lg overflow-hidden">
+              {(() => {
+                const embedUrl = getYouTubeEmbedUrl(contentItem.data);
+                if (embedUrl) {
+                  return (
+                    <iframe
+                      src={embedUrl}
+                      className="w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      title={contentItem.title}
+                    />
+                  );
+                } else {
+                  return (
+                    <div className="flex flex-col items-center gap-2 text-red-400 p-4 text-center">
+                      <AlertCircle className="w-12 h-12" />
+                      <p className="font-medium">Invalid Video Source</p>
+                      <p className="text-sm text-slate-400">Only YouTube videos are supported.</p>
+                    </div>
+                  );
+                }
+              })()}
             </div>
           )}
           {contentItem.type === "test" && (

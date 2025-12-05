@@ -6,7 +6,7 @@ import { eq, asc, and } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
 import Image from "next/image";
-import { currentUser } from "@clerk/nextjs/server";
+
 
 export default async function CourseLayout({
   children,
@@ -47,12 +47,19 @@ export default async function CourseLayout({
   });
 
   // Fetch user progress
-  const user = await currentUser();
+  // Fetch user progress
+  const { auth } = await import("@/lib/auth");
+  const { headers } = await import("next/headers");
+  const session = await auth.api.getSession({
+    headers: await headers()
+  });
+  const user = session?.user;
+
   const completedContentIds = new Set<number>();
   
-  if (user && user.emailAddresses[0]?.emailAddress) {
+  if (user && user.email) {
     const dbUser = await db.query.users.findFirst({
-      where: eq(users.email, user.emailAddresses[0].emailAddress),
+      where: eq(users.email, user.email),
     });
 
     if (dbUser) {
@@ -123,11 +130,11 @@ export default async function CourseLayout({
           <div>
             <SidebarLink
               link={{
-                label: user?.firstName || "Profile",
+                label: user?.name || "Profile",
                 href: "/profile",
                 icon: (
                   <Image
-                    src={user?.imageUrl || "https://github.com/shadcn.png"}
+                    src={user?.image || "https://github.com/shadcn.png"}
                     className="h-7 w-7 shrink-0 rounded-full"
                     width={50}
                     height={50}

@@ -1,8 +1,8 @@
 "use client";
-import React, { useEffect, useRef, useState, useMemo } from "react";
-import { Color, Fog, Vector3 } from "three";
+import React, { useEffect, useRef, useState, useMemo, Suspense } from "react";
+import { Color, Vector3 } from "three";
 import ThreeGlobe from "three-globe";
-import { useThree, Canvas, extend } from "@react-three/fiber";
+import { Canvas, extend } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import countries from "@/data/globe.json";
 import { useInterval } from "@/hooks/use-interval";
@@ -224,22 +224,13 @@ function Globe({ globeConfig, data }: WorldProps) {
     );
 }
 
-function WebGLRendererConfig() {
-    const { gl, scene } = useThree();
 
-    useEffect(() => {
-        gl.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        scene.fog = new Fog(0xffffff, 400, 2000);
-    }, [gl, scene]);
-
-    return null;
-}
 
 function World(props: WorldProps) {
     const { globeConfig } = props;
     return (
-        <Canvas camera={{ fov: 50, near: 180, far: 1800 }}>
-            <WebGLRendererConfig />
+        <Canvas camera={{ fov: 50, near: 180, far: 1800 }} dpr={[1, 2]}>
+            <fog attach="fog" args={[0xffffff, 400, 2000]} />
             <ambientLight color={globeConfig.ambientLight} intensity={0.6} />
             <directionalLight
                 color={globeConfig.directionalLeftLight}
@@ -254,17 +245,19 @@ function World(props: WorldProps) {
                 position={new Vector3(-200, 500, 200)}
                 intensity={0.8}
             />
-            <Globe {...props} />
-            <OrbitControls
-                enablePan={false}
-                enableZoom={false}
-                minDistance={cameraZ}
-                maxDistance={cameraZ}
-                autoRotateSpeed={1}
-                autoRotate={true}
-                minPolarAngle={Math.PI / 3.5}
-                maxPolarAngle={Math.PI - Math.PI / 3}
-            />
+            <Suspense fallback={null}>
+                <Globe {...props} />
+                <OrbitControls
+                    enablePan={false}
+                    enableZoom={false}
+                    minDistance={cameraZ}
+                    maxDistance={cameraZ}
+                    autoRotateSpeed={1}
+                    autoRotate={true}
+                    minPolarAngle={Math.PI / 3.5}
+                    maxPolarAngle={Math.PI - Math.PI / 3}
+                />
+            </Suspense>
         </Canvas>
     );
 }

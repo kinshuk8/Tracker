@@ -13,29 +13,24 @@ export default function AuthFlow({ defaultTab = "signin" }: { defaultTab?: "sign
 
   // EFFECT 1: Update URL when the user clicks a button to toggle the view
   useEffect(() => {
-    const newPath = isSignup ? "/sign-up" : "/sign-in";
+    const newPath = isSignup ? "/auth/sign-up" : "/auth/sign-in";
     // Use Next.js router to properly handle route changes
     if (typeof window !== 'undefined') {
       window.history.pushState({}, '', newPath);
     }
   }, [isSignup]);
 
-  // EFFECT 2: Listen for browser back/forward navigation
   useEffect(() => {
     const handlePopState = () => {
-      // When the user navigates using back/forward buttons, the URL changes.
-      // This function reads the new URL and syncs the UI state to match it.
-      setIsSignup(window.location.pathname === "/sign-up");
+      setIsSignup(window.location.pathname === "/auth/sign-up");
     };
 
-    // Listen for the 'popstate' event, which fires on back/forward navigation
     window.addEventListener('popstate', handlePopState);
 
-    // Cleanup: remove the event listener when the component unmounts
     return () => {
       window.removeEventListener('popstate', handlePopState);
     };
-  }, []); // The empty dependency array ensures this effect runs only once on mount
+  }, []); 
 
   const formVariants = {
     hidden: { opacity: 0, x: "-50%" },
@@ -51,9 +46,6 @@ export default function AuthFlow({ defaultTab = "signin" }: { defaultTab?: "sign
 
   return (
     <>
-      {/* ======================================================================= */}
-      {/* Desktop Sliding Door Layout                                             */}
-      {/* ======================================================================= */}
       <div className="hidden md:block relative h-screen w-full bg-white dark:bg-gray-800 overflow-hidden">
         {/* Forms Container */}
         <motion.div
@@ -150,27 +142,78 @@ export default function AuthFlow({ defaultTab = "signin" }: { defaultTab?: "sign
         </motion.div>
       </div>
 
-      {/* ======================================================================= */}
-      {/* Mobile Toggle Layout (Unchanged)                                        */}
-      {/* ======================================================================= */}
-      <div className="md:hidden flex flex-col min-h-screen bg-white dark:bg-gray-800">
-        <motion.div
-          key={isSignup ? "signup" : "signin"}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.4 }}
-          className="flex-1 flex flex-col items-center justify-center p-8"
-        >
-          <div className="w-full max-w-md">
-            {isSignup ? <SignUpForm hideCard /> : <SignInForm hideCard />}
+
+      <div className="md:hidden flex flex-col min-h-screen bg-gradient-to-br from-blue-500 to-indigo-600 p-4 justify-center items-center">
+        <div className="w-full max-w-md flex flex-col items-center">
+          {/* Illustration */}
+          <motion.div
+            key={isSignup ? "signup-img" : "signin-img"}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="mb-6"
+          >
+            <Image
+              src={isSignup ? "/assets/undraw_sign-up.svg" : "/assets/undraw_login.svg"}
+              alt="Auth Illustration"
+              width={200}
+              height={150}
+              className="drop-shadow-lg"
+              priority
+            />
+          </motion.div>
+
+          {/* Form Container */}
+          <div className="w-full bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl overflow-hidden">
+            
+            {/* Sliding Segmented Control */}
+            <div className="p-4 pb-0">
+              <div className="relative flex bg-slate-100/80 p-1 rounded-lg">
+                <button
+                  onClick={() => setIsSignup(false)}
+                  className={`flex-1 relative z-10 py-2 text-sm font-medium transition-colors duration-200 ${!isSignup ? "text-blue-600" : "text-slate-500 hover:text-slate-700"}`}
+                >
+                  Sign In
+                  {!isSignup && (
+                    <motion.div
+                      layoutId="activeTab"
+                      className="absolute inset-0 bg-white rounded-md shadow-sm -z-10"
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
+                </button>
+                <button
+                  onClick={() => setIsSignup(true)}
+                  className={`flex-1 relative z-10 py-2 text-sm font-medium transition-colors duration-200 ${isSignup ? "text-blue-600" : "text-slate-500 hover:text-slate-700"}`}
+                >
+                  Create Account
+                  {isSignup && (
+                    <motion.div
+                      layoutId="activeTab"
+                      className="absolute inset-0 bg-white rounded-md shadow-sm -z-10"
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Form Content */}
+            <div className="p-1">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={isSignup ? "signup-form" : "signin-form"}
+                  initial={{ opacity: 0, x: isSignup ? 20 : -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: isSignup ? -20 : 20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {isSignup ? <SignUpForm hideCard /> : <SignInForm hideCard />}
+                </motion.div>
+              </AnimatePresence>
+            </div>
           </div>
-          <div className="mt-6 text-sm text-muted-foreground">
-            <Button variant="link" onClick={() => setIsSignup(!isSignup)}>
-              {isSignup ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
-            </Button>
-          </div>
-        </motion.div>
+        </div>
       </div>
     </>
   );

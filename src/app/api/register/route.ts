@@ -20,18 +20,38 @@ export async function POST(req: Request) {
 
     if (existingUser.length > 0) {
       userId = existingUser[0].id;
-      // Optional: Update user details if needed
     } else {
-      // Create new user
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const newUser = await db.insert(users).values({
-        name,
-        email,
-        password: hashedPassword,
+      // Create new user using Better-Auth API to ensure proper hashing and session creation
+      // We need to import 'auth' from '@/lib/auth'
+      const { auth } = await import("@/lib/auth");
+      const { headers } = await import("next/headers");
+      
+      const result = await auth.api.signUpEmail({
+        body: {
+            email,
+            password,
+            name,
+        },
+        headers: await headers()
+      });
+
+      if (!result) {
+         return NextResponse.json({ error: "Failed to create user" }, { status: 500 });
+      }
+      
+      // Fetch the created user to get the ID (since result might be session or user object depending on config)
+      const newUser = await db.select().from(users).where(eq(users.email, email)).limit(1);
+      if (newUser.length === 0) {
+         return NextResponse.json({ error: "User created but not found" }, { status: 500 });
+      }
+      
+      userId = newUser[0].id;
+      
+      // Update additional fields not handled by signUpEmail
+      await db.update(users).set({
         college,
         role: "user",
-      }).returning({ id: users.id });
-      userId = newUser[0].id;
+      }).where(eq(users.id, userId));
     }
 
     // Calculate end date based on plan

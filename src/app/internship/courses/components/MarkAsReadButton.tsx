@@ -33,7 +33,7 @@ export default function MarkAsReadButton({
       if (error instanceof Error && error.message === "Unauthorized") {
         toast.error("Please sign in to save progress");
         // Optional: Redirect to sign-in
-        // window.location.href = "/sign-in";
+        // window.location.href = "/auth/sign-in";
       } else {
         toast.error("Failed to mark as read");
       }

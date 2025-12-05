@@ -104,7 +104,7 @@ export default function HeroSection() {
               size="lg"
               className="min-w-[160px] rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition-all hover:scale-105"
             >
-              <Link href="/sign-in">Get Started Free</Link>
+              <Link href="/auth/sign-in">Get Started Free</Link>
             </Button>
             <Button
               asChild

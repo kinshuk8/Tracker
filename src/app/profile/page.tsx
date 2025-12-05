@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { users, enrollments } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
-import { currentUser } from "@clerk/nextjs/server";
+
 import { redirect } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -14,14 +14,19 @@ import Link from "next/link";
 import { BookOpen, Calendar, User } from "lucide-react";
 
 export default async function ProfilePage() {
-  const user = await currentUser();
+  const { auth } = await import("@/lib/auth");
+  const { headers } = await import("next/headers");
+  const session = await auth.api.getSession({
+    headers: await headers()
+  });
+  const user = session?.user;
 
-  if (!user || !user.emailAddresses[0]?.emailAddress) {
-    redirect("/sign-in");
+  if (!user || !user.email) {
+    redirect("/auth/sign-in");
   }
 
   const dbUser = await db.query.users.findFirst({
-    where: eq(users.email, user.emailAddresses[0].emailAddress),
+    where: eq(users.email, user.email),
   });
 
   if (!dbUser) {

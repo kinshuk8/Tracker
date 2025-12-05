@@ -3,17 +3,22 @@
 import { db } from "@/db";
 import { users, enrollments, userProgress } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
-import { currentUser } from "@clerk/nextjs/server";
+
 import { revalidatePath } from "next/cache";
 
 export async function markAsCompleted(courseId: number, contentId: number) {
-  const user = await currentUser();
+  const { auth } = await import("@/lib/auth");
+  const { headers } = await import("next/headers");
+  const session = await auth.api.getSession({
+    headers: await headers()
+  });
+  const user = session?.user;
 
   if (!user) {
     throw new Error("Unauthorized");
   }
 
-  const email = user.emailAddresses[0]?.emailAddress;
+  const email = user.email;
   if (!email) {
     throw new Error("No email found");
   }

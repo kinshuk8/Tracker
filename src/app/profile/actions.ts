@@ -3,13 +3,18 @@
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { currentUser } from "@clerk/nextjs/server";
+
 import { revalidatePath } from "next/cache";
 
 export async function updateProfile(formData: FormData) {
-  const user = await currentUser();
+  const { auth } = await import("@/lib/auth");
+  const { headers } = await import("next/headers");
+  const session = await auth.api.getSession({
+    headers: await headers()
+  });
+  const user = session?.user;
 
-  if (!user || !user.emailAddresses[0]?.emailAddress) {
+  if (!user || !user.email) {
     throw new Error("Unauthorized");
   }
 
@@ -27,7 +32,7 @@ export async function updateProfile(formData: FormData) {
         phoneNumber,
         updatedAt: new Date(),
       })
-      .where(eq(users.email, user.emailAddresses[0].emailAddress));
+      .where(eq(users.email, user.email));
 
     revalidatePath("/profile");
   } catch (error) {

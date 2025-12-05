@@ -1,19 +1,14 @@
 "use client";
 
-import { useSignIn } from "@clerk/nextjs";
-import { OAuthStrategy } from "@clerk/types";
+import { authClient } from "@/lib/auth-client";
 import { FaGoogle } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
 
 export function SocialLogins() {
-  const { signIn } = useSignIn();
-
-  const oauthSignIn = async (strategy: OAuthStrategy) => {
-    if (!signIn) return;
-    await signIn.authenticateWithRedirect({
-      strategy,
-      redirectUrl: "/",
-      redirectUrlComplete: "/",
+  const oauthSignIn = async () => {
+    await authClient.signIn.social({
+      provider: "google",
+      callbackURL: "/",
     });
   };
 
@@ -22,7 +17,7 @@ export function SocialLogins() {
       <Button
         variant="outline"
         className="w-full"
-        onClick={() => oauthSignIn("oauth_google")}
+        onClick={() => oauthSignIn()}
       >
         <FaGoogle className="mr-2 h-4 w-4" />
         Sign in with Google

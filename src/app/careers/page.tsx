@@ -11,7 +11,7 @@ export default function CareersPage() {
     return (
         <div className="font-sans bg-white text-slate-800 min-h-screen flex flex-col">
             <Navbar />
-            <main className="flex-grow flex flex-col items-center justify-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
+            <main className="flex-grow flex flex-col items-center justify-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center mt-20">
                 <div className="bg-slate-100 dark:bg-slate-800 p-6 rounded-full mb-8">
                     <Construction className="w-16 h-16 text-brand" />
                 </div>

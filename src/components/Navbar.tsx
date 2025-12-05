@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,7 +19,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useUser, useClerk, SignedIn, SignedOut } from "@clerk/nextjs";
 import { LogOut, User, Menu } from "lucide-react";
 import {
   Sheet,
@@ -35,74 +34,7 @@ import {
   MobileNavMenu,
   MobileNavToggle,
 } from "@/components/ui/resizable-navbar";
-
-// Custom user menu component
-const CustomUserMenu = () => {
-  const { user } = useUser();
-  const { signOut } = useClerk();
-
-  if (!user) return null;
-
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Avatar className="h-9 w-9 cursor-pointer border border-neutral-200 dark:border-neutral-800 hover:opacity-80 transition-opacity">
-          <AvatarImage src={user.imageUrl} alt={user.fullName || "User"} className="object-cover" />
-          <AvatarFallback className="bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300">
-            {user.firstName?.charAt(0) || "U"}
-          </AvatarFallback>
-        </Avatar>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user.fullName}</p>
-            <p className="text-xs leading-none text-muted-foreground text-neutral-500">
-              {user.primaryEmailAddress?.emailAddress}
-            </p>
-          </div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href="/profile" className="cursor-pointer flex items-center gap-2">
-            <User className="h-4 w-4" />
-            <span>Profile</span>
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          className="cursor-pointer text-red-600 focus:text-red-600 flex items-center gap-2"
-          onClick={() => signOut()}
-        >
-          <LogOut className="h-4 w-4" />
-          <span>Sign out</span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-};
-
-// Custom authentication components
-const AuthComponents = () => {
-  return (
-    <>
-      <SignedOut>
-        <div className="flex items-center gap-3">
-          <Button
-            asChild
-            size="lg"
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6 py-2.5 shadow-lg hover:shadow-xl transition-all duration-200"
-          >
-            <Link href="/sign-in">Get Started</Link>
-          </Button>
-        </div>
-      </SignedOut>
-      <SignedIn>
-        <CustomUserMenu />
-      </SignedIn>
-    </>
-  );
-};
+import { authClient } from "@/lib/auth-client";
 
 const navLinks = [
   { name: "Home", link: "/" },
@@ -116,6 +48,20 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+  
+  const { data: session } = authClient.useSession();
+  const user = session?.user;
+
+  const handleSignOut = async () => {
+    await authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          router.push("/");
+        },
+      },
+    });
+  };
 
   return (
     <div className="fixed top-0 inset-x-0 z-50">
@@ -133,8 +79,68 @@ export default function Navbar() {
             />
           </Link>
           <NavItems items={navLinks} />
+          
+          {/* Desktop Auth & Dashboard Links */}
           <div className="relative flex items-center gap-4 z-50 mt-1 mr-4">
-            <AuthComponents />
+             {user ? (
+              <div className="flex items-center gap-4">
+                <Link
+                  href="/dashboard"
+                  className={`hidden md:block text-sm font-medium transition-colors hover:text-blue-600 ${
+                    pathname === "/dashboard"
+                      ? "text-blue-600"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  Dashboard
+                </Link>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Avatar className="h-9 w-9 cursor-pointer border border-neutral-200 dark:border-neutral-800 hover:opacity-80 transition-opacity">
+                      <AvatarImage src={user.image || ""} alt={user.name || "User"} className="object-cover" />
+                      <AvatarFallback className="bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300">
+                        {user.name?.charAt(0) || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel className="font-normal">
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">{user.name}</p>
+                        <p className="text-xs leading-none text-muted-foreground text-neutral-500">
+                          {user.email}
+                        </p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href="/profile" className="cursor-pointer flex items-center gap-2">
+                        <User className="h-4 w-4" />
+                        <span>Profile</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      className="cursor-pointer text-red-600 focus:text-red-600 flex items-center gap-2"
+                      onClick={handleSignOut}
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span>Sign out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <Button
+                  asChild
+                  size="lg"
+                  className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6 py-2.5 shadow-lg hover:shadow-xl transition-all duration-200"
+                >
+                  <Link href="/auth/sign-in">Get Started</Link>
+                </Button>
+              </div>
+            )}
           </div>
         </NavBody>
 
@@ -169,8 +175,44 @@ export default function Navbar() {
                 {link.name}
               </a>
             ))}
+            {user && (
+               <Link
+                href="/dashboard"
+                onClick={() => setIsOpen(false)}
+                className={cn(
+                  "text-lg font-medium transition-colors hover:text-brand py-2",
+                  pathname === "/dashboard"
+                    ? "text-brand font-semibold"
+                    : "text-slate-600 dark:text-slate-300"
+                )}
+              >
+                Dashboard
+              </Link>
+            )}
             <div className="pt-4 mt-4 border-t border-slate-200 dark:border-slate-800">
-              <AuthComponents />
+               {user ? (
+                 <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <Avatar className="h-8 w-8">
+                            <AvatarImage src={user.image || ""} />
+                            <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <span className="text-sm font-medium">{user.name}</span>
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-red-600">
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Sign Out
+                    </Button>
+                 </div>
+               ) : (
+                  <Button
+                  asChild
+                  size="lg"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6 py-2.5 shadow-lg hover:shadow-xl transition-all duration-200"
+                >
+                  <Link href="/auth/sign-in">Get Started</Link>
+                </Button>
+               )}
             </div>
           </MobileNavMenu>
         </MobileNav>
@@ -190,6 +232,22 @@ export default function Navbar() {
             </Button>
           </SheetTrigger>
           <SheetContent side="right" className="w-[280px] sm:w-[350px] flex flex-col p-0">
+            {/* Mobile Navigation */}
+            {mobileMenuOpen && ( // Use mobileMenuOpen state
+              <div className="md:hidden absolute top-16 left-0 right-0 bg-background border-b p-4 space-y-4 animate-in slide-in-from-top-5">
+                {user ? ( // Use user object existence check
+                  <>
+                    <Link
+                      href="/dashboard"
+                      className="block text-sm font-medium text-muted-foreground hover:text-blue-600"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Dashboard
+                    </Link>
+                  </>
+                ) : null}
+              </div>
+            )}
             <nav className="flex flex-col items-center justify-center flex-1 gap-2 px-6 py-8">
               {navLinks.map((link) => (
                 <Link
@@ -207,11 +265,6 @@ export default function Navbar() {
                 </Link>
               ))}
             </nav>
-            <div className="border-t border-slate-200 dark:border-slate-800 p-6">
-              <div className="flex justify-center">
-                <AuthComponents />
-              </div>
-            </div>
           </SheetContent>
         </Sheet>
       </div>
