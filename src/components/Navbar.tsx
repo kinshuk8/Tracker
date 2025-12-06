@@ -103,7 +103,7 @@ export default function Navbar() {
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator className="bg-black/5 dark:bg-white/10 my-1" />
                     <DropdownMenuItem asChild className="focus:bg-black/5 dark:focus:bg-white/10 rounded-lg cursor-pointer">
-                      <Link href="/profile" className="flex items-center gap-2 py-2">
+                      <Link href="/dashboard/profile" className="flex items-center gap-2 py-2">
                         <User className="h-4 w-4" />
                         <span>Profile</span>
                       </Link>

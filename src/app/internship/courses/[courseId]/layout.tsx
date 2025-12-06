@@ -79,7 +79,7 @@ export default async function CourseLayout({
         <SidebarBody className="justify-between gap-10">
           <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
             <div className="flex flex-col gap-4 mb-8">
-               <Link href="/internship/courses" className="flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-700 transition-colors">
+               <Link href="/dashboard/explore" className="flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-700 transition-colors">
                   <ArrowLeft className="w-4 h-4" />
                   Back to Courses
                </Link>
