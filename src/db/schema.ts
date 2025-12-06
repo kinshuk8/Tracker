@@ -1,7 +1,7 @@
 import { pgTable, serial, text, timestamp, integer, boolean, pgEnum } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
-export const roleEnum = pgEnum("role", ["user", "admin"]);
+export const roleEnum = pgEnum("role", ["user", "intern", "admin"]);
 export const planEnum = pgEnum("plan", ["1_month", "3_months", "6_months"]);
 export const contentTypeEnum = pgEnum("content_type", ["text", "video", "test"]);
 

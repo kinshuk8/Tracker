@@ -80,48 +80,37 @@ export default function Navbar() {
           </Link>
           <NavItems items={navLinks} />
           
-          {/* Desktop Auth & Dashboard Links */}
-          <div className="relative flex items-center gap-4 z-50 mt-1 mr-4">
+          <div className="relative flex items-center gap-4 z-50 mr-4">
              {user ? (
               <div className="flex items-center gap-4">
-                <Link
-                  href="/dashboard"
-                  className={`hidden md:block text-sm font-medium transition-colors hover:text-blue-600 ${
-                    pathname === "/dashboard"
-                      ? "text-blue-600"
-                      : "text-muted-foreground"
-                  }`}
-                >
-                  Dashboard
-                </Link>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Avatar className="h-9 w-9 cursor-pointer border border-neutral-200 dark:border-neutral-800 hover:opacity-80 transition-opacity">
+                    <Avatar className="h-9 w-9 cursor-pointer border-2 border-white/20 hover:border-white/40 transition-colors shadow-sm">
                       <AvatarImage src={user.image || ""} alt={user.name || "User"} className="object-cover" />
                       <AvatarFallback className="bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300">
                         {user.name?.charAt(0) || "U"}
                       </AvatarFallback>
                     </Avatar>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuLabel className="font-normal">
+                  <DropdownMenuContent align="end" className="w-64 bg-white/80 dark:bg-black/80 backdrop-blur-xl border-white/20 shadow-2xl p-2 rounded-xl">
+                    <DropdownMenuLabel className="font-normal p-2">
                       <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{user.name}</p>
-                        <p className="text-xs leading-none text-muted-foreground text-neutral-500">
+                        <p className="text-sm font-semibold leading-none">{user.name}</p>
+                        <p className="text-xs leading-none text-muted-foreground opacity-70">
                           {user.email}
                         </p>
                       </div>
                     </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <Link href="/profile" className="cursor-pointer flex items-center gap-2">
+                    <DropdownMenuSeparator className="bg-black/5 dark:bg-white/10 my-1" />
+                    <DropdownMenuItem asChild className="focus:bg-black/5 dark:focus:bg-white/10 rounded-lg cursor-pointer">
+                      <Link href="/profile" className="flex items-center gap-2 py-2">
                         <User className="h-4 w-4" />
                         <span>Profile</span>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator />
+                    <DropdownMenuSeparator className="bg-black/5 dark:bg-white/10 my-1" />
                     <DropdownMenuItem
-                      className="cursor-pointer text-red-600 focus:text-red-600 flex items-center gap-2"
+                      className="focus:bg-red-500/10 focus:text-red-600 text-red-500 rounded-lg cursor-pointer flex items-center gap-2 py-2"
                       onClick={handleSignOut}
                     >
                       <LogOut className="h-4 w-4" />
@@ -175,20 +164,7 @@ export default function Navbar() {
                 {link.name}
               </a>
             ))}
-            {user && (
-               <Link
-                href="/dashboard"
-                onClick={() => setIsOpen(false)}
-                className={cn(
-                  "text-lg font-medium transition-colors hover:text-brand py-2",
-                  pathname === "/dashboard"
-                    ? "text-brand font-semibold"
-                    : "text-slate-600 dark:text-slate-300"
-                )}
-              >
-                Dashboard
-              </Link>
-            )}
+            {/* Mobile Dashboard link removed */}
             <div className="pt-4 mt-4 border-t border-slate-200 dark:border-slate-800">
                {user ? (
                  <div className="flex items-center justify-between">
