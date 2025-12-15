@@ -115,19 +115,6 @@ export default function HeroSection() {
               <Link href="#features">Learn More</Link>
             </Button>
           </motion.div>
-
-          <motion.div
-            variants={itemVariants}
-            className="mt-6 sm:mt-8"
-          >
-            <a href="https://peerlist.io/vmkedgemind/project/vmk-edgemind-solutions-website" target="_blank" rel="noreferrer">
-              <img
-                src="https://peerlist.io/api/v1/projects/embed/PRJHGNQQDDGBLJK6RCMP86LON6PEBK?showUpvote=true&theme=light"
-                alt="VMK EDGEMIND SOLUTIONS WEBSITE"
-                style={{ width: 'auto', height: '72px' }}
-              />
-            </a>
-          </motion.div>
         </motion.div>
       </div>
     </div>

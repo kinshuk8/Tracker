@@ -1,0 +1,51 @@
+"use client";
+
+import { motion } from "framer-motion";
+import { Check } from "lucide-react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { plans } from "../data";
+
+interface PlanSelectorProps {
+  selectedPlan: string;
+  onSelect: (planId: string) => void;
+}
+
+export function PlanSelector({ selectedPlan, onSelect }: PlanSelectorProps) {
+  return (
+    <section>
+      <h2 className="text-2xl font-semibold mb-4">2. Select a Plan</h2>
+      <div className="grid gap-4">
+        {plans.map((plan) => (
+          <motion.div
+            key={plan.id}
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
+          >
+            <Card
+              className={`cursor-pointer transition-colors ${
+                selectedPlan === plan.id
+                  ? "ring-2 ring-blue-600 border-blue-600 bg-blue-50/50"
+                  : "hover:border-blue-400"
+              }`}
+              onClick={() => onSelect(plan.id)}
+            >
+              <CardHeader className="p-4 flex flex-row items-center justify-between space-y-0">
+                <CardTitle className="text-lg">{plan.title}</CardTitle>
+                <span className="text-xl font-bold">₹{plan.price}</span>
+              </CardHeader>
+              <CardContent className="p-4 pt-0">
+                <ul className="grid sm:grid-cols-2 gap-2">
+                  {plan.features.map((feature, i) => (
+                    <li key={i} className="text-sm text-slate-600 flex items-center gap-2">
+                      <Check className="w-4 h-4 text-green-500" /> {feature}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
+      </div>
+    </section>
+  );
+}

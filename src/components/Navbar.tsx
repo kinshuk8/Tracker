@@ -19,7 +19,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, User, Menu } from "lucide-react";
+import { LogOut, User, Menu, ShieldCheck } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -106,6 +106,12 @@ export default function Navbar() {
                       <Link href="/dashboard/profile" className="flex items-center gap-2 py-2">
                         <User className="h-4 w-4" />
                         <span>Profile</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild className="focus:bg-black/5 dark:focus:bg-white/10 rounded-lg cursor-pointer">
+                      <Link href="/admin" className="flex items-center gap-2 py-2">
+                        <ShieldCheck className="h-4 w-4" />
+                        <span>Admin Portal</span>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator className="bg-black/5 dark:bg-white/10 my-1" />

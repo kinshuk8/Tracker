@@ -3,10 +3,25 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+import { db } from "@/db";
+import { internshipRegistrations } from "@/db/schema";
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { name, phone, email, year, college, internshipDuration, courses, areaOfInterest } = body;
+
+    // Save to Database
+    await db.insert(internshipRegistrations).values({
+      name,
+      phone,
+      email,
+      year,
+      college,
+      internshipDuration,
+      courses,
+      areaOfInterest
+    });
 
     const { data: emailData, error } = await resend.emails.send({
       from: 'Internship Application <onboarding@resend.dev>', 

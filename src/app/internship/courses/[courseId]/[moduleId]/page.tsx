@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { db } from "@/db";
-import { content, userProgress, users } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { content, userProgress, users, modules } from "@/db/schema";
+import { eq, and, asc, desc, lt, gt } from "drizzle-orm";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 
 import MarkAsReadButton from "../../components/MarkAsReadButton";
 import Quiz from "../../components/Quiz";
@@ -23,7 +24,7 @@ export default async function ModulePage({
 }: {
   params: Promise<{ courseId: string; moduleId: string }>;
 }) {
-  const { moduleId } = await params;
+  const { courseId, moduleId } = await params;
 
   // Note: 'moduleId' param is actually the content ID based on layout.tsx links
   const contentId = parseInt(moduleId);
@@ -46,8 +47,69 @@ export default async function ModulePage({
     notFound();
   }
 
-  // Check completion status
-  // Check completion status
+  // --- Navigation Logic ---
+  const currentModuleOrder = contentItem.module.order;
+  const currentContentOrder = contentItem.order;
+
+  // 1. Try to find previous content in the same module
+  let prevContent = await db.query.content.findFirst({
+    where: and(
+      eq(content.moduleId, contentItem.moduleId),
+      lt(content.order, currentContentOrder)
+    ),
+    orderBy: desc(content.order),
+  });
+
+  // 2. If not found, find last content of the previous module
+  if (!prevContent) {
+    const prevModule = await db.query.modules.findFirst({
+      where: and(
+        eq(modules.courseId, contentItem.module.courseId),
+        lt(modules.order, currentModuleOrder)
+      ),
+      orderBy: desc(modules.order),
+      with: {
+        content: {
+          orderBy: desc(content.order),
+          limit: 1,
+        }
+      }
+    });
+    if (prevModule && prevModule.content.length > 0) {
+      prevContent = prevModule.content[0];
+    }
+  }
+
+  // 3. Try to find next content in the same module
+  let nextContent = await db.query.content.findFirst({
+    where: and(
+      eq(content.moduleId, contentItem.moduleId),
+      gt(content.order, currentContentOrder)
+    ),
+    orderBy: asc(content.order),
+  });
+
+  // 4. If not found, find first content of the next module
+  if (!nextContent) {
+    const nextModule = await db.query.modules.findFirst({
+      where: and(
+        eq(modules.courseId, contentItem.module.courseId),
+        gt(modules.order, currentModuleOrder)
+      ),
+      orderBy: asc(modules.order),
+      with: {
+        content: {
+          orderBy: asc(content.order),
+          limit: 1,
+        }
+      }
+    });
+    if (nextModule && nextModule.content.length > 0) {
+      nextContent = nextModule.content[0];
+    }
+  }
+  // --- End Navigation Logic ---
+
   let isCompleted = false;
   const { auth } = await import("@/lib/auth");
   const { headers } = await import("next/headers");
@@ -131,14 +193,33 @@ export default async function ModulePage({
       </div>
 
       <div className="flex items-center justify-between pt-4">
-        <Button variant="outline" className="text-slate-600 hover:text-slate-900">
-          <ChevronLeft className="w-4 h-4 mr-2" />
-          Previous Lesson
-        </Button>
-        <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all">
-          Next Lesson
-          <ChevronRight className="w-4 h-4 ml-2" />
-        </Button>
+        {prevContent ? (
+          <Link href={`/internship/courses/${courseId}/${prevContent.id}`}>
+            <Button variant="outline" className="text-slate-600 hover:text-slate-900">
+              <ChevronLeft className="w-4 h-4 mr-2" />
+              Previous Lesson
+            </Button>
+          </Link>
+        ) : (
+          <Button variant="outline" disabled className="text-slate-400">
+            <ChevronLeft className="w-4 h-4 mr-2" />
+            Previous Lesson
+          </Button>
+        )}
+
+        {nextContent ? (
+           <Link href={`/internship/courses/${courseId}/${nextContent.id}`}>
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all">
+              Next Lesson
+              <ChevronRight className="w-4 h-4 ml-2" />
+            </Button>
+          </Link>
+        ) : (
+           <Button disabled className="bg-slate-200 text-slate-400">
+            Next Lesson
+            <ChevronRight className="w-4 h-4 ml-2" />
+          </Button>
+        )}
       </div>
     </div>
   );

@@ -135,3 +135,16 @@ export const userProgress = pgTable("user_progress", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
+
+export const internshipRegistrations = pgTable("internship_registrations", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone").notNull(),
+  college: text("college").notNull(),
+  year: text("year").notNull(),
+  internshipDuration: text("internship_duration").notNull(),
+  courses: text("courses").array().notNull(), // using text array as it's simpler for array of strings in PG
+  areaOfInterest: text("area_of_interest"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});

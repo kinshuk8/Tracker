@@ -34,8 +34,8 @@ const LandingPage = () => {
         <Services />
         <Solutions />
         <Projects />
-        <Testimonials />
-        <Branches />
+        {/* <Testimonials />
+        <Branches /> */}
         <CallToAction />
       </main>
       <Footer />
