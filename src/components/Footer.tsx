@@ -37,28 +37,52 @@ export default function Footer() {
             <h4 className="text-white font-semibold mb-4">Company</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <a
-                  href="#home"
+                <Link
+                  href="/"
                   className="text-neutral-400 hover:text-white transition-colors"
                 >
                   Home
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#services"
+                <Link
+                  href="/contact"
                   className="text-neutral-400 hover:text-white transition-colors"
                 >
-                  Services
-                </a>
+                  Contact Us
+                </Link>
               </li>
               <li>
-                <a
-                  href="#solutions"
+                <Link
+                  href="/privacy-policy"
                   className="text-neutral-400 hover:text-white transition-colors"
                 >
-                  Solutions
-                </a>
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/terms-conditions"
+                  className="text-neutral-400 hover:text-white transition-colors"
+                >
+                  Terms & Conditions
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/cancellation-refund"
+                  className="text-neutral-400 hover:text-white transition-colors"
+                >
+                  Cancellation & Refund
+                </Link>
+              </li>
+               <li>
+                <Link
+                  href="/shipping-delivery"
+                  className="text-neutral-400 hover:text-white transition-colors"
+                >
+                 Shipping & Delivery
+                </Link>
               </li>
             </ul>
           </div>

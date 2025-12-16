@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Mail, MapPin } from "lucide-react";
+import { Building2, Loader2, Mail, MapPin, Phone } from "lucide-react";
 
 const schema = z.object({
   name: z.string().min(2, "Please enter your full name."),
@@ -109,24 +109,68 @@ export default function ContactUs() {
             />
           </motion.div>
 
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div className="rounded-xl p-4 bg-white dark:bg-white/5 border border-black/10 dark:border-white/10 flex items-center gap-3">
-              <Mail className="w-5 h-5 text-brand" />
+          <div className="space-y-6">
+            <div className="flex items-start gap-4 p-4 rounded-xl bg-white/50 dark:bg-white/5 border border-slate-100 dark:border-white/10 hover:border-brand/20 transition-colors">
+              <div className="p-2.5 rounded-lg bg-brand/10 text-brand">
+                <Building2 className="w-5 h-5" />
+              </div>
               <div>
-                <p className="text-sm text-neutral-600 dark:text-neutral-300">Email</p>
-                <p className="font-medium">vmkedgemind@gmail.com</p>
+                <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-1">Company Details</h3>
+                <div className="space-y-1 text-sm text-slate-600 dark:text-slate-400">
+                  <p><span className="font-medium text-slate-700 dark:text-slate-300">Legal Name:</span> VMK EDGEMIND SOLUTIONS PRIVATE LIMITED</p>
+                </div>
               </div>
             </div>
-            <div className="relative rounded-xl p-4 bg-white dark:bg-white/5 border border-black/10 dark:border-white/10 flex items-center gap-3">
-              <div className="absolute inset-x-20 top-0 bg-gradient-to-r from-transparent via-brand to-transparent h-[2px] w-3/4 blur-sm" />
-              <div className="absolute inset-x-20 top-0 bg-gradient-to-r from-transparent via-brand to-transparent h-px w-3/4" />
-              <div className="absolute inset-x-60 top-0 bg-gradient-to-r from-transparent via-sky-500 to-transparent h-[5px] w-1/4 blur-sm" />
-              <div className="absolute inset-x-60 top-0 bg-gradient-to-r from-transparent via-sky-500 to-transparent h-px w-1/4" />
-              <MapPin className="w-5 h-5 text-brand" />
-              <div>
-                <p className="text-sm text-neutral-600 dark:text-neutral-300">Address</p>
-                <p className="font-medium">Vijayawada, AP, India</p>
+
+            <div className="flex items-start gap-4 p-4 rounded-xl bg-white/50 dark:bg-white/5 border border-slate-100 dark:border-white/10 hover:border-brand/20 transition-colors">
+              <div className="p-2.5 rounded-lg bg-brand/10 text-brand">
+                <MapPin className="w-5 h-5" />
               </div>
+              <div>
+                <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-1">Our Addresses</h3>
+                <div className="space-y-3 text-sm text-slate-600 dark:text-slate-400">
+                  <div>
+                    <p className="font-medium text-slate-700 dark:text-slate-300">Operational Address</p>
+                    <p>22-5-8, G2 Harsha Elite Apartment, Kunchanapalle, Guntur, Tadepalle, Andhra Pradesh, India, 522501</p>
+                  </div>
+                  <div>
+                     <p className="font-medium text-slate-700 dark:text-slate-300">Registered Address</p>
+                    <p>22-5-8, G2 Harsha Elite Apartment, Kunchanapalle, Guntur, Tadepalle, Andhra Pradesh, India, 522501</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-white/50 dark:bg-white/5 border border-slate-100 dark:border-white/10 hover:border-brand/20 transition-colors">
+                <div className="p-2 rounded-lg bg-brand/10 text-brand">
+                  <Mail className="w-4 h-4" />
+                </div>
+                <div>
+                   <h3 className="font-medium text-slate-800 dark:text-slate-100 text-sm mb-0.5">Email Us</h3>
+                  <a href="mailto:hr@vmkedgemindsolutions.com" className="text-sm text-slate-600 dark:text-slate-400 hover:text-brand transition-colors">
+                    hr@vmkedgemindsolutions.com
+                  </a>
+                </div>
+              </div>
+
+               <div className="flex items-start gap-3 p-4 rounded-xl bg-white/50 dark:bg-white/5 border border-slate-100 dark:border-white/10 hover:border-brand/20 transition-colors">
+                <div className="p-2 rounded-lg bg-brand/10 text-brand">
+                  <Phone className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-slate-800 dark:text-slate-100 text-sm mb-0.5">Call Us</h3>
+                  <a href="tel:+918686854024" className="text-sm text-slate-600 dark:text-slate-400 hover:text-brand transition-colors">
+                    +91 8686854024
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-slate-100 dark:border-white/5">
+              <p className="text-xs text-slate-400 dark:text-slate-500">
+                Last updated on Dec 17 2025
+              </p>
             </div>
           </div>
         </div>
