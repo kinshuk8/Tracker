@@ -27,7 +27,6 @@ export default async function CourseIndexPage({
     notFound();
   }
 
-  // Find first module
   const firstModule = await db.query.modules.findFirst({
     where: eq(modules.courseId, course.id),
     orderBy: asc(modules.order),
@@ -37,7 +36,6 @@ export default async function CourseIndexPage({
     return <div>No modules found in this course.</div>;
   }
 
-  // Find first content
   const firstContent = await db.query.content.findFirst({
     where: eq(content.moduleId, firstModule.id),
     orderBy: asc(content.order),
