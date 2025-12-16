@@ -108,12 +108,14 @@ export default function Navbar() {
                         <span>Profile</span>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild className="focus:bg-black/5 dark:focus:bg-white/10 rounded-lg cursor-pointer">
-                      <Link href="/admin" className="flex items-center gap-2 py-2">
-                        <ShieldCheck className="h-4 w-4" />
-                        <span>Admin Portal</span>
-                      </Link>
-                    </DropdownMenuItem>
+                    {user.role === "admin" && (
+                      <DropdownMenuItem asChild className="focus:bg-black/5 dark:focus:bg-white/10 rounded-lg cursor-pointer">
+                        <Link href="/admin" className="flex items-center gap-2 py-2">
+                          <ShieldCheck className="h-4 w-4" />
+                          <span>Admin Portal</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuSeparator className="bg-black/5 dark:bg-white/10 my-1" />
                     <DropdownMenuItem
                       className="focus:bg-red-500/10 focus:text-red-600 text-red-500 rounded-lg cursor-pointer flex items-center gap-2 py-2"

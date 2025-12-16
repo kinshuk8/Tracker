@@ -8,6 +8,13 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useState } from "react";
 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
 export function AppSidebar() {
   const [open, setOpen] = useState(false);
   const router = useRouter();
@@ -50,10 +57,25 @@ export function AppSidebar() {
                 href="#"
                 className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20"
             >
-                <div className="h-6 w-6 bg-primary rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm flex-shrink-0" />
-                <span className="font-medium text-black dark:text-white whitespace-pre">
-                    Tracker
-                </span>
+                <Image
+                  src="/assets/company-logo.svg"
+                  className="h-7 w-auto flex-shrink-0"
+                  width={50}
+                  height={50}
+                  alt="Avatar"
+                />
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="font-medium text-black dark:text-white whitespace-pre truncate max-w-[150px]">
+                          VMK Edge Mind Solutions
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>VMK Edge Mind Solutions</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
             </Link>
           </div>
           <div className="mt-8 flex flex-col gap-2">
