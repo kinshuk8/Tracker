@@ -9,29 +9,7 @@ import { motion, Variants } from "framer-motion";
 import { HoverBorderGradient } from "@/components/ui/hover-border-gradient";
 import { CheckCircle } from "lucide-react";
 
-// Data now uses URL-based placeholders that work instantly
-const solutions = [
-  {
-    title: "Networking Expertise",
-    desc: "Designing secure, scalable, and highly efficient network infrastructures tailored for diverse business needs, ensuring robust connectivity and performance.",
-    img: "/assets/undraw_server-status.svg",
-    features: [
-      "Scalable Architecture Design",
-      "Advanced Security Protocols",
-      "Performance Optimization",
-    ],
-  },
-  {
-    title: "Automation & IoT Services",
-    desc: "Leveraging the power of the Internet of Things with our smart automation solutions to enhance efficiency and comfort for homes, industries, and enterprises.",
-    img: "/assets/undraw_chat-with-ai.svg",
-    features: [
-      "Custom IoT Dashboards",
-      "Sensor Integration",
-      "Automated Workflow Creation",
-    ],
-  },
-];
+import { solutions } from "@/data/solutions";
 
 export default function Solutions() {
   return (
@@ -55,7 +33,7 @@ export default function Solutions() {
               visible: {
                 opacity: 1,
                 x: 0,
-                transition: { duration: 0.6, ease: "easeOut" as any }, // eslint-disable-line @typescript-eslint/no-explicit-any
+                transition: { duration: 0.6, ease: "easeOut" as any }, 
               },
             };
 
@@ -64,7 +42,7 @@ export default function Solutions() {
               visible: {
                 opacity: 1,
                 x: 0,
-                transition: { duration: 0.6, ease: "easeOut" as any }, // eslint-disable-line @typescript-eslint/no-explicit-any
+                transition: { duration: 0.6, ease: "easeOut" as any }, 
               },
             };
 
@@ -120,12 +98,12 @@ export default function Solutions() {
                     isImageFirst ? "md:order-1" : "md:order-2"
                   }`}
                 >
-                  <div className="relative w-full h-80 sm:h-96 lg:h-[450px] rounded-xl overflow-hidden">
+                  <div className="relative w-full h-80 sm:h-96 lg:h-[450px] rounded-xl overflow-hidden shadow-xl">
                     <Image
                       src={solution.img}
                       alt={solution.title}
                       fill
-                      className="object-contain"
+                      className="object-cover"
                     />
                   </div>
                 </motion.div>

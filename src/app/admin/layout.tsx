@@ -5,6 +5,7 @@ import {
   Users,
   Library,
   LogOut,
+  CreditCard,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -53,6 +54,27 @@ export default async function AdminLayout({
       href: "/admin/s3files",
       icon: (
         <Library className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      ),
+    },
+    {
+      label: "Enrollments",
+      href: "/admin/enrollments",
+      icon: (
+        <Users className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      ),
+    },
+    {
+      label: "Payments",
+      href: "/admin/payments",
+      icon: (
+        <CreditCard className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      ),
+    },
+    {
+      label: "New Enrollment",
+      href: "/admin/enroll/new",
+      icon: (
+        <Users className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
     },
   ];

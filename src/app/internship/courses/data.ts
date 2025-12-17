@@ -5,7 +5,7 @@ export const courses = [
 ];
 
 export const plans = [
-  { id: "1_month", title: "1 Month", price: 199, features: ["Course Access"] },
-  { id: "3_months", title: "3 Months", price: 429, features: ["Course Access", "Assignments", "Projects"] },
-  { id: "6_months", title: "6 Months", price: 1499, features: ["Course Access", "Assignments", "Projects", "Resume Building", "Priority Support"] },
+  { id: "1_month", title: "1 Month", price: 199, features: ["Course Access", "Certification also provided"] },
+  { id: "3_months", title: "3 Months", price: 429, features: ["Course Access", "Assignments", "Projects", "Certification also provided"] },
+  { id: "6_months", title: "6 Months", price: 1499, features: ["Course Access", "Assignments", "Projects", "Resume Building", "Priority Support", "Certification also provided"] },
 ];

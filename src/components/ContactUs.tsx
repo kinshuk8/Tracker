@@ -56,10 +56,25 @@ export default function ContactUs() {
   const form = useForm({
     defaultValues: useMemo(() => ({ name: "", email: "", subject: "", message: "" }), []),
     onSubmit: async ({ value }) => {
-      await new Promise((r) => setTimeout(r, 1000));
-      toast.success("Message sent! We&apos;ll get back to you shortly.");
-      console.log("Contact submit", value);
-      form.reset();
+      try {
+        const response = await fetch("/api/contact", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(value),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to send message");
+        }
+
+        toast.success("Message sent! We'll get back to you shortly.");
+        form.reset();
+      } catch (error) {
+        toast.error("Failed to send message. Please try again later.");
+        console.error("Contact submit error", error);
+      }
     },
     validators: {
       onChange: ({ value }) => {

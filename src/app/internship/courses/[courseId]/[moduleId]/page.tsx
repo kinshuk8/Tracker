@@ -9,6 +9,7 @@ import Link from "next/link";
 import MarkAsReadButton from "../../components/MarkAsReadButton";
 import Quiz from "../../components/Quiz";
 import { AlertCircle } from "lucide-react";
+import { S3Resource } from "@/components/content/s3-resource";
 
 function getYouTubeEmbedUrl(url: string): string | null {
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -43,7 +44,7 @@ export default async function ModulePage({
     }
   });
 
-  if (!contentItem) {
+  if (!contentItem || !contentItem.module) {
     notFound();
   }
 
@@ -54,7 +55,7 @@ export default async function ModulePage({
   // 1. Try to find previous content in the same module
   let prevContent = await db.query.content.findFirst({
     where: and(
-      eq(content.moduleId, contentItem.moduleId),
+      eq(content.moduleId, contentItem.moduleId!),
       lt(content.order, currentContentOrder)
     ),
     orderBy: desc(content.order),
@@ -83,7 +84,7 @@ export default async function ModulePage({
   // 3. Try to find next content in the same module
   let nextContent = await db.query.content.findFirst({
     where: and(
-      eq(content.moduleId, contentItem.moduleId),
+      eq(content.moduleId, contentItem.moduleId!),
       gt(content.order, currentContentOrder)
     ),
     orderBy: asc(content.order),
@@ -143,52 +144,71 @@ export default async function ModulePage({
           <h1 className="text-3xl font-bold text-slate-900">{contentItem.title}</h1>
         </div>
         <div className="flex items-center gap-2">
-          <MarkAsReadButton 
-            courseId={contentItem.module.course.id} 
-            contentId={contentItem.id} 
-            initialIsCompleted={isCompleted} 
-          />
+          {!(/\.(mp4|mov|webm|mkv|avi)$/i.test(contentItem.data)) && (
+            <MarkAsReadButton 
+              courseId={contentItem.module.course.id} 
+              contentId={contentItem.id} 
+              initialIsCompleted={isCompleted} 
+            />
+          )}
         </div>
       </div>
 
       <div className="min-h-[500px] bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="p-8 md:p-12 prose prose-slate max-w-none prose-headings:font-bold prose-h1:text-3xl prose-h2:text-2xl prose-a:text-blue-600">
           {/* Render content based on type */}
-          {contentItem.type === "text" && (
-            <div className="whitespace-pre-wrap font-serif text-lg leading-relaxed text-slate-700">{contentItem.data}</div>
-          )}
-          {contentItem.type === "video" && (
-            <div className="aspect-video bg-slate-900 rounded-lg flex items-center justify-center text-white shadow-lg overflow-hidden">
-              {(() => {
-                const embedUrl = getYouTubeEmbedUrl(contentItem.data);
-                if (embedUrl) {
-                  return (
+          {(() => {
+            const isYouTube = contentItem.type === "video" && getYouTubeEmbedUrl(contentItem.data);
+            const isS3 = contentItem.data.startsWith("s3://");
+            const isFileLike = !contentItem.data.includes("\n") && /\.(pdf|docx|doc|ppt|pptx|xls|xlsx|zip|png|jpg|jpeg|mp4|mov|avi|wmv)$/i.test(contentItem.data);
+            
+            // Priority 1: YouTube Video
+            if (isYouTube) {
+               const embedUrl = getYouTubeEmbedUrl(contentItem.data);
+               return (
+                 <div className="aspect-video bg-slate-900 rounded-lg flex items-center justify-center text-white shadow-lg overflow-hidden">
                     <iframe
-                      src={embedUrl}
+                      src={embedUrl!}
                       className="w-full h-full"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
                       title={contentItem.title}
                     />
-                  );
-                } else {
-                  return (
-                    <div className="flex flex-col items-center gap-2 text-red-400 p-4 text-center">
-                      <AlertCircle className="w-12 h-12" />
-                      <p className="font-medium">Invalid Video Source</p>
-                      <p className="text-sm text-slate-400">Only YouTube videos are supported.</p>
+                 </div>
+               );
+            }
+
+            // Priority 2: S3 Resource or File (Video or Download)
+            if (isS3 || isFileLike || (contentItem.type === "video" && !isYouTube)) {
+               return (
+                  <div className="w-full">
+                     <S3Resource 
+                        src={contentItem.data} 
+                        title={contentItem.title} 
+                        courseId={contentItem.module!.courseId!} 
+                        contentId={contentItem.id}
+                     />
+                  </div>
+               );
+            }
+
+            // Priority 3: Standard Text
+            if (contentItem.type === "text") {
+                return (
+                    <div className="whitespace-pre-wrap font-serif text-lg leading-relaxed text-slate-700">{contentItem.data}</div>
+                );
+            }
+
+            // Priority 4: Quiz
+            if (contentItem.type === "test") {
+                return (
+                    <div>
+                      <h3 className="text-xl font-semibold mb-4">Quiz</h3>
+                      <Quiz data={contentItem.data} />
                     </div>
-                  );
-                }
-              })()}
-            </div>
-          )}
-          {contentItem.type === "test" && (
-            <div>
-              <h3 className="text-xl font-semibold mb-4">Quiz</h3>
-              <Quiz data={contentItem.data} />
-            </div>
-          )}
+                );
+            }
+          })()}
         </div>
       </div>
 

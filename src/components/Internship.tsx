@@ -3,11 +3,17 @@
 import Link from "next/link";
 import Image from "next/image";
 import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
-import { Code, Database, BrainCircuit } from "lucide-react";
+import { Code, BarChart3, Coffee } from "lucide-react";
 import { motion } from "framer-motion";
 
 
 const internships = [
+  {
+    icon: <BarChart3 className="h-8 w-8 text-brand-purple" />,
+    title: "Power BI Internship",
+    desc: "Master data visualization and business intelligence—transform raw data into actionable insights.",
+    img: "/assets/python-internship.png", // Keeping existing image path or need generic one if unavailable, sticking to current set for safety unless I know others exist
+  },
   {
     icon: <Code className="h-8 w-8 text-brand-purple" />,
     title: "Python Internship",
@@ -15,16 +21,10 @@ const internships = [
     img: "/assets/python-internship.png",
   },
   {
-    icon: <Database className="h-8 w-8 text-brand-purple" />,
-    title: "MySQL Internship",
-    desc: "Master relational databases with hands-on projects in schema design, data modeling, and high-performance querying.",
-    img: "/assets/mysql-internship.png",
-  },
-  {
-    icon: <BrainCircuit className="h-8 w-8 text-brand-purple" />,
-    title: "Agentic AI Internship",
-    desc: "Step into the future of AI—build autonomous agents, LLM-powered systems, and intelligent decision-making pipelines.",
-    img: "/assets/agentic-ai-internship.png",
+    icon: <Coffee className="h-8 w-8 text-brand-purple" />,
+    title: "Java Internship",
+    desc: "Comprehensive Java training for building robust, scalable enterprise applications and backend systems.",
+    img: "/assets/agentic-ai-internship.png", // Reusing existing asset placeholder
   },
 ];
 
@@ -102,7 +102,7 @@ export default function Internship() {
                   </CardItem>
 
                   <div className="flex justify-end mt-8">
-                    <Link href="/internship">
+                    <Link href="/internship/courses">
                       <CardItem
                         translateZ={20}
                         className="px-4 py-2 rounded-xl text-xs font-normal dark:text-white"

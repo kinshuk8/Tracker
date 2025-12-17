@@ -13,7 +13,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, Lock } from "lucide-react";
+import { authClient } from "@/lib/auth-client";
+import Link from "next/link";
 
 interface RegistrationFormProps {
   selectedCourse: string;
@@ -21,12 +23,14 @@ interface RegistrationFormProps {
 }
 
 export function RegistrationForm({ selectedCourse, selectedPlan }: RegistrationFormProps) {
+  const { data: session } = authClient.useSession();
+  
   const form = useForm({
     defaultValues: {
       name: "",
       college: "",
       email: "",
-      password: "",
+      phone: "",
     },
     onSubmit: async ({ value }) => {
       if (!selectedCourse || !selectedPlan) {
@@ -40,6 +44,27 @@ export function RegistrationForm({ selectedCourse, selectedPlan }: RegistrationF
       toast.success("Registration successful! Redirecting...");
     },
   });
+
+  if (!session) {
+    return (
+      <Card className="bg-slate-50 border-slate-200">
+        <CardHeader className="text-center">
+          <div className="mx-auto bg-slate-100 p-3 rounded-full w-fit mb-2">
+            <Lock className="w-6 h-6 text-slate-500" />
+          </div>
+          <CardTitle>Login Required</CardTitle>
+          <CardDescription>
+            You must be logged in to register for a course.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button asChild className="w-full" size="lg">
+             <Link href="/auth/sign-in?callbackUrl=/internship/courses">Sign In to Continue</Link>
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
@@ -102,16 +127,15 @@ export function RegistrationForm({ selectedCourse, selectedPlan }: RegistrationF
             )}
           </form.Field>
 
-          <form.Field name="password">
+          <form.Field name="phone">
             {(field) => (
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="phone">Phone Number</Label>
                 <Input
-                  id="password"
-                  type="password"
+                  id="phone"
                   value={field.state.value}
                   onChange={(e) => field.handleChange(e.target.value)}
-                  placeholder="••••••••"
+                  placeholder="+91 98765 43210"
                   required
                 />
               </div>

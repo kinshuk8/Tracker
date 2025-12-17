@@ -127,21 +127,13 @@ export default async function CourseLayout({
             </div>
           </div>
           
-          <div>
-            <SidebarLink
-              link={{
-                label: user?.name || "Profile",
-                href: "/profile",
-                icon: (
-                  <Image
-                    src={user?.image || "https://github.com/shadcn.png"}
-                    className="h-7 w-7 shrink-0 rounded-full"
-                    width={50}
-                    height={50}
-                    alt="Avatar"
-                  />
-                ),
-              }}
+          <div className="flex justify-center w-full pb-4">
+            <Image
+              src={user?.image || "https://github.com/shadcn.png"}
+              className="h-8 w-8 shrink-0 rounded-full object-cover"
+              width={50}
+              height={50}
+              alt="Avatar"
             />
           </div>
         </SidebarBody>

@@ -3,28 +3,63 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Trash2, Edit, Library, Users } from "lucide-react";
-
+import { Plus, Trash2, Edit, Library, Users, Loader2, Info } from "lucide-react";
+import Link from "next/link";
 import { useState, useEffect } from "react";
 import { CardSkeleton } from "@/components/skeletons/CardSkeleton";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-const mockCourses = [
-  { id: 1, title: "Power BI", students: 120, modules: 8 },
-  { id: 2, title: "Python", students: 250, modules: 12 },
-  { id: 3, title: "Java", students: 180, modules: 10 },
-];
+interface CourseSummary {
+  id: number;
+  title: string;
+  modulesCount: number;
+  studentsCount: number;
+}
 
 export default function AdminCoursesPage() {
-  const [courses, setCourses] = useState(mockCourses);
+  const [courses, setCourses] = useState<CourseSummary[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Simulate data fetching
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
+    fetchCourses();
   }, []);
+
+  const fetchCourses = async () => {
+    try {
+      const res = await fetch("/api/admin/courses");
+      if (!res.ok) throw new Error("Failed to fetch courses");
+      const data = await res.json();
+      setCourses(data);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to load courses");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+      try {
+          const res = await fetch(`/api/admin/courses/${id}`, { method: "DELETE" });
+          if (!res.ok) throw new Error("Failed to delete");
+          setCourses(courses.filter(c => c.id !== id));
+          toast.success("Course deleted successfully");
+      } catch (error) {
+          toast.error("Failed to delete course");
+      }
+  };
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8 text-slate-800 dark:text-slate-200">
@@ -39,9 +74,11 @@ export default function AdminCoursesPage() {
           </p>
         </div>
 
-        <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-md transition-all hover:scale-105">
-          <Plus className="w-4 h-4 mr-2" />
-          Add New Course
+        <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white shadow-md transition-all hover:scale-105">
+          <Link href="/admin/courses/new">
+            <Plus className="w-4 h-4 mr-2" />
+            Add New Course
+          </Link>
         </Button>
       </div>
 
@@ -72,7 +109,15 @@ export default function AdminCoursesPage() {
               ? Array.from({ length: 3 }).map((_, i) => (
                   <CardSkeleton key={i} />
                 ))
-              : courses.map((course) => (
+              : courses.length === 0 ? (
+                  <Alert className="col-span-full">
+                    <Info className="h-4 w-4" />
+                    <AlertTitle>No Courses Found</AlertTitle>
+                    <AlertDescription>
+                      You haven't created any courses yet. Click "Add New Course" to get started.
+                    </AlertDescription>
+                  </Alert>
+              ) : courses.map((course) => (
                   <Card
                     key={course.id}
                     className="group relative overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
@@ -100,14 +145,14 @@ export default function AdminCoursesPage() {
                             Students
                           </p>
                           <p className="text-2xl font-bold">
-                            {course.students}
+                            {course.studentsCount}
                           </p>
                         </div>
                         <div>
                           <p className="text-sm text-slate-500 dark:text-slate-400 mb-0.5">
                             Modules
                           </p>
-                          <p className="text-2xl font-bold">{course.modules}</p>
+                          <p className="text-2xl font-bold">{course.modulesCount}</p>
                         </div>
                       </div>
 
@@ -116,18 +161,37 @@ export default function AdminCoursesPage() {
                         <Button
                           variant="ghost"
                           size="sm"
+                          asChild
                           className="flex-1 text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                         >
-                          <Edit className="w-4 h-4 mr-2" /> Edit
+                          <Link href={`/admin/courses/${course.id}/edit`}>
+                             <Edit className="w-4 h-4 mr-2" /> Edit
+                          </Link>
                         </Button>
 
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="flex-1 text-slate-600 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                        >
-                          <Trash2 className="w-4 h-4 mr-2" /> Delete
-                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="sm" className="flex-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
+                              <Trash2 className="w-4 h-4 mr-2" /> Delete
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This action cannot be undone. This will permanently delete the course 
+                                <strong> "{course.title}" </strong>
+                                and remove all its modules and data from the database.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDelete(course.id)} className="bg-red-600 hover:bg-red-700">
+                                Delete Course
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
                     </CardContent>
                   </Card>

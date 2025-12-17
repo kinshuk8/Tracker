@@ -1,97 +1,98 @@
 "use client";
 
-import Image from "next/image";
 import React from "react";
-import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
+import Image from "next/image";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 
-const projects = [
-    {
-        title: "Smart City Infrastructure",
-        description:
-            "IoT-based monitoring system for urban traffic and utility management.",
-        image: "https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?q=80&w=1000&auto=format&fit=crop",
-        link: "#",
-    },
-    {
-        title: "Industrial Automation",
-        description:
-            "AI-driven robotics control system for manufacturing efficiency.",
-        image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=1000&auto=format&fit=crop",
-        link: "#",
-    },
-    {
-        title: "Healthcare Analytics",
-        description:
-            "Predictive analytics platform for patient care optimization.",
-        image: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=1000&auto=format&fit=crop",
-        link: "#",
-    },
-];
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { projects } from "@/data/projects";
 
 export default function Projects() {
-    return (
-        <section id="projects" className="py-10 sm:py-16"> {/* Reduced space */}
-            <div className="text-center mb-6">
-                <h2 className="text-3xl font-bold text-slate-900 dark:text-white sm:text-4xl">
-                    Our Projects
-                </h2>
-                <p className="mt-4 text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-                    Explore some of our recent work delivering cutting-edge solutions across various industries.
-                </p>
-            </div>
+  return (
+    <section id="projects" className="py-20 sm:py-24 bg-slate-50 dark:bg-black/50 overflow-hidden relative">
+      {/* Background decoration */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-30 dark:opacity-20">
+          <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-500/20 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-purple-500/20 rounded-full blur-3xl"></div>
+      </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10 max-w-7xl mx-auto px-4">
-                {projects.map((project, index) => (
-                    <CardContainer key={index} className="inter-var w-full">
-                        <CardBody className="bg-gray-50 relative group/card dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black dark:border-white/[0.2] border-black/[0.1] w-full h-auto rounded-xl p-8 border">
-                            <CardItem
-                                translateZ="50"
-                                className="text-xl font-bold text-neutral-600 dark:text-white"
-                            >
-                                {project.title}
-                            </CardItem>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
+        <div className="text-center mb-12 sm:mb-16">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-slate-900 dark:text-white">
+            Our Projects
+          </h2>
+          <p className="mt-4 text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
+            Explore how we're reshaping industries with our cutting-edge solutions.
+          </p>
+        </div>
 
-                            <CardItem
-                                as="p"
-                                translateZ="60"
-                                className="text-neutral-500 text-sm max-w-sm mt-2 dark:text-neutral-300"
-                            >
-                                {project.description}
-                            </CardItem>
-
-                            <CardItem translateZ="100" className="w-full mt-4">
-                                <Image
-                                    src={project.image}
-                                    height="1000"
-                                    width="1000"
-                                    className="h-60 w-full object-cover rounded-xl group-hover/card:shadow-xl"
-                                    alt={project.title}
-                                />
-                            </CardItem>
-
-                            <div className="flex justify-between items-center mt-20">
-                                <CardItem
-                                    translateZ={20}
-                                    className="px-4 py-2 rounded-xl text-xs font-normal dark:text-white"
-                                >
-                                    <Link href={project.link} target="__blank">
-                                        Learn More →
-                                    </Link>
-                                </CardItem>
-
-                                <CardItem
-                                    translateZ={20}
-                                    as="button"
-                                    className="px-4 py-2 rounded-xl bg-black dark:bg-white dark:text-black text-white text-xs font-bold"
-                                >
-                                    View Case Study
-                                </CardItem>
+        <Carousel
+          opts={{
+            align: "start",
+            loop: true,
+          }}
+          className="w-full"
+        >
+          <CarouselContent className="-ml-2 md:-ml-4">
+            {projects.map((project) => (
+              <CarouselItem key={project.id} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
+                <div className="p-1 h-full">
+                  <Card className="h-full border-none shadow-lg hover:shadow-2xl transition-all duration-300 bg-white dark:bg-zinc-900/80 backdrop-blur-sm overflow-hidden group flex flex-col">
+                    <CardHeader className="p-0">
+                      <div className="relative h-60 w-full overflow-hidden">
+                        <Image
+                          src={project.image}
+                          alt={project.title}
+                          fill
+                          className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                            <div className="flex gap-2 flex-wrap">
+                                {project.tags.map(tag => (
+                                    <span key={tag} className="text-xs font-medium text-white bg-white/20 backdrop-blur px-2 py-1 rounded-full border border-white/10">
+                                        {tag}
+                                    </span>
+                                ))}
                             </div>
-                        </CardBody>
-                    </CardContainer>
-                ))}
-            </div>
-        </section>
-    );
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="p-6 flex-grow">
+                      <h3 className="text-xl font-bold mb-2 text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                        {project.title}
+                      </h3>
+                      <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+                        {project.description}
+                      </p>
+                    </CardContent>
+                    <CardFooter className="p-6 pt-0 mt-auto">
+                      <Button asChild variant="outline" className="w-full group/btn hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all">
+                        <Link href={project.link} className="flex items-center justify-center">
+                          View Case Study
+                          <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover/btn:translate-x-1" />
+                        </Link>
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <div className="flex justify-end gap-2 mt-8 mr-4">
+             <CarouselPrevious className="static translate-y-0 translate-x-0" />
+             <CarouselNext className="static translate-y-0 translate-x-0" />
+          </div>
+        </Carousel>
+      </div>
+    </section>
+  );
 }

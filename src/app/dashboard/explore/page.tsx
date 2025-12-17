@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { BookOpen } from "lucide-react";
-import Image from "next/image";
+import { S3Image } from "@/components/ui/s3-image";
 
 interface Course {
   id: number;
@@ -88,7 +88,7 @@ export default function ExplorePage() {
                 <Card key={course.id} className="overflow-hidden hover:shadow-lg transition-all border-none ring-1 ring-border/50 bg-card/50">
                   <div className="relative aspect-video w-full overflow-hidden">
                     {course.imageUrl ? (
-                      <Image
+                      <S3Image
                         src={course.imageUrl}
                         alt={course.title}
                         fill
@@ -137,7 +137,7 @@ export default function ExplorePage() {
                 <Card key={course.id} className="overflow-hidden hover:shadow-lg transition-all border-none ring-1 ring-border/50 bg-card/50">
                   <div className="relative aspect-video w-full overflow-hidden">
                     {course.imageUrl ? (
-                      <Image
+                      <S3Image
                         src={course.imageUrl}
                         alt={course.title}
                         fill

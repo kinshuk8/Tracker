@@ -27,7 +27,11 @@ export default function Careers() {
                     
                     <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                         <Button asChild size="lg" className="h-12 px-8 text-base rounded-full shadow-lg shadow-blue-500/20">
-                            <a href="mailto:hr@vmkedgemindsolutions.com">
+                            <a 
+                                href="https://mail.google.com/mail/?view=cm&fs=1&to=hr@vmkedgemindsolutions.com"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
                                 <Mail className="mr-2 h-5 w-5" />
                                 Apply via Email
                             </a>

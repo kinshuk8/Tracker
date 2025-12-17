@@ -1,31 +1,10 @@
-
 import Link from "next/link";
 import Image from "next/image";
 import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
-import { Cog, Network, Home } from "lucide-react"; 
+import { services } from "@/data/services";
+import * as LucideIcons from "lucide-react";
 
-const services = [
-  {
-    icon: <Cog className="h-8 w-8 text-brand-purple" />,
-    title: "Software Development",
-    desc: "End-to-end software solutions tailored to meet unique client requirements and ensure quality.",
-    img: "/assets/software-development.png",
-  },
-  {
-    icon: <Network className="h-8 w-8 text-brand-purple" />,
-    title: "Networking Consultancy",
-    desc: "Designing secure, scalable, and efficient network infrastructures for modern businesses.",
-    img: "/assets/network-solutions.png",
-  },
-  {
-    icon: <Home className="h-8 w-8 text-brand-purple" />,
-    title: "Smart IoT Solutions",
-    desc: "Automated and integrated IoT solutions for homes, industries, and enterprises.",
-    img: "/assets/iot-solutions.png",
-  },
-];
-
-export default function Services() {
+export default function Services({ hideViewAll = false }: { hideViewAll?: boolean }) {
   return (
     <section
       id="services"
@@ -39,53 +18,65 @@ export default function Services() {
             Innovative Technology Solutions
           </h2>
           <p className="mt-4 text-lg text-neutral-600 dark:text-neutral-300 max-w-2xl mx-auto">
-            Delivering customized software, networking, and IoT consultancy for
-            businesses of all sizes.
+            Delivering customized software, IoT, and AI solutions for businesses of all sizes.
           </p>
         </div>
         
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 md:gap-10">
-          {services.map((card) => (
-            <CardContainer key={card.title} className="inter-var">
-              <CardBody className="bg-gray-50 relative group/card dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black dark:border-white/[0.2] border-black/[0.1] w-auto sm:w-full h-auto rounded-xl p-6 border">
-                <CardItem
-                  translateZ="50"
-                  className="text-xl font-bold text-neutral-600 dark:text-white flex items-center gap-3"
-                >
-                  {card.icon}
-                  {card.title}
-                </CardItem>
-                <CardItem
-                  as="p"
-                  translateZ="60"
-                  className="text-neutral-500 text-sm max-w-sm mt-2 dark:text-neutral-300"
-                >
-                  {card.desc}
-                </CardItem>
-                <CardItem translateZ="100" className="w-full mt-4">
-                  <div className="w-full h-[200px] relative rounded-lg overflow-hidden">
-                    <Image
-                      src={card.img}
-                      alt={card.title}
-                      fill
-                      className="object-contain"
-                    />
-                  </div>
-                </CardItem>
-                <div className="flex justify-end items-center mt-8">
-                  <Link href="/services">
+          {(hideViewAll ? services : services.slice(0, 3)).map((service) => {
+             // Dynamic Icon Rendering
+             const IconComponent = (LucideIcons as any)[service.iconName] || LucideIcons.HelpCircle;
+
+             return (
+                <CardContainer key={service.slug} className="inter-var">
+                <CardBody className="bg-gray-50 relative group/card dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black dark:border-white/[0.2] border-black/[0.1] w-auto sm:w-full h-auto rounded-xl p-6 border flex flex-col h-full">
                     <CardItem
-                      translateZ={20}
-                      className="px-4 py-2 rounded-xl text-xs font-normal dark:text-white"
+                    translateZ="50"
+                    className="text-xl font-bold text-neutral-600 dark:text-white flex items-center gap-3"
                     >
-                      Learn more →
+                    <IconComponent className="h-8 w-8 text-brand-purple" />
+                    {service.title}
                     </CardItem>
-                  </Link>
-                </div>
-              </CardBody>
-            </CardContainer>
-          ))}
+                    <CardItem
+                    as="p"
+                    translateZ="60"
+                    className="text-neutral-500 text-sm max-w-sm mt-2 dark:text-neutral-300 flex-grow"
+                    >
+                    {service.shortDescription}
+                    </CardItem>
+                    <CardItem translateZ="100" className="w-full mt-4">
+                    <div className="w-full h-[200px] relative rounded-lg overflow-hidden">
+                        <Image
+                        src={service.image}
+                        alt={service.title}
+                        fill
+                        className="object-cover"
+                        />
+                    </div>
+                    </CardItem>
+                    <div className="flex justify-end items-center mt-8">
+                    <Link href={`/services/${service.slug}`}>
+                        <CardItem
+                        translateZ={20}
+                        className="px-4 py-2 rounded-xl text-xs font-normal dark:text-white hover:text-brand-purple transition-colors"
+                        >
+                        Learn more →
+                        </CardItem>
+                    </Link>
+                    </div>
+                </CardBody>
+                </CardContainer>
+             );
+          })}
         </div>
+        
+        {!hideViewAll && (
+            <div className="flex justify-center mt-12">
+                <Link href="/services" className="inline-flex items-center justify-center px-8 py-3 text-base font-medium text-white transition-all duration-200 bg-brand-purple border border-transparent rounded-full hover:bg-brand-purple/90 shadow-lg hover:shadow-xl hover:-translate-y-1">
+                    View All Services
+                </Link>
+            </div>
+        )}
       </div>
     </section>
   );

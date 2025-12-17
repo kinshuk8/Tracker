@@ -14,6 +14,7 @@ import { User, Save } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ProfileSkeleton } from "@/components/ui/skeletons";
 import { Loader2 } from "lucide-react";
+import { AvatarUpload } from "@/components/ui/avatar-upload";
 
 const profileSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -88,21 +89,17 @@ export default function ProfilePage() {
                     <CardDescription>Click save after entering a new URL.</CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col items-center gap-6">
-                    <Avatar className="h-40 w-40 border-4 border-background shadow-xl">
-                        <AvatarImage src={form.watch("imageUrl") || ""} className="object-cover" />
-                        <AvatarFallback className="text-4xl bg-primary/10 text-primary">
-                            {session.user.name?.charAt(0)}
-                        </AvatarFallback>
-                    </Avatar>
+                    <AvatarUpload 
+                        value={form.watch("imageUrl") || ""} 
+                        onChange={(val) => form.setValue("imageUrl", val, { shouldDirty: true })}
+                        name={form.watch("name")}
+                    />
                     
-                    <div className="w-full space-y-2">
-                        <Label htmlFor="imageUrl">Image URL</Label>
-                        <Input 
-                            id="imageUrl" 
-                            placeholder="https://..." 
-                            {...form.register("imageUrl")} 
-                        />
-                    </div>
+                    {/* Hidden input to keep form state bound if needed for manual entry fallback, 
+                        but standard users will use the upload. 
+                        We can keep the manual input below or remove it. 
+                        User asked for "upload image, not entering URL". So removing URL input is better. 
+                    */}
                 </CardContent>
             </Card>
 

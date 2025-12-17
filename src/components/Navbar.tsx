@@ -38,8 +38,8 @@ import { authClient } from "@/lib/auth-client";
 
 const navLinks = [
   { name: "Home", link: "/" },
-  { name: "Services", link: "#services" },
-  { name: "Solutions", link: "#solutions" },
+  { name: "Services", link: "/services" },
+  { name: "Solutions", link: "/solutions" },
   { name: "Careers", link: "/careers" },
   { name: "Contact", link: "/contact" },
 ];

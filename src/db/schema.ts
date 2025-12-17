@@ -82,12 +82,31 @@ export const modulesRelations = relations(modules, ({ one, many }) => ({
     fields: [modules.courseId],
     references: [courses.id],
   }),
+  days: many(days),
+  content: many(content),
+}));
+
+export const days = pgTable("days", {
+  id: serial("id").primaryKey(),
+  moduleId: integer("module_id").references(() => modules.id).notNull(),
+  title: text("title").notNull(),
+  order: integer("order").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const daysRelations = relations(days, ({ one, many }) => ({
+  module: one(modules, {
+    fields: [days.moduleId],
+    references: [modules.id],
+  }),
   content: many(content),
 }));
 
 export const content = pgTable("content", {
   id: serial("id").primaryKey(),
-  moduleId: integer("module_id").references(() => modules.id).notNull(),
+  moduleId: integer("module_id").references(() => modules.id), // Made optional for backward compatibility or direct module content
+  dayId: integer("day_id").references(() => days.id), // New field
   title: text("title").notNull(),
   type: contentTypeEnum("type").notNull(),
   data: text("data").notNull(), // Markdown for text, URL for video, JSON for test
@@ -100,6 +119,10 @@ export const contentRelations = relations(content, ({ one }) => ({
   module: one(modules, {
     fields: [content.moduleId],
     references: [modules.id],
+  }),
+  day: one(days, {
+    fields: [content.dayId],
+    references: [days.id],
   }),
 }));
 
@@ -148,3 +171,28 @@ export const internshipRegistrations = pgTable("internship_registrations", {
   areaOfInterest: text("area_of_interest"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+export const payments = pgTable("payments", {
+  id: serial("id").primaryKey(),
+  paymentId: text("payment_id").notNull(),
+  orderId: text("order_id").notNull(),
+  signature: text("signature").notNull(),
+  amount: integer("amount").notNull(), // Amount in paise
+  currency: text("currency").default("INR").notNull(),
+  status: text("status").notNull(),
+  userId: text("user_id").references(() => users.id).notNull(),
+  courseId: integer("course_id").references(() => courses.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const paymentsRelations = relations(payments, ({ one }) => ({
+  user: one(users, {
+    fields: [payments.userId],
+    references: [users.id],
+  }),
+  course: one(courses, {
+    fields: [payments.courseId],
+    references: [courses.id],
+  }),
+}));
