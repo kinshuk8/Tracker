@@ -26,10 +26,13 @@ interface Course {
   title: string;
 }
 
+import { authClient } from "@/lib/auth-client";
+
 export default function AdminEnrollNewPage() {
   const router = useRouter();
   const [courses, setCourses] = useState<Course[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const { data: session } = authClient.useSession();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -41,6 +44,15 @@ export default function AdminEnrollNewPage() {
       courseId: "",
     },
   });
+
+  useEffect(() => {
+    if (session?.user) {
+      form.setValue("name", session.user.name || "");
+      form.setValue("email", session.user.email || "");
+      // phone and college might not be in session depending on auth provider, but if they are custom fields in user table...
+      // For now we autofill what we can.
+    }
+  }, [session, form]);
 
   useEffect(() => {
     // Fetch courses to populate dropdown
@@ -92,7 +104,7 @@ export default function AdminEnrollNewPage() {
                 courseId: data.courseId,
                 userDetails: {
                   name: data.name,
-                  email: data.email,
+                  email: data.email.toLowerCase(),
                   phone: data.phone,
                   college: data.college,
                 },

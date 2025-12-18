@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { courses, modules, days, content } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 
 // GET: Fetch full course hierarchy
 export async function GET(
@@ -109,14 +109,34 @@ export async function PUT(
       
       if (modulesData && Array.isArray(modulesData)) {
           // Full Structure Replace Strategy
-          // 1. Delete all existing modules for this course (cascades to days -> content)
-          // Note: Drizzle doesn't auto-cascade on delete unless DB FK is set to CASCADE.
-          // Assuming standard PG behavior if FK has ON DELETE CASCADE.
-          // If not, we must manually delete. Let's start with manual to be safe or just modules.
-          
-          await db.delete(modules).where(eq(modules.courseId, id));
+          // 1. Fetch existing structure to handle cascade delete manually
+          const existingModules = await tx.query.modules.findMany({
+             where: eq(modules.courseId, id),
+             with: {
+                 days: true 
+             }
+          });
 
-          // 2. Re-insert
+          const moduleIds = existingModules.map(m => m.id);
+          const dayIds = existingModules.flatMap(m => m.days.map(d => d.id));
+
+          // 2. Delete Content (linked to modules or days)
+          if (moduleIds.length > 0) {
+              await tx.delete(content).where(inArray(content.moduleId, moduleIds));
+          }
+          if (dayIds.length > 0) {
+              await tx.delete(content).where(inArray(content.dayId, dayIds));
+          }
+
+          // 3. Delete Days
+          if (moduleIds.length > 0) {
+              await tx.delete(days).where(inArray(days.moduleId, moduleIds));
+          }
+
+          // 4. Delete Modules
+          await tx.delete(modules).where(eq(modules.courseId, id));
+
+          // 5. Re-insert
           for (const mod of modulesData) {
               const [newMod] = await tx.insert(modules).values({
                   courseId: id,

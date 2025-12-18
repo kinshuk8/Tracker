@@ -16,6 +16,9 @@ import { toast } from "sonner";
 import { Loader2, Lock } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
+import Script from "next/script";
+import { useRouter } from "next/navigation";
+import { plans } from "../data";
 
 interface RegistrationFormProps {
   selectedCourse: string;
@@ -24,12 +27,13 @@ interface RegistrationFormProps {
 
 export function RegistrationForm({ selectedCourse, selectedPlan }: RegistrationFormProps) {
   const { data: session } = authClient.useSession();
+  const router = useRouter();
   
   const form = useForm({
     defaultValues: {
-      name: "",
+      name: session?.user?.name || "",
       college: "",
-      email: "",
+      email: session?.user?.email || "",
       phone: "",
     },
     onSubmit: async ({ value }) => {
@@ -38,10 +42,77 @@ export function RegistrationForm({ selectedCourse, selectedPlan }: RegistrationF
         return;
       }
 
-      // Simulate API call
-      await new Promise((r) => setTimeout(r, 1000));
-      console.log("Registration:", { ...value, course: selectedCourse, plan: selectedPlan });
-      toast.success("Registration successful! Redirecting...");
+      try {
+        // 1. Create Order
+        const orderRes = await fetch("/api/razorpay/order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            courseId: selectedCourse,
+            planId: selectedPlan 
+          }),
+        });
+
+        if (!orderRes.ok) throw new Error("Failed to create order");
+        const order = await orderRes.json();
+
+        // 2. Open Razorpay
+        const options = {
+          key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, 
+          amount: order.amount,
+          currency: order.currency,
+          name: "Internship Enrollment",
+          description: `Enrollment for Course #${selectedCourse}`,
+          order_id: order.id,
+          handler: async function (response: any) {
+            // 3. Verify Payment
+            try {
+              const verifyRes = await fetch("/api/razorpay/verify", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                  courseId: selectedCourse,
+                  userDetails: {
+                    name: value.name,
+                    email: value.email.toLowerCase(),
+                    phone: value.phone,
+                    college: value.college,
+                  },
+                }),
+              });
+
+              const verifyData = await verifyRes.json();
+              if (verifyData.success) {
+                toast.success("Enrollment Successful!");
+                router.push("/internship/courses/" + selectedCourse);
+              } else {
+                toast.error("Payment verification failed");
+              }
+            } catch (error) {
+              console.error(error);
+              toast.error("Error confirming enrollment");
+            }
+          },
+          prefill: {
+            name: value.name,
+            email: value.email,
+            contact: value.phone,
+          },
+          theme: {
+            color: "#3399cc",
+          },
+        };
+
+        const paymentObject = new (window as any).Razorpay(options);
+        paymentObject.open();
+
+      } catch (error) {
+        console.error(error);
+        toast.error("Failed to initiate payment");
+      }
     },
   });
 
@@ -68,6 +139,7 @@ export function RegistrationForm({ selectedCourse, selectedPlan }: RegistrationF
 
   return (
     <Card>
+      <Script src="https://checkout.razorpay.com/v1/checkout.js" />
       <CardHeader>
         <CardTitle>Registration Details</CardTitle>
         <CardDescription>Fill in your details to complete enrollment.</CardDescription>
@@ -148,7 +220,7 @@ export function RegistrationForm({ selectedCourse, selectedPlan }: RegistrationF
             disabled={form.state.isSubmitting}
           >
             {form.state.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Complete Registration
+            Pay & Register (₹{plans.find(p => p.id === selectedPlan)?.price || 0})
           </Button>
         </form>
       </CardContent>

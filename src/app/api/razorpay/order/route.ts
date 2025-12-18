@@ -8,17 +8,33 @@ export async function POST(req: NextRequest) {
   });
 
   try {
-    const { courseId } = await req.json();
+    const { courseId, planId } = await req.json();
 
-    if (!courseId) {
+    if (!courseId || !planId) {
       return NextResponse.json(
-        { error: "Course ID is required" },
+        { error: "Course ID and Plan ID are required" },
         { status: 400 }
       );
     }
 
-    // specific amount for testing - 1 INR = 100 paise
-    const amount = 100;
+    // Pricing mapping (should match data.ts)
+    const PRICING: Record<string, number> = {
+      "1_month": 199,
+      "3_months": 429,
+      "6_months": 1499,
+    };
+
+    const price = PRICING[planId];
+
+    if (!price) {
+        return NextResponse.json(
+            { error: "Invalid Plan ID" },
+            { status: 400 }
+        );
+    }
+
+    // Razorpay accepts amount in paise
+    const amount = price * 100;
 
     const options = {
       amount: amount,
@@ -26,6 +42,7 @@ export async function POST(req: NextRequest) {
       receipt: `receipt_order_${Date.now()}`,
       notes: {
         courseId: courseId.toString(),
+        planId: planId.toString(),
       },
     };
 

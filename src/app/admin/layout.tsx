@@ -81,7 +81,7 @@ export default async function AdminLayout({
 
   return (
     <div className="flex flex-col md:flex-row bg-gray-100 dark:bg-neutral-900 w-full flex-1 mx-auto border-neutral-200 dark:border-neutral-700 overflow-hidden h-screen">
-      <Sidebar open={true}>
+      <Sidebar animate={false}>
         <SidebarBody className="justify-between gap-10">
           <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
             <Link href="/" className="flex items-center gap-2 mb-8 px-2 py-2">

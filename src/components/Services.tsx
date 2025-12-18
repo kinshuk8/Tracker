@@ -69,14 +69,6 @@ export default function Services({ hideViewAll = false }: { hideViewAll?: boolea
              );
           })}
         </div>
-        
-        {!hideViewAll && (
-            <div className="flex justify-center mt-12">
-                <Link href="/services" className="inline-flex items-center justify-center px-8 py-3 text-base font-medium text-white transition-all duration-200 bg-brand-purple border border-transparent rounded-full hover:bg-brand-purple/90 shadow-lg hover:shadow-xl hover:-translate-y-1">
-                    View All Services
-                </Link>
-            </div>
-        )}
       </div>
     </section>
   );

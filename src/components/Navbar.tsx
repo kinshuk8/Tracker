@@ -6,11 +6,22 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar";
+[
+  {
+    "StartLine": 87,
+    "EndLine": 94,
+    "TargetContent": "                  <DropdownMenuTrigger asChild>\n                    <Avatar className=\"h-9 w-9 cursor-pointer border-2 border-white/20 hover:border-white/40 transition-colors shadow-sm\">\n                      <AvatarImage src={user.image || \"\"} alt={user.name || \"User\"} className=\"object-cover\" />\n                      <AvatarFallback className=\"bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300\">\n                        {user.name?.charAt(0) || \"U\"}\n                      </AvatarFallback>\n                    </Avatar>\n                  </DropdownMenuTrigger>",
+    "ReplacementContent": "                  <DropdownMenuTrigger asChild>\n                    <div className=\"outline-none\">\n                        <UserAvatar user={user} className=\"h-9 w-9 border-2 hover:border-white/40 transition-colors\" />\n                    </div>\n                  </DropdownMenuTrigger>",
+    "AllowMultiple": false
+  },
+  {
+    "StartLine": 202,
+    "EndLine": 205,
+    "TargetContent": "                          <Avatar className=\"h-8 w-8\">\n                              <AvatarImage src={user.image || \"\"} />\n                              <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>\n                          </Avatar>",
+    "ReplacementContent": "                          <UserAvatar user={user} className=\"h-8 w-8\" />",
+    "AllowMultiple": false
+  }
+]
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,6 +46,7 @@ import {
   MobileNavToggle,
 } from "@/components/ui/resizable-navbar";
 import { authClient } from "@/lib/auth-client";
+import { UserAvatar } from "@/components/UserAvatar";
 
 const navLinks = [
   { name: "Home", link: "/" },
@@ -85,12 +97,9 @@ export default function Navbar() {
               <div className="flex items-center gap-4">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Avatar className="h-9 w-9 cursor-pointer border-2 border-white/20 hover:border-white/40 transition-colors shadow-sm">
-                      <AvatarImage src={user.image || ""} alt={user.name || "User"} className="object-cover" />
-                      <AvatarFallback className="bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300">
-                        {user.name?.charAt(0) || "U"}
-                      </AvatarFallback>
-                    </Avatar>
+                    <div className="outline-none">
+                        <UserAvatar user={user} className="h-9 w-9 border-2 hover:border-white/40 transition-colors" />
+                    </div>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-64 bg-white/80 dark:bg-black/80 backdrop-blur-xl border-white/20 shadow-2xl p-2 rounded-xl">
                     <DropdownMenuLabel className="font-normal p-2">
@@ -173,20 +182,49 @@ export default function Navbar() {
               </a>
             ))}
             {/* Mobile Dashboard link removed */}
-            <div className="pt-4 mt-4 border-t border-slate-200 dark:border-slate-800">
+            <div className="pt-4 mt-4 border-t border-slate-200 dark:border-slate-800 space-y-4">
                {user ? (
-                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <Avatar className="h-8 w-8">
-                            <AvatarImage src={user.image || ""} />
-                            <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <span className="text-sm font-medium">{user.name}</span>
-                    </div>
-                    <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-red-600">
-                        <LogOut className="h-4 w-4 mr-2" />
-                        Sign Out
-                    </Button>
+                 <div className="flex justify-center w-full">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer w-full justify-start transition-colors outline-none">
+                            <UserAvatar user={user} className="h-10 w-10 border-2 border-white/20 shadow-sm" />
+                            <div className="flex flex-col text-left">
+                                <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">{user.name}</span>
+                                <span className="text-xs text-slate-500 dark:text-slate-400">{user.email}</span>
+                            </div>
+                        </div>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="center" side="top" className="w-[--radix-dropdown-menu-trigger-width] min-w-[240px]">
+                        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild className="cursor-pointer">
+                          <Link href="/dashboard/profile" onClick={() => setIsOpen(false)} className="flex items-center gap-2 w-full">
+                            <User className="h-4 w-4" />
+                            <span>Profile</span>
+                          </Link>
+                        </DropdownMenuItem>
+                        {user.role === "admin" && (
+                          <DropdownMenuItem asChild className="cursor-pointer">
+                            <Link href="/admin" onClick={() => setIsOpen(false)} className="flex items-center gap-2 w-full">
+                              <ShieldCheck className="h-4 w-4" />
+                              <span>Admin Portal</span>
+                            </Link>
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem 
+                          className="text-red-600 focus:text-red-700 focus:bg-red-50 dark:focus:bg-red-950/20 cursor-pointer"
+                          onClick={() => {
+                              handleSignOut();
+                              setIsOpen(false);
+                          }}
+                        >
+                          <LogOut className="h-4 w-4 mr-2" />
+                          <span>Sign Out</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                  </div>
                ) : (
                   <Button

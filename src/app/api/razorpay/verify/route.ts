@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { db } from "@/db";
-import { users, enrollments, payments } from "@/db/schema";
+import { users, enrollments, payments, courses } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 export async function POST(req: NextRequest) {
@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
       razorpay_order_id,
       razorpay_payment_id,
       razorpay_signature,
-      courseId,
+      courseId: courseIdParam, // Rename to avoid confusion
       userDetails,
     } = await req.json();
 
@@ -24,35 +24,50 @@ export async function POST(req: NextRequest) {
     const isAuthentic = expectedSignature === razorpay_signature;
 
     if (isAuthentic) {
-      // 1. Create or Get User
-      // Note: In a real app, you might want to check if user already exists more robustly
-      // For this admin flow, we assume we might be creating a new user or linking to existing by email.
+      // Resolve Course ID (Handle Slug vs ID)
+      let resolvedCourseId = parseInt(courseIdParam);
       
+      if (isNaN(resolvedCourseId)) {
+        const course = await db.query.courses.findFirst({
+          where: eq(courses.slug, courseIdParam),
+        });
+        if (course) {
+          resolvedCourseId = course.id;
+        } else {
+           return NextResponse.json(
+            { message: "Invalid Course ID", success: false },
+            { status: 400 }
+          );
+        }
+      }
+
+      // 1. Create or Get User
+      // ... (Rest of existing user logic)
+      
+      // ... (Inside User Creation Logic - no changes needed there usually, but wait, let's keep the user logic intact)
+      // I need to be careful with replace range. I will insert the resolution logic at the top and update usages.
+      
+      // Let's rewrite the block to be safe.
+      
+      // 1. Create or Get User
       let userId = "";
       
       const existingUser = await db.query.users.findFirst({
-        where: eq(users.email, userDetails.email),
+        where: eq(users.email, userDetails.email.toLowerCase()),
       });
 
       if (existingUser) {
         userId = existingUser.id;
       } else {
-        // Create new user
-        // We need a unique ID. Assuming we have a way to generate IDs or let DB handle it if it was serial/uuid.
-        // The schema says id is text. Usually uuid. Let's start with a random string if not present.
-        // Wait, schema `users` has `id: text("id").primaryKey()`. I better check how other users are created.
-        // Assuming we can use a simple random ID for now or dependent on auth lib.
-        // For better compatibility, I will assume we generate one.
         userId = crypto.randomUUID();
-        
         await db.insert(users).values({
           id: userId,
           name: userDetails.name,
-          email: userDetails.email,
-          emailVerified: false, // Admin added
+          email: userDetails.email.toLowerCase(),
+          emailVerified: false,
           createdAt: new Date(),
           updatedAt: new Date(),
-          role: "user", // or "intern"
+          role: "user",
           college: userDetails.college,
           phoneNumber: userDetails.phone,
         });
@@ -63,29 +78,28 @@ export async function POST(req: NextRequest) {
         paymentId: razorpay_payment_id,
         orderId: razorpay_order_id,
         signature: razorpay_signature,
-        amount: 100, // stored in paise
+        amount: 100,
         currency: "INR",
-        status: "captured", // Assumed success if signature matches
+        status: "captured",
         userId: userId,
-        courseId: parseInt(courseId),
+        courseId: resolvedCourseId, // Use resolved ID
         createdAt: new Date(),
         updatedAt: new Date(),
       });
 
       // 3. Create Enrollment
-      // Check if already enrolled?
       const existingEnrollment = await db.query.enrollments.findFirst({
         where: (enrollments, { and, eq }) => and(
           eq(enrollments.userId, userId),
-          eq(enrollments.courseId, parseInt(courseId))
+          eq(enrollments.courseId, resolvedCourseId)
         ),
       });
 
       if (!existingEnrollment) {
         await db.insert(enrollments).values({
             userId: userId,
-            courseId: parseInt(courseId),
-            plan: "6_months", // Default or passed from frontend
+            courseId: resolvedCourseId,
+            plan: "6_months",
             startDate: new Date(),
             endDate: new Date(new Date().setMonth(new Date().getMonth() + 6)),
             isActive: true,

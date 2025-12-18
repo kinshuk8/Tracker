@@ -5,7 +5,7 @@ import { courses, modules, content, userProgress, users } from "@/db/schema";
 import { eq, asc, and } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
-import Image from "next/image";
+import { SidebarUserProfile } from "../components/SidebarUserProfile";
 
 
 export default async function CourseLayout({
@@ -74,8 +74,8 @@ export default async function CourseLayout({
   }
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-slate-50">
-      <Sidebar open={true}>
+    <div className="flex flex-col md:flex-row h-screen w-full overflow-hidden bg-slate-50">
+      <Sidebar animate={false}>
         <SidebarBody className="justify-between gap-10">
           <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
             <div className="flex flex-col gap-4 mb-8">
@@ -128,13 +128,7 @@ export default async function CourseLayout({
           </div>
           
           <div className="flex justify-center w-full pb-4">
-            <Image
-              src={user?.image || "https://github.com/shadcn.png"}
-              className="h-8 w-8 shrink-0 rounded-full object-cover"
-              width={50}
-              height={50}
-              alt="Avatar"
-            />
+            <SidebarUserProfile user={user} />
           </div>
         </SidebarBody>
       </Sidebar>
