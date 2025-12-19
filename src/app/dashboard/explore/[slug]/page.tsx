@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Loader2, CheckCircle, Lock, BookOpen, Clock, Calendar } from "lucide-react";
+import { S3Image } from "@/components/ui/s3-image";
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -157,7 +158,7 @@ export default function CourseDetailPage() {
             <Card className="sticky top-8">
                 <div className="aspect-video relative w-full overflow-hidden rounded-t-lg">
                     {course.imageUrl ? (
-                        <Image
+                        <S3Image
                             src={course.imageUrl}
                             alt={course.title}
                             fill
@@ -197,14 +198,29 @@ export default function CourseDetailPage() {
                     ) : (
                         <div className="space-y-4">
                             <div>
-                                <h3 className="text-2xl font-bold">$49.99</h3>
-                                <p className="text-sm text-muted-foreground">One-time payment for 6 months access</p>
+                                <h3 className="font-semibold mb-2">Select a Plan</h3>
+                                <div className="space-y-3">
+                                    {[
+                                        { id: "1_month", title: "1 Month", price: 199, features: ["Course Access", "Certification"] },
+                                        { id: "3_months", title: "3 Months", price: 429, features: ["Projects", "Assignments"] },
+                                        { id: "6_months", title: "6 Months", price: 1499, features: ["Resume Building", "Priority Support"] },
+                                    ].map((plan) => (
+                                        <div key={plan.id} className="border rounded-lg p-3 hover:border-primary cursor-pointer transition-colors">
+                                            <div className="flex justify-between items-center mb-1">
+                                                <span className="font-medium">{plan.title}</span>
+                                                <span className="font-bold text-lg">₹{plan.price}</span>
+                                            </div>
+                                            <div className="text-xs text-muted-foreground">
+                                                {plan.features.join(" • ")}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
-                            <div className="space-y-2">
-                                <p className="text-sm font-medium">Includes:</p>
+                            <div className="space-y-2 pt-2">
+                                <p className="text-sm font-medium">All plans include:</p>
                                 <ul className="text-sm text-muted-foreground space-y-1">
                                     <li className="flex items-center gap-2"><CheckCircle className="h-3 w-3 text-primary" /> Full course access</li>
-                                    <li className="flex items-center gap-2"><CheckCircle className="h-3 w-3 text-primary" /> Certification of completion</li>
                                     <li className="flex items-center gap-2"><CheckCircle className="h-3 w-3 text-primary" /> Community support</li>
                                 </ul>
                             </div>
@@ -217,8 +233,10 @@ export default function CourseDetailPage() {
                             <Link href={`/internship/courses/${course.slug}`}>Continue Learning</Link>
                         </Button>
                     ) : (
-                         <Button className="w-full" size="lg">
-                            Register Now
+                         <Button className="w-full" size="lg" asChild>
+                            <Link href={`/internship/courses?course=${course.slug}`}>
+                                Enroll Now
+                            </Link>
                         </Button>
                     )}
                 </CardFooter>

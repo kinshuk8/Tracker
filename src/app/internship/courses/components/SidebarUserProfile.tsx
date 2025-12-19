@@ -1,6 +1,6 @@
 "use client";
 
-import { useSidebar } from "@/components/ui/sidebar";
+import { useSidebar } from "@/components/ui/sidebar-aceternity";
 import { UserAvatar } from "@/components/UserAvatar";
 import { motion } from "framer-motion";
 import {

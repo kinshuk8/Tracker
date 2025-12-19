@@ -1,4 +1,4 @@
-import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
+import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar-aceternity";
 import {
   LayoutDashboard,
   BookOpen,

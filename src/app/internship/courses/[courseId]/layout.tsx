@@ -4,7 +4,7 @@ import { db } from "@/db";
 import { courses, modules, content, userProgress, users } from "@/db/schema";
 import { eq, asc, and } from "drizzle-orm";
 import { notFound } from "next/navigation";
-import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
+import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar-aceternity";
 import { SidebarUserProfile } from "../components/SidebarUserProfile";
 
 

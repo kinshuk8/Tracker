@@ -74,7 +74,7 @@ export default function ProfilePage() {
   if (!session?.user) return null;
 
   return (
-    <div className="container mx-auto py-10 px-8 max-w-5xl">
+    <div className="container mx-auto py-6 px-4 md:py-10 md:px-8 max-w-5xl">
       <div className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight">Account Settings</h1>
           <p className="text-muted-foreground mt-2">Manage your profile and account preferences.</p>

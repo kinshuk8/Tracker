@@ -1,15 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { CourseSelector } from "./components/CourseSelector";
 import { PlanSelector } from "./components/PlanSelector";
 import { RegistrationForm } from "./components/RegistrationForm";
 
-export default function CoursesPage() {
+function CoursesContent() {
   const [selectedCourse, setSelectedCourse] = useState<string>("");
   const [selectedPlan, setSelectedPlan] = useState<string>("");
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const course = searchParams.get("course");
+    if (course) {
+        setSelectedCourse(course);
+    }
+  }, [searchParams]);
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-800">
@@ -38,4 +47,12 @@ export default function CoursesPage() {
       <Footer />
     </div>
   );
+}
+
+export default function CoursesPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <CoursesContent />
+        </Suspense>
+    );
 }

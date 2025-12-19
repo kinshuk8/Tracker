@@ -53,7 +53,7 @@ export default function ExplorePage() {
 
   if (isAuthPending || isLoading) {
     return (
-      <div className="container mx-auto py-10 px-8">
+      <div className="container mx-auto py-6 px-4 md:py-10 md:px-8">
         <div className="mb-10">
             <h1 className="text-3xl font-bold tracking-tight mb-2">My Courses</h1>
             <p className="text-muted-foreground mb-6">Continue where you left off.</p>
@@ -67,7 +67,7 @@ export default function ExplorePage() {
   const availableCourses = courses.filter(c => !c.enrollment || !c.enrollment.isActive);
 
   return (
-    <div className="container mx-auto py-10 px-8">
+    <div className="container mx-auto py-6 px-4 md:py-10 md:px-8">
       <div className="mb-10">
         <h1 className="text-3xl font-bold tracking-tight mb-2">My Courses</h1>
         <p className="text-muted-foreground mb-6">Continue where you left off.</p>
