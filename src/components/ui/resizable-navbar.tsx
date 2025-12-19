@@ -115,8 +115,11 @@ export const NavBody = ({ children, className, visible }: NavBodyProps) => {
   );
 };
 
+import { usePathname } from "next/navigation";
+
 export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
   const [hovered, setHovered] = useState<number | null>(null);
+  const pathname = usePathname();
 
   return (
     <motion.div
@@ -130,7 +133,12 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
         <a
           onMouseEnter={() => setHovered(idx)}
           onClick={onItemClick}
-          className="relative px-4 py-2 text-neutral-600 dark:text-neutral-300"
+          className={cn(
+            "relative px-4 py-2 transition-colors",
+            pathname === item.link 
+              ? "text-blue-600 dark:text-blue-400 font-semibold" 
+              : "text-neutral-600 dark:text-neutral-300"
+          )}
           key={`link-${idx}`}
           href={item.link}
         >

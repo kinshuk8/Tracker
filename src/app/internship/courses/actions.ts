@@ -88,3 +88,70 @@ export async function markAsCompleted(courseId: number, contentId: number) {
   revalidatePath("/internship/courses");
   return { success: true };
 }
+
+export async function submitQuiz(contentId: number, score: number, totalQuestions: number, passed: boolean) {
+  const { auth } = await import("@/lib/auth");
+  const { headers } = await import("next/headers");
+  const session = await auth.api.getSession({
+    headers: await headers()
+  });
+  const user = session?.user;
+
+  if (!user || !user.email) {
+    throw new Error("Unauthorized");
+  }
+
+  const dbUser = await db.query.users.findFirst({
+    where: eq(users.email, user.email),
+  });
+
+  if (!dbUser) {
+    throw new Error("User not found");
+  }
+
+  const existingProgress = await db.query.userProgress.findFirst({
+    where: and(
+      eq(userProgress.userId, dbUser.id),
+      eq(userProgress.contentId, contentId)
+    ),
+  });
+
+  if (existingProgress && existingProgress.attempts >= 3) {
+    // If already completed and just practicing, that's fine? 
+    // Requirement says "only retake for 3 times". Assuming strict limit.
+    // But if they passed already, maybe allow practice? 
+    // Let's stick to strict 3 attempts for score recording.
+    return { success: false, error: "Maximum attempts reached", attempts: existingProgress.attempts, bestScore: existingProgress.score };
+  }
+
+  const currentAttempts = (existingProgress?.attempts || 0) + 1;
+  const currentBestScore = existingProgress?.score || 0;
+  const newBestScore = Math.max(currentBestScore, score);
+  
+  // Mark completed only if passed. If already completed, keep it completed.
+  const isCompleted = passed || !!existingProgress?.isCompleted;
+
+  if (existingProgress) {
+    await db.update(userProgress)
+      .set({
+        attempts: currentAttempts,
+        score: newBestScore,
+        isCompleted: isCompleted,
+        completedAt: isCompleted ? (existingProgress.completedAt || new Date()) : null,
+        updatedAt: new Date(),
+      })
+      .where(eq(userProgress.id, existingProgress.id));
+  } else {
+    await db.insert(userProgress).values({
+      userId: dbUser.id,
+      contentId: contentId,
+      attempts: currentAttempts,
+      score: newBestScore,
+      isCompleted: isCompleted,
+      completedAt: isCompleted ? new Date() : null,
+    });
+  }
+
+  revalidatePath("/internship/courses");
+  return { success: true, attempts: currentAttempts, bestScore: newBestScore, remaining: 3 - currentAttempts };
+}

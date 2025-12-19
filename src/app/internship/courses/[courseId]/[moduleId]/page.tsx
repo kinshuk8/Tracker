@@ -11,14 +11,7 @@ import Quiz from "../../components/Quiz";
 import { AlertCircle } from "lucide-react";
 import { S3Resource } from "@/components/content/s3-resource";
 
-function getYouTubeEmbedUrl(url: string): string | null {
-  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-  const match = url.match(regExp);
 
-  return (match && match[2].length === 11)
-    ? `https://www.youtube.com/embed/${match[2]}`
-    : null;
-}
 
 export default async function ModulePage({
   params,
@@ -33,18 +26,33 @@ export default async function ModulePage({
     notFound();
   }
 
-  const contentItem = await db.query.content.findFirst({
-    where: eq(content.id, contentId),
-    with: {
-      module: {
-        with: {
-          course: true
-        }
-      }
-    }
-  });
+  // Parallelize Auth and Content Fetching
+  const sessionPromise = (async () => {
+    const { auth } = await import("@/lib/auth");
+    const { headers } = await import("next/headers");
+    return auth.api.getSession({
+      headers: await headers()
+    });
+  })();
 
-  if (!contentItem || !contentItem.module) {
+  const contentPromise = (async () => {
+     const cResult = await db.query.content.findFirst({
+        where: eq(content.id, contentId),
+      });
+      if (!cResult || !cResult.moduleId) return null;
+      
+      const mResult = await db.query.modules.findFirst({
+        where: eq(modules.id, cResult.moduleId),
+        with: { course: true }
+      });
+      
+      if (!mResult) return null;
+      return { ...cResult, module: mResult };
+  })();
+
+  const [session, contentItem] = await Promise.all([sessionPromise, contentPromise]);
+
+  if (!contentItem) {
     notFound();
   }
 
@@ -52,16 +60,27 @@ export default async function ModulePage({
   const currentModuleOrder = contentItem.module.order;
   const currentContentOrder = contentItem.order;
 
-  // 1. Try to find previous content in the same module
-  let prevContent = await db.query.content.findFirst({
-    where: and(
-      eq(content.moduleId, contentItem.moduleId!),
-      lt(content.order, currentContentOrder)
-    ),
-    orderBy: desc(content.order),
-  });
+  const [prevContentSameModule, nextContentSameModule] = await Promise.all([
+    db.query.content.findFirst({
+      where: and(
+        eq(content.moduleId, contentItem.moduleId!),
+        lt(content.order, currentContentOrder)
+      ),
+      orderBy: desc(content.order),
+    }),
+    db.query.content.findFirst({
+      where: and(
+        eq(content.moduleId, contentItem.moduleId!),
+        gt(content.order, currentContentOrder)
+      ),
+      orderBy: asc(content.order),
+    })
+  ]);
 
-  // 2. If not found, find last content of the previous module
+  let prevContent = prevContentSameModule;
+  let nextContent = nextContentSameModule;
+
+  // Secondary queries only if needed
   if (!prevContent) {
     const prevModule = await db.query.modules.findFirst({
       where: and(
@@ -81,16 +100,6 @@ export default async function ModulePage({
     }
   }
 
-  // 3. Try to find next content in the same module
-  let nextContent = await db.query.content.findFirst({
-    where: and(
-      eq(content.moduleId, contentItem.moduleId!),
-      gt(content.order, currentContentOrder)
-    ),
-    orderBy: asc(content.order),
-  });
-
-  // 4. If not found, find first content of the next module
   if (!nextContent) {
     const nextModule = await db.query.modules.findFirst({
       where: and(
@@ -110,14 +119,12 @@ export default async function ModulePage({
     }
   }
   // --- End Navigation Logic ---
-
+ 
   let isCompleted = false;
-  const { auth } = await import("@/lib/auth");
-  const { headers } = await import("next/headers");
-  const session = await auth.api.getSession({
-    headers: await headers()
-  });
-  
+  let attempts = 0;
+  let score: number | undefined = undefined;
+  let isLocked = false;
+
   const user = session?.user;
 
   if (user && user.email) {
@@ -126,6 +133,7 @@ export default async function ModulePage({
     });
 
     if (dbUser) {
+      // 1. Fetch current progress
       const progress = await db.query.userProgress.findFirst({
         where: and(
           eq(userProgress.userId, dbUser.id),
@@ -133,7 +141,75 @@ export default async function ModulePage({
         ),
       });
       isCompleted = !!progress?.isCompleted;
+      attempts = progress?.attempts || 0;
+      score = progress?.score || undefined;
+
+      // 2. Check Module Locking
+      // Logic: If this is the START of a module (or any content in a module), 
+      // check if the immediately PREVIOUS module is completed.
+      // Optimization: Only check if we are NOT an admin/intern? (assuming regular user flow)
+      
+      // Calculate previous module ID
+      const currentModuleId = contentItem.moduleId!;
+      const previousModule = await db.query.modules.findFirst({
+        where: and(
+          eq(modules.courseId, contentItem.module.courseId),
+          lt(modules.order, contentItem.module.order)
+        ),
+        orderBy: desc(modules.order),
+        with: {
+           content: true // finish check needs total content
+        }
+      });
+
+      if (previousModule) {
+         // Check if ALL content in previous module is completed
+         const previousModuleContentIds = previousModule.content.map(c => c.id);
+         const completedCount = await db.$count(
+            userProgress, 
+            and(
+                eq(userProgress.userId, dbUser.id),
+                eq(userProgress.isCompleted, true),
+                // inArray(userProgress.contentId, previousModuleContentIds) // Drizzle doesn't support massive arrays well sometimes, but fine here
+            )
+            // safer manual check if array issue, but let's try clean query first or
+            // simpler: fetch all progress for user for these IDs
+         );
+         
+         // Actually, just fetching all completed IDs for previous module is safer
+         const completedProgress = await db.query.userProgress.findMany({
+             where: and(
+                 eq(userProgress.userId, dbUser.id),
+                 eq(userProgress.isCompleted, true)
+             ),
+             columns: { contentId: true }
+         });
+         
+         const completedSet = new Set(completedProgress.map(p => p.contentId));
+         const isPreviousModuleComplete = previousModule.content.every(c => completedSet.has(c.id));
+
+         if (!isPreviousModuleComplete) {
+             isLocked = true;
+         }
+      }
     }
+  }
+
+  if (isLocked) {
+      return (
+          <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-4">
+              <div className="bg-red-100 p-4 rounded-full">
+                  <AlertCircle className="w-12 h-12 text-red-600" />
+              </div>
+              <h1 className="text-2xl font-bold text-slate-900">Module Locked</h1>
+              <p className="text-slate-600 max-w-md">
+                  You must complete the previous module to unlock this content. Please go back and finish all lessons and quizzes.
+              </p>
+              <Link href={`/internship/courses/${courseId}`}>
+                  <Button variant="outline">Back to Course</Button>
+              </Link>
+          </div>
+      );
   }
 
   return (
@@ -144,7 +220,7 @@ export default async function ModulePage({
           <h1 className="text-3xl font-bold text-slate-900">{contentItem.title}</h1>
         </div>
         <div className="flex items-center gap-2">
-          {!(/\.(mp4|mov|webm|mkv|avi)$/i.test(contentItem.data)) && (
+          {contentItem.type !== "test" && (
             <MarkAsReadButton 
               courseId={contentItem.module.course.id} 
               contentId={contentItem.id} 
@@ -158,36 +234,24 @@ export default async function ModulePage({
         <div className="p-8 md:p-12 prose prose-slate max-w-none prose-headings:font-bold prose-h1:text-3xl prose-h2:text-2xl prose-a:text-blue-600">
           {/* Render content based on type */}
           {(() => {
-            const isYouTube = contentItem.type === "video" && getYouTubeEmbedUrl(contentItem.data);
+            // Priority 2: S3 Resource or File (Video or Download)
             const isS3 = contentItem.data.startsWith("s3://");
             const isFileLike = !contentItem.data.includes("\n") && /\.(pdf|docx|doc|ppt|pptx|xls|xlsx|zip|png|jpg|jpeg|mp4|mov|avi|wmv)$/i.test(contentItem.data);
-            
-            // Priority 1: YouTube Video
-            if (isYouTube) {
-               const embedUrl = getYouTubeEmbedUrl(contentItem.data);
-               return (
-                 <div className="aspect-video bg-slate-900 rounded-lg flex items-center justify-center text-white shadow-lg overflow-hidden">
-                    <iframe
-                      src={embedUrl!}
-                      className="w-full h-full"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      title={contentItem.title}
-                    />
-                 </div>
-               );
-            }
 
-            // Priority 2: S3 Resource or File (Video or Download)
-            if (isS3 || isFileLike || (contentItem.type === "video" && !isYouTube)) {
+            if (isS3 || isFileLike || contentItem.type === "video") {
                return (
-                  <div className="w-full">
+                  <div className="w-full flex flex-col">
                      <S3Resource 
                         src={contentItem.data} 
                         title={contentItem.title} 
                         courseId={contentItem.module!.courseId!} 
                         contentId={contentItem.id}
                      />
+                     {contentItem.type !== "video" && !/\.(mp4|mov|webm|mkv|avi)$/i.test(contentItem.data) && (
+                        <p className="mt-4 text-sm text-slate-500 text-center italic">
+                            Please read the document above and click "Mark as Read" to save your progress.
+                        </p>
+                     )}
                   </div>
                );
             }
@@ -204,7 +268,12 @@ export default async function ModulePage({
                 return (
                     <div>
                       <h3 className="text-xl font-semibold mb-4">Quiz</h3>
-                      <Quiz data={contentItem.data} />
+                      <Quiz 
+                        data={contentItem.data} 
+                        contentId={contentItem.id} 
+                        initialAttempts={attempts} 
+                        currentBestScore={score}
+                      />
                     </div>
                 );
             }

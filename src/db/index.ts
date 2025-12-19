@@ -1,4 +1,4 @@
-import { drizzle } from "drizzle-orm/node-postgres";
+import { drizzle, NodePgDatabase } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import * as schema from "./schema";
 import * as dotenv from "dotenv";
@@ -11,12 +11,36 @@ if (!process.env.DATABASE_URL) {
 
 const isProduction = process.env.NODE_ENV === "production";
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  connectionTimeoutMillis: 10000, // 10 seconds
-  ssl: {
-      rejectUnauthorized: false
-  },
-});
+// Use a global variable to store the database connection in development
+// to prevent connection exhaustion during hot reloads.
+// We need to properly type the DB with schema
+type DB = NodePgDatabase<typeof schema>;
 
-export const db = drizzle(pool, { schema });
+const globalForDb = global as unknown as { db: DB | undefined };
+
+let db: DB;
+
+if (isProduction) {
+    const pool = new Pool({
+        connectionString: process.env.DATABASE_URL,
+        connectionTimeoutMillis: 10000,
+        ssl: {
+            rejectUnauthorized: false
+        },
+    });
+    db = drizzle(pool, { schema });
+} else {
+    if (!globalForDb.db) {
+        const pool = new Pool({
+            connectionString: process.env.DATABASE_URL,
+            connectionTimeoutMillis: 10000,
+            ssl: {
+                rejectUnauthorized: false
+            },
+        });
+        globalForDb.db = drizzle(pool, { schema });
+    }
+    db = globalForDb.db;
+}
+
+export { db };

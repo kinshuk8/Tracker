@@ -1,4 +1,4 @@
-import { pgTable, serial, text, timestamp, integer, boolean, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, timestamp, integer, boolean, pgEnum, index } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 export const roleEnum = pgEnum("role", ["user", "intern", "admin"]);
@@ -75,7 +75,10 @@ export const modules = pgTable("modules", {
   order: integer("order").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (table) => ({
+  courseIdIdx: index("modules_course_id_idx").on(table.courseId),
+  orderIdx: index("modules_order_idx").on(table.order),
+}));
 
 export const modulesRelations = relations(modules, ({ one, many }) => ({
   course: one(courses, {
@@ -113,7 +116,10 @@ export const content = pgTable("content", {
   order: integer("order").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (table) => ({
+  moduleIdIdx: index("content_module_id_idx").on(table.moduleId),
+  orderIdx: index("content_order_idx").on(table.order),
+}));
 
 export const contentRelations = relations(content, ({ one }) => ({
   module: one(modules, {
@@ -154,10 +160,26 @@ export const userProgress = pgTable("user_progress", {
   userId: text("user_id").references(() => users.id).notNull(),
   contentId: integer("content_id").references(() => content.id).notNull(),
   isCompleted: boolean("is_completed").default(false).notNull(),
+  attempts: integer("attempts").default(0).notNull(),
+  score: integer("score"),
   completedAt: timestamp("completed_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (table) => ({
+  userIdIdx: index("user_progress_user_id_idx").on(table.userId),
+  contentIdIdx: index("user_progress_content_id_idx").on(table.contentId),
+}));
+
+export const userProgressRelations = relations(userProgress, ({ one }) => ({
+  user: one(users, {
+    fields: [userProgress.userId],
+    references: [users.id],
+  }),
+  content: one(content, {
+    fields: [userProgress.contentId],
+    references: [content.id],
+  }),
+}));
 
 export const internshipRegistrations = pgTable("internship_registrations", {
   id: serial("id").primaryKey(),

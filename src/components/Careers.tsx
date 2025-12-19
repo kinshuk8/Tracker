@@ -37,7 +37,7 @@ export default function Careers() {
                             </a>
                         </Button>
                         <Button asChild variant="outline" size="lg" className="h-12 px-8 text-base rounded-full border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900">
-                             <Link href="/internship">
+                             <Link href="/internship/courses">
                                 View Internships
                              </Link>
                         </Button>

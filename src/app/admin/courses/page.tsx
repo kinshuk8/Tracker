@@ -21,6 +21,24 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
+import { Progress } from "@/components/ui/progress";
+import { getCourseStudents } from "./actions";
+
 interface CourseSummary {
   id: number;
   title: string;
@@ -28,9 +46,25 @@ interface CourseSummary {
   studentsCount: number;
 }
 
+interface StudentProgress {
+    id: string;
+    name: string | null;
+    email: string;
+    image: string | null;
+    enrolledAt: Date;
+    progress: number;
+    completedItems: number;
+    totalItems: number;
+}
+
 export default function AdminCoursesPage() {
   const [courses, setCourses] = useState<CourseSummary[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Student Performance State
+  const [selectedCourseId, setSelectedCourseId] = useState<string>("");
+  const [students, setStudents] = useState<StudentProgress[]>([]);
+  const [loadingStudents, setLoadingStudents] = useState(false);
 
   useEffect(() => {
     fetchCourses();
@@ -58,6 +92,23 @@ export default function AdminCoursesPage() {
           toast.success("Course deleted successfully");
       } catch (error) {
           toast.error("Failed to delete course");
+      }
+  };
+  
+  const handleCourseSelect = async (courseId: string) => {
+      setSelectedCourseId(courseId);
+      setLoadingStudents(true);
+      try {
+          const res = await getCourseStudents(parseInt(courseId));
+          if (res.error) {
+              toast.error(res.error);
+          } else {
+              setStudents(res.students as StudentProgress[]);
+          }
+      } catch (e) {
+          toast.error("Failed to load student data");
+      } finally {
+          setLoadingStudents(false);
       }
   };
 
@@ -201,17 +252,88 @@ export default function AdminCoursesPage() {
 
         {/* STUDENTS TAB */}
         <TabsContent value="students" className="mt-0">
-          <Card className="rounded-2xl border-dashed border-2 border-slate-200 dark:border-slate-800 bg-transparent shadow-none p-12">
-            <div className="text-center text-slate-500 flex flex-col items-center">
-              <div className="p-4 rounded-full bg-slate-100 dark:bg-slate-800 mb-4">
-                <Users className="w-8 h-8 opacity-50" />
-              </div>
-              <h3 className="text-lg font-semibold mb-1">Student Analytics</h3>
-              <p className="text-sm">
-                Select a specific course above to view detailed performance
-                metrics.
-              </p>
-            </div>
+          <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-sm">
+            <CardHeader>
+              <CardTitle>Student Progress</CardTitle>
+            </CardHeader>
+            <CardContent>
+               <div className="mb-6 max-w-sm">
+                   <label className="text-sm font-medium mb-1.5 block">Select Course</label>
+                   <Select value={selectedCourseId} onValueChange={handleCourseSelect}>
+                       <SelectTrigger>
+                           <SelectValue placeholder="Select a course to view students" />
+                       </SelectTrigger>
+                       <SelectContent>
+                           {courses.map(course => (
+                               <SelectItem key={course.id} value={course.id.toString()}>
+                                   {course.title}
+                               </SelectItem>
+                           ))}
+                       </SelectContent>
+                   </Select>
+               </div>
+
+               {loadingStudents ? (
+                   <div className="flex justify-center p-12">
+                       <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+                   </div>
+               ) : !selectedCourseId ? (
+                   <div className="text-center p-12 text-slate-500 bg-slate-50 dark:bg-slate-900 rounded-lg border border-dashed">
+                       <Users className="w-8 h-8 mx-auto mb-3 opacity-50" />
+                       <p>Please select a course to view student performance statistics.</p>
+                   </div>
+               ) : students.length === 0 ? (
+                    <div className="text-center p-12 text-slate-500 bg-slate-50 dark:bg-slate-900 rounded-lg border border-dashed">
+                       <Info className="w-8 h-8 mx-auto mb-3 opacity-50" />
+                       <p>No students found enrolled in this course.</p>
+                   </div>
+               ) : (
+                   <div className="rounded-md border">
+                       <Table>
+                           <TableHeader>
+                               <TableRow>
+                                   <TableHead>Student</TableHead>
+                                   <TableHead>Enrolled Date</TableHead>
+                                   <TableHead className="w-[300px]">Progress</TableHead>
+                               </TableRow>
+                           </TableHeader>
+                           <TableBody>
+                               {students.map((student) => (
+                                   <TableRow key={student.id}>
+                                       <TableCell>
+                                           <div className="flex items-center gap-3">
+                                               {student.image ? (
+                                                   <img src={student.image} alt={student.name || ""} className="w-8 h-8 rounded-full" />
+                                               ) : (
+                                                   <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500">
+                                                       {student.name?.charAt(0) || "U"}
+                                                   </div>
+                                               )}
+                                               <div>
+                                                   <div className="font-medium text-slate-900 dark:text-slate-100">{student.name}</div>
+                                                   <div className="text-xs text-slate-500">{student.email}</div>
+                                               </div>
+                                           </div>
+                                       </TableCell>
+                                       <TableCell>
+                                           {new Date(student.enrolledAt).toLocaleDateString()}
+                                       </TableCell>
+                                       <TableCell>
+                                           <div className="space-y-1">
+                                                <div className="flex justify-between text-xs">
+                                                    <span>{student.progress}%</span>
+                                                    <span className="text-slate-500">{student.completedItems} / {student.totalItems} items</span>
+                                                </div>
+                                                <Progress value={student.progress} className="h-2" />
+                                           </div>
+                                       </TableCell>
+                                   </TableRow>
+                               ))}
+                           </TableBody>
+                       </Table>
+                   </div>
+               )}
+            </CardContent>
           </Card>
         </TabsContent>
       </Tabs>

@@ -6,6 +6,7 @@ import { eq, asc, and } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar-aceternity";
 import { SidebarUserProfile } from "../components/SidebarUserProfile";
+import { Progress } from "@/components/ui/progress";
 
 
 export default async function CourseLayout({
@@ -91,6 +92,23 @@ export default async function CourseLayout({
                     {course.title}
                   </span>
                </div>
+               
+               {/* Progress Bar */}
+               {completedContentIds.size > 0 && (() => {
+                  let totalContent = 0;
+                  courseModules.forEach(m => totalContent += m.content.length);
+                  const percentage = totalContent > 0 ? Math.round((completedContentIds.size / totalContent) * 100) : 0;
+                  
+                  return (
+                      <div className="flex flex-col gap-1 mt-1">
+                          <div className="flex justify-between text-xs text-neutral-500">
+                              <span>Progress</span>
+                              <span>{percentage}%</span>
+                          </div>
+                          <Progress value={percentage} className="h-1.5" />
+                      </div>
+                  )
+               })()}
             </div>
             
             <div className="flex flex-col gap-6">

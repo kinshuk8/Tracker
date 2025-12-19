@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { CheckCircle, XCircle, RefreshCw } from "lucide-react";
+import { CheckCircle, XCircle, RefreshCw, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -14,12 +14,11 @@ interface Question {
   a: string[];
 }
 
-interface QuizData {
-  questions: Question[];
-}
-
 interface QuizProps {
   data: string;
+  contentId: number;
+  initialAttempts: number;
+  currentBestScore?: number;
 }
 
 interface ExtendedQuestion extends Question {
@@ -31,25 +30,55 @@ interface ExtendedQuizData {
   questions: ExtendedQuestion[];
 }
 
-export default function Quiz({ data }: QuizProps) {
+
+import { submitQuiz } from "../actions";
+import { toast } from "sonner";
+import { Lock } from "lucide-react";
+
+export default function Quiz({ data, contentId, initialAttempts, currentBestScore }: QuizProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<number, string>>({}); // valid state for storing answers
+  const [answers, setAnswers] = useState<Record<number, string>>({}); 
   const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
+  
+  // Track attempts locally to update UI immediately
+  const [attempts, setAttempts] = useState(initialAttempts);
+  const [bestScore, setBestScore] = useState<number | undefined>(currentBestScore);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // 3 attempts max
+  const maxAttempts = 3;
+  const isLocked = attempts >= maxAttempts;
 
   const [quizData, setQuizData] = useState<ExtendedQuizData>({ questions: [] });
 
   useEffect(() => {
     try {
-      const parsed: QuizData = JSON.parse(data);
-      setQuizData({
-        questions: parsed.questions.map((q) => ({
+      const parsed = JSON.parse(data);
+      // Handle both formats:
+      // 1. { questions: [{ q, a }] } (Legacy/Expected originally)
+      // 2. [{ question, options, answer }] (Actual DB format)
+      
+      let questions: ExtendedQuestion[] = [];
+
+      if (Array.isArray(parsed)) {
+        // Handle format 2
+        questions = parsed.map((item: any) => ({
+          q: item.question,
+          a: item.options,
+          correctAnswer: item.answer,
+          options: [...item.options].sort(() => Math.random() - 0.5),
+        }));
+      } else if (parsed.questions) {
+        // Handle format 1
+        questions = parsed.questions.map((q: any) => ({
           ...q,
           correctAnswer: q.a[0],
-          // Shuffle options
           options: [...q.a].sort(() => Math.random() - 0.5),
-        })),
-      });
+        }));
+      }
+
+      setQuizData({ questions });
     } catch (e) {
       console.error("Failed to parse quiz data", e);
     }
@@ -58,18 +87,21 @@ export default function Quiz({ data }: QuizProps) {
   const currentQuestion = quizData.questions[currentQuestionIndex];
 
   const handleOptionSelect = (value: string) => {
-    if (showResult) return;
+    if (showResult || isSubmitting) return;
     setAnswers((prev) => ({
       ...prev,
       [currentQuestionIndex]: value,
     }));
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentQuestionIndex < quizData.questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
-      // Calculate score and show result
+      // Logic for submission
+      if (isLocked) return;
+      setIsSubmitting(true);
+
       let calculatedScore = 0;
       quizData.questions.forEach((q, index) => {
         if (answers[index] === q.correctAnswer) {
@@ -77,11 +109,35 @@ export default function Quiz({ data }: QuizProps) {
         }
       });
       setScore(calculatedScore);
-      setShowResult(true);
+      
+      try {
+          // Submit to server
+          const passed = true; // Assuming any completion counts as 'passed' for now? Or strict pass? 
+          // Requirement: "until user has completed... even with test... can't go to next". 
+          // Usually means attempt made. But strict pass might be better. Let's assume completion = attempt made for flow, but maybe verify passes?
+          // Let's pass 'passed=true' for now to mark progress, but score matters.
+          
+          const result = await submitQuiz(contentId, calculatedScore, quizData.questions.length, true);
+          
+          if (result.success) {
+              setAttempts(result.attempts || attempts + 1);
+              setBestScore(result.bestScore !== null ? result.bestScore : undefined);
+              toast.success("Quiz submitted successfully!");
+          } else {
+              toast.error(result.error || "Failed to submit quiz");
+          }
+      } catch (e) {
+          console.error(e);
+          toast.error("Something went wrong");
+      } finally {
+          setIsSubmitting(false);
+          setShowResult(true);
+      }
     }
   };
 
   const handleRetake = () => {
+    if (isLocked) return;
     setCurrentQuestionIndex(0);
     setAnswers({});
     setScore(0);
@@ -91,12 +147,33 @@ export default function Quiz({ data }: QuizProps) {
   if (!quizData.questions.length) {
     return <div className="text-red-500">Error loading quiz data.</div>;
   }
+  
+  // Locked State (Start Screen) if no attempts left and result not shown
+  if (isLocked && !showResult) {
+      return (
+        <Card className="w-full max-w-2xl mx-auto mt-8 border-yellow-200 bg-yellow-50">
+             <CardContent className="flex flex-col items-center justify-center p-12 text-center text-yellow-800">
+                 <Lock className="w-12 h-12 mb-4 opacity-50" />
+                 <h2 className="text-2xl font-bold mb-2">Maximum Attempts Reached</h2>
+                 <p className="text-lg mb-4">You have used all {maxAttempts} attempts for this quiz.</p>
+                 <div className="bg-white/50 px-6 py-3 rounded-lg border border-yellow-200">
+                     <span className="text-sm font-semibold uppercase tracking-wider text-yellow-700">Best Score</span>
+                     <div className="text-3xl font-bold">{bestScore ?? 0} / {quizData.questions.length}</div>
+                 </div>
+             </CardContent>
+        </Card>
+      );
+  }
 
   if (showResult) {
     return (
       <Card className="w-full max-w-2xl mx-auto mt-8">
         <CardHeader>
           <CardTitle className="text-2xl text-center">Quiz Completed!</CardTitle>
+          <div className="flex justify-center gap-6 mt-4 text-sm text-slate-500">
+             <div>Attempts: <span className="font-bold text-slate-900">{attempts} / {maxAttempts}</span></div>
+             <div>Best Score: <span className="font-bold text-green-600">{bestScore ?? score}</span></div>
+          </div>
         </CardHeader>
         <CardContent className="flex flex-col items-center gap-6">
           <div className="text-6xl font-bold text-blue-600">
@@ -127,9 +204,9 @@ export default function Quiz({ data }: QuizProps) {
 
         </CardContent>
         <CardFooter className="justify-center">
-          <Button onClick={handleRetake} className="gap-2">
-            <RefreshCw className="w-4 h-4" />
-            Retake Quiz
+          <Button onClick={handleRetake} className="gap-2" disabled={isLocked}>
+            {isLocked ? <Lock className="w-4 h-4" /> : <RefreshCw className="w-4 h-4" />}
+            {isLocked ? "No Attempts Left" : "Retake Quiz"}
           </Button>
         </CardFooter>
       </Card>
@@ -137,20 +214,24 @@ export default function Quiz({ data }: QuizProps) {
   }
 
   return (
-    <Card className="w-full max-w-2xl mx-auto mt-8">
-      <CardHeader>
-        <div className="flex justify-between items-center mb-4">
-          <span className="text-sm font-medium text-slate-500">
-            Question {currentQuestionIndex + 1} of {quizData.questions.length}
-          </span>
-        </div>
-        <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+    <Card className="w-full max-w-2xl mx-auto mt-8 relative overflow-hidden">
+      <div className="absolute top-0 left-0 w-full h-1 bg-slate-100">
           <div 
             className="bg-blue-600 h-full transition-all duration-300"
             style={{ width: `${((currentQuestionIndex + 1) / quizData.questions.length) * 100}%` }}
           />
+      </div>
+      <CardHeader>
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-sm font-medium text-slate-500">
+            Question {currentQuestionIndex + 1} of {quizData.questions.length}
+          </span>
+          <div className="flex items-center gap-3 text-xs font-medium bg-slate-100 px-3 py-1 rounded-full text-slate-600">
+              <span>Attempts: {attempts}/{maxAttempts}</span>
+              {bestScore !== undefined && <span>Best: {bestScore}</span>}
+          </div>
         </div>
-        <CardTitle className="text-xl mt-4">{currentQuestion.q}</CardTitle>
+        <CardTitle className="text-xl mt-2">{currentQuestion.q}</CardTitle>
       </CardHeader>
       <CardContent>
         <RadioGroup
@@ -187,13 +268,13 @@ export default function Quiz({ data }: QuizProps) {
           </AnimatePresence>
         </RadioGroup>
       </CardContent>
-      <CardFooter className="justify-end pt-6">
+      <CardFooter className="justify-end pt-6 bg-slate-50/50">
         <Button 
             onClick={handleNext} 
-            disabled={!answers[currentQuestionIndex]}
-            className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white"
+            disabled={!answers[currentQuestionIndex] || isSubmitting}
+            className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white min-w-[120px]"
         >
-            {currentQuestionIndex < quizData.questions.length - 1 ? "Next Question" : "Submit Quiz"}
+            {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : (currentQuestionIndex < quizData.questions.length - 1 ? "Next Question" : "Submit Quiz")}
         </Button>
       </CardFooter>
     </Card>

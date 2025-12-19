@@ -93,6 +93,7 @@ export function S3Resource({ src, title, courseId, contentId }: S3ResourceProps)
                 controls 
                 className="w-full h-full" 
                 controlsList="nodownload"
+                onContextMenu={(e) => e.preventDefault()}
                 onEnded={handleVideoEnded}
             >
                 Your browser does not support the video tag.

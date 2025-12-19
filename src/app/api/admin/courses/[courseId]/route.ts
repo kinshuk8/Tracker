@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { courses, modules, days, content } from "@/db/schema";
+import { courses, modules, days, content, userProgress, enrollments, payments } from "@/db/schema";
 import { eq, inArray } from "drizzle-orm";
 
 // GET: Fetch full course hierarchy
@@ -189,7 +189,63 @@ export async function DELETE(
       const { courseId } = await params;
       const id = parseInt(courseId);
   
-      await db.delete(courses).where(eq(courses.id, id));
+      await db.transaction(async (tx) => {
+          // 1. Gather Dependencies
+          const courseModules = await tx.query.modules.findMany({
+              where: eq(modules.courseId, id),
+              with: {
+                  content: true,
+                  days: {
+                      with: {
+                          content: true
+                      }
+                  }
+              }
+          });
+
+          const moduleIds = courseModules.map(m => m.id);
+          const dayIds = courseModules.flatMap(m => m.days.map(d => d.id));
+          
+          const distinctContentIds = new Set<number>();
+          courseModules.forEach(m => {
+              m.content.forEach(c => distinctContentIds.add(c.id));
+              m.days.forEach(d => {
+                  d.content.forEach(c => distinctContentIds.add(c.id));
+              });
+          });
+          const contentIds = Array.from(distinctContentIds);
+
+          // 2. Delete Dependencies from bottom up
+
+          // A. User Progress
+          if (contentIds.length > 0) {
+              await tx.delete(userProgress).where(inArray(userProgress.contentId, contentIds));
+          }
+
+          // B. Content
+          if (contentIds.length > 0) {
+               await tx.delete(content).where(inArray(content.id, contentIds));
+          }
+
+          // C. Days
+          if (dayIds.length > 0) {
+              await tx.delete(days).where(inArray(days.id, dayIds));
+          }
+
+          // D. Modules
+          if (moduleIds.length > 0) {
+              await tx.delete(modules).where(inArray(modules.id, moduleIds));
+          }
+
+          // E. Enrollments
+          await tx.delete(enrollments).where(eq(enrollments.courseId, id));
+
+          // F. Payments (Unlink instead of delete for financial records)
+          await tx.update(payments).set({ courseId: null }).where(eq(payments.courseId, id));
+
+          // G. Finally Course
+          await tx.delete(courses).where(eq(courses.id, id));
+      });
   
       return NextResponse.json({ success: true });
     } catch (error) {
