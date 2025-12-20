@@ -120,12 +120,31 @@ export async function PUT(
           const moduleIds = existingModules.map(m => m.id);
           const dayIds = existingModules.flatMap(m => m.days.map(d => d.id));
 
-          // 2. Delete Content (linked to modules or days)
+          // 2. Delete Content Dependencies (User Progress) & Content
           if (moduleIds.length > 0) {
-              await tx.delete(content).where(inArray(content.moduleId, moduleIds));
+              const moduleContent = await tx.query.content.findMany({
+                  where: inArray(content.moduleId, moduleIds),
+              });
+              const moduleContentIds = moduleContent.map(c => c.id);
+
+              if (moduleContentIds.length > 0) {
+                  await tx.delete(userProgress).where(inArray(userProgress.contentId, moduleContentIds));
+                  await tx.delete(content).where(inArray(content.id, moduleContentIds)); // Delete content explicitly to be safe
+              }
+              // Original logic had just delete content by moduleId, but safer to do by ID after progress delete
+              // await tx.delete(content).where(inArray(content.moduleId, moduleIds)); 
           }
           if (dayIds.length > 0) {
-              await tx.delete(content).where(inArray(content.dayId, dayIds));
+             const dayContent = await tx.query.content.findMany({
+                  where: inArray(content.dayId, dayIds),
+              });
+              const dayContentIds = dayContent.map(c => c.id);
+
+              if (dayContentIds.length > 0) {
+                   await tx.delete(userProgress).where(inArray(userProgress.contentId, dayContentIds));
+                   await tx.delete(content).where(inArray(content.id, dayContentIds));
+              }
+              // await tx.delete(content).where(inArray(content.dayId, dayIds));
           }
 
           // 3. Delete Days
