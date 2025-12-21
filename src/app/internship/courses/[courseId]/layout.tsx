@@ -7,6 +7,7 @@ import { notFound } from "next/navigation";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar-aceternity";
 import { SidebarUserProfile } from "../components/SidebarUserProfile";
 import { Progress } from "@/components/ui/progress";
+import { CourseContentSidebar } from "../components/CourseContentSidebar";
 
 
 export default async function CourseLayout({
@@ -43,11 +44,18 @@ export default async function CourseLayout({
     with: {
       content: {
         orderBy: asc(content.order),
+      },
+      days: {
+        orderBy: asc(modules.order),
+        with: {
+            content: {
+                orderBy: asc(content.order),
+            }
+        }
       }
     }
   });
 
-  // Fetch user progress
   // Fetch user progress
   const { auth } = await import("@/lib/auth");
   const { headers } = await import("next/headers");
@@ -74,6 +82,20 @@ export default async function CourseLayout({
     }
   }
 
+  // Cast to a Type that matches our prop (Drizzle Relation Types can be tricky to infer perfectly without explicit types)
+  const formattedModules = courseModules.map(m => ({
+     id: m.id,
+     title: m.title,
+     days: m.days.map(d => ({
+        id: d.id,
+        title: d.title,
+        moduleId: d.moduleId,
+        content: d.content
+     })),
+     // Filter out content that is already assigned to a day
+     content: m.content.filter(c => c.dayId === null)
+  }));
+
   return (
     <div className="flex flex-col md:flex-row h-screen w-full overflow-hidden bg-slate-50">
       <Sidebar animate={false}>
@@ -96,7 +118,10 @@ export default async function CourseLayout({
                {/* Progress Bar */}
                {completedContentIds.size > 0 && (() => {
                   let totalContent = 0;
-                  courseModules.forEach(m => totalContent += m.content.length);
+                  courseModules.forEach(m => {
+                      totalContent += m.content.length;
+                      m.days.forEach(d => totalContent += d.content.length);
+                  });
                   const percentage = totalContent > 0 ? Math.round((completedContentIds.size / totalContent) * 100) : 0;
                   
                   return (
@@ -112,36 +137,11 @@ export default async function CourseLayout({
             </div>
             
             <div className="flex flex-col gap-6">
-              {courseModules.map((module) => (
-                <div key={module.id} className="flex flex-col gap-2">
-                  <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-wider px-2">
-                    {module.title}
-                  </h3>
-                  <div className="flex flex-col gap-1">
-                    {module.content.map((item) => {
-                      const isCompleted = completedContentIds.has(item.id);
-                      return (
-                        <SidebarLink
-                          key={item.id}
-                          link={{
-                            label: item.title,
-                            href: `/internship/courses/${courseId}/${item.id}`,
-                            icon: isCompleted ? (
-                              <CheckCircle className="h-4 w-4 shrink-0 text-green-600" />
-                            ) : item.type === "video" ? (
-                              <Video className="h-4 w-4 shrink-0" />
-                            ) : item.type === "test" ? (
-                              <FileText className="h-4 w-4 shrink-0" />
-                            ) : (
-                              <BookOpen className="h-4 w-4 shrink-0" />
-                            ),
-                          }}
-                        />
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
+                <CourseContentSidebar 
+                    modules={formattedModules} 
+                    courseId={courseId} 
+                    completedContentIds={completedContentIds} 
+                />
             </div>
           </div>
           
