@@ -6,6 +6,7 @@ import {
   Library,
   LogOut,
   CreditCard,
+  TicketPercent,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -54,6 +55,13 @@ export default async function AdminLayout({
       href: "/admin/s3files",
       icon: (
         <Library className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      ),
+    },
+    {
+      label: "Coupons",
+      href: "/admin/coupons",
+      icon: (
+        <TicketPercent className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
     },
     {

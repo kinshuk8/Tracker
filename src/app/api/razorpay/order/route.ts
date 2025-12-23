@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import Razorpay from "razorpay";
+import { db } from "@/db";
+import { coupons, coursePlans, enrollments, courses } from "@/db/schema";
+import { eq, and } from "drizzle-orm";
+import { auth } from "@/lib/auth"; // Verify path
+import { headers } from "next/headers";
 
 export async function POST(req: NextRequest) {
   const razorpay = new Razorpay({
@@ -8,7 +13,15 @@ export async function POST(req: NextRequest) {
   });
 
   try {
-    const { courseId, planId } = await req.json();
+    const session = await auth.api.getSession({
+        headers: await headers()
+    });
+
+    if (!session) {
+         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { courseId, planId, couponCode } = await req.json();
 
     if (!courseId || !planId) {
       return NextResponse.json(
@@ -17,32 +30,94 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Pricing mapping (should match data.ts)
-    const PRICING: Record<string, number> = {
-      "1_month": 199,
-      "3_months": 429,
-      "6_months": 1499,
-    };
+    let numericCourseId = Number(courseId);
 
-    const price = PRICING[planId];
+    // If ID is NaN, assume it's a slug and look it up
+    if (isNaN(numericCourseId)) {
+        const foundCourse = await db.query.courses.findFirst({
+            where: eq(courses.slug, courseId.toString()), // Force string comparison just in case
+            columns: { id: true }
+        });
 
-    if (!price) {
+        if (!foundCourse) {
+             return NextResponse.json(
+                { error: "Course not found." },
+                { status: 404 }
+             );
+        }
+        numericCourseId = foundCourse.id;
+    }
+
+    const userId = session.user.id;
+
+    // 1. DUPLICATE PURCHASE CHECK
+    const existingEnrollment = await db.query.enrollments.findFirst({
+        where: and(
+            eq(enrollments.userId, userId),
+            eq(enrollments.courseId, numericCourseId),
+            eq(enrollments.isActive, true)
+        )
+    });
+
+    if (existingEnrollment) {
+         return NextResponse.json(
+            { error: "You are already enrolled in this course." },
+            { status: 400 }
+         );
+    }
+ 
+    // 2. DYNAMIC PRICING
+    const plan = await db.query.coursePlans.findFirst({
+        where: and(
+            eq(coursePlans.courseId, numericCourseId),
+            eq(coursePlans.planType, planId),
+            eq(coursePlans.isActive, true)
+        )
+    });
+
+    if (!plan) {
         return NextResponse.json(
-            { error: "Invalid Plan ID" },
+            { error: "Invalid or inactive plan." },
             { status: 400 }
         );
     }
 
+    let price = plan.price;
+
+    // Apply Coupon
+    let discount = 0;
+    let appliedCouponCode = null;
+
+    if (couponCode) {
+      const coupon = await db.query.coupons.findFirst({
+        where: and(
+          eq(coupons.code, couponCode.toUpperCase()),
+          eq(coupons.isActive, true)
+        ),
+      });
+
+      if (coupon) {
+        discount = coupon.discountAmount;
+        appliedCouponCode = coupon.code;
+      }
+    }
+
+    let finalPrice = price - discount;
+    if (finalPrice < 1) finalPrice = 1; // Minimum 1 Rupee
+
     // Razorpay accepts amount in paise
-    const amount = price * 100;
+    const amount = finalPrice * 100;
 
     const options = {
       amount: amount,
       currency: "INR",
       receipt: `receipt_order_${Date.now()}`,
       notes: {
-        courseId: courseId.toString(),
+        courseId: numericCourseId.toString(),
         planId: planId.toString(),
+        couponCode: appliedCouponCode || "",
+        originalPrice: price.toString(),
+        discount: discount.toString(),
       },
     };
 

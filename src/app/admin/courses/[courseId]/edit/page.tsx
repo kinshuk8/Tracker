@@ -24,6 +24,7 @@ export default async function EditCoursePage({ params }: { params: Promise<{ cou
   const course = await db.query.courses.findFirst({
     where: eq(courses.id, id),
     with: {
+        plans: true,
         modules: {
           orderBy: (modules, { asc }) => [asc(modules.order)],
           with: {

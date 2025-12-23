@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { courses } from "@/db/schema";
-import { desc } from "drizzle-orm";
+import { courses, enrollments } from "@/db/schema";
+import { desc, count, eq } from "drizzle-orm";
 
 export async function GET() {
   try {
@@ -9,15 +9,27 @@ export async function GET() {
       orderBy: [desc(courses.createdAt)],
       with: {
         modules: true,
+        plans: true,
       }
     });
     
+    // 2. Fetch active enrollment counts
+    const enrollmentCounts = await db
+        .select({
+            courseId: enrollments.courseId,
+            count: count(enrollments.id)
+        })
+        .from(enrollments)
+        .where(eq(enrollments.isActive, true))
+        .groupBy(enrollments.courseId);
+
+    const countMap = new Map(enrollmentCounts.map(e => [e.courseId, e.count]));
+
     // Transform to include counts
     const coursesWithCounts = allCourses.map(course => ({
       ...course,
       modulesCount: course.modules.length,
-      // In a real app we might want to count students too via enrollments
-      studentsCount: 0 
+      studentsCount: countMap.get(course.id) || 0
     }));
 
     return NextResponse.json(coursesWithCounts);
@@ -30,13 +42,12 @@ export async function GET() {
   }
 }
 
-import { modules, days, content } from "@/db/schema";
-
+import { modules, days, content, coursePlans } from "@/db/schema";
 // ...
 
 export async function POST(request: Request) {
   try {
-    const { title, description, slug, imageUrl, modules: modulesData } = await request.json();
+    const { title, description, slug, imageUrl, modules: modulesData, plans: plansData } = await request.json();
 
     if (!title || !description || !slug) {
       return NextResponse.json(
@@ -55,7 +66,21 @@ export async function POST(request: Request) {
           imageUrl,
         }).returning();
 
-        // 2. Create nested structure if provided
+        // 2. Create Plans if provided
+        if (plansData && Array.isArray(plansData)) {
+            for (const plan of plansData) {
+                if (plan.isActive) {
+                    await tx.insert(coursePlans).values({
+                        courseId: newCourse.id,
+                        planType: plan.planType,
+                        price: plan.price,
+                        isActive: true
+                    });
+                }
+            }
+        }
+
+        // 3. Create nested structure if provided
         if (modulesData && Array.isArray(modulesData)) {
             for (const mod of modulesData) {
                 const [newMod] = await tx.insert(modules).values({

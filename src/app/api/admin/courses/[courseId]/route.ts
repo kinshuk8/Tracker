@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { courses, modules, days, content, userProgress, enrollments, payments } from "@/db/schema";
+import { courses, modules, days, content, userProgress, enrollments, payments, coursePlans } from "@/db/schema";
 import { eq, inArray } from "drizzle-orm";
 
 // GET: Fetch full course hierarchy
@@ -70,7 +70,7 @@ export async function PUT(
     const { courseId } = await params;
     const id = parseInt(courseId);
     const body = await request.json();
-    const { title, description, slug, imageUrl, modules: modulesData } = body;
+    const { title, description, slug, imageUrl, modules: modulesData, plans: plansData } = body;
 
     // Transaction to ensure atomicity
     await db.transaction(async (tx) => {
@@ -78,6 +78,25 @@ export async function PUT(
       await tx.update(courses)
         .set({ title, description, slug, imageUrl, updatedAt: new Date() })
         .where(eq(courses.id, id));
+
+      // 1.5 Update Plans
+      if (plansData && Array.isArray(plansData)) {
+          // Delete existing plans
+          await tx.delete(coursePlans).where(eq(coursePlans.courseId, id));
+          
+          // Re-insert ACTIVE plans (or all and store status, checking what frontend sends)
+          // Frontend sends all including inactive.
+          for (const plan of plansData) {
+              // Only insert if valid? Or insert all. The UI handles toggling isActive.
+              // DB schema has isActive.
+              await tx.insert(coursePlans).values({
+                  courseId: id,
+                  planType: plan.planType,
+                  price: plan.price,
+                  isActive: plan.isActive
+              });
+          }
+      }
 
       // 2. Handle Structure Sync if modules provided
       // This is tricky without existing IDs. 
@@ -256,8 +275,9 @@ export async function DELETE(
               await tx.delete(modules).where(inArray(modules.id, moduleIds));
           }
 
-          // E. Enrollments
+          // E. Enrollments & Course Plans
           await tx.delete(enrollments).where(eq(enrollments.courseId, id));
+          await tx.delete(coursePlans).where(eq(coursePlans.courseId, id));
 
           // F. Payments (Unlink instead of delete for financial records)
           await tx.update(payments).set({ courseId: null }).where(eq(payments.courseId, id));

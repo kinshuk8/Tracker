@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { ModuleList, ModuleItem } from "./ModuleList";
 import { ChevronLeft, Save, Loader2 } from "lucide-react";
@@ -57,6 +58,13 @@ interface CourseData {
   slug: string;
   imageUrl?: string;
   modules: ModuleItem[];
+  plans?: CoursePlan[];
+}
+
+interface CoursePlan {
+  planType: "1_month" | "3_months" | "6_months";
+  price: number;
+  isActive: boolean;
 }
 
 interface CourseEditorProps {
@@ -73,6 +81,11 @@ export function CourseEditor({ initialData, isEditing = false }: CourseEditorPro
       slug: "",
       imageUrl: "",
       modules: [],
+      plans: [
+        { planType: "1_month", price: 199, isActive: true }, // Default enabled 1 month
+        { planType: "3_months", price: 429, isActive: false },
+        { planType: "6_months", price: 1499, isActive: false },
+      ]
     }
   );
   const [saving, setSaving] = useState(false);
@@ -190,6 +203,77 @@ export function CourseEditor({ initialData, isEditing = false }: CourseEditorPro
                </div>
           </div>
       </div>
+      
+      <hr className="border-slate-200 dark:border-slate-800" />
+      
+      {/* PLANS CONFIGURATION */}
+      <div className="space-y-4">
+          <h2 className="text-xl font-bold">Course Plans & Pricing</h2>
+          <Card className="p-6">
+              <div className="grid gap-4">
+                  {(["1_month", "3_months", "6_months"] as const).map((planType) => {
+                      const existingPlan = course.plans?.find(p => p.planType === planType) || { planType, price: 0, isActive: false };
+                      const label = planType === "1_month" ? "1 Month" : planType === "3_months" ? "3 Months" : "6 Months";
+                      
+                      return (
+                          <div key={planType} className="flex items-center gap-4 p-4 border rounded-lg bg-slate-50 dark:bg-slate-900/50">
+                              <div className="flex items-center gap-2 min-w-[120px]">
+                                  <input 
+                                    type="checkbox"
+                                    id={`plan-${planType}`}
+                                    className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                    checked={existingPlan.isActive}
+                                    onChange={(e) => {
+                                        const newIsActive = e.target.checked;
+                                        const newPlans = [...(course.plans || [])];
+                                        const index = newPlans.findIndex(p => p.planType === planType);
+                                        if (index > -1) {
+                                            newPlans[index].isActive = newIsActive;
+                                        } else {
+                                            newPlans.push({ planType, price: 0, isActive: newIsActive });
+                                        }
+                                        setCourse({ ...course, plans: newPlans });
+                                    }}
+                                  />
+                                  <Label htmlFor={`plan-${planType}`} className="font-medium cursor-pointer">{label}</Label>
+                              </div>
+                              
+                              <div className="flex-1 flex items-center gap-2">
+                                  <Label className="text-sm text-slate-500 w-12">Price (₹)</Label>
+                                  <Input 
+                                    type="number"
+                                    min="0"
+                                    value={existingPlan.price}
+                                    onChange={(e) => {
+                                        const newPrice = parseInt(e.target.value) || 0;
+                                        const newPlans = [...(course.plans || [])];
+                                        const index = newPlans.findIndex(p => p.planType === planType);
+                                        if (index > -1) {
+                                            newPlans[index].price = newPrice;
+                                        } else {
+                                            newPlans.push({ planType, price: newPrice, isActive: false });
+                                        }
+                                        setCourse({ ...course, plans: newPlans });
+                                    }}
+                                    disabled={!existingPlan.isActive}
+                                    className="w-32"
+                                  />
+                              </div>
+                              <div className="text-sm text-slate-500">
+                                  {existingPlan.isActive ? (
+                                      <span className="text-green-600 font-medium">Active</span>
+                                  ) : (
+                                      <span className="text-slate-400">Inactive</span>
+                                  )}
+                              </div>
+                          </div>
+                      );
+                  })}
+              </div>
+          </Card>
+      </div>
+
+      <hr className="border-slate-200 dark:border-slate-800" />
 
       <hr className="border-slate-200 dark:border-slate-800" />
       

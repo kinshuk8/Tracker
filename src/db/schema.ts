@@ -64,8 +64,16 @@ export const courses = pgTable("courses", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export const coursesRelations = relations(courses, ({ many }) => ({
-  modules: many(modules),
+export const coursePlans = pgTable("course_plans", {
+  id: serial("id").primaryKey(),
+  courseId: integer("course_id").references(() => courses.id).notNull(),
+  planType: planEnum("plan_type").notNull(),
+  price: integer("price").notNull(), // IN RUPEES
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  unq: index("course_plans_course_id_plan_type_idx").on(table.courseId, table.planType),
 }));
 
 export const modules = pgTable("modules", {
@@ -80,15 +88,6 @@ export const modules = pgTable("modules", {
   orderIdx: index("modules_order_idx").on(table.order),
 }));
 
-export const modulesRelations = relations(modules, ({ one, many }) => ({
-  course: one(courses, {
-    fields: [modules.courseId],
-    references: [courses.id],
-  }),
-  days: many(days),
-  content: many(content),
-}));
-
 export const days = pgTable("days", {
   id: serial("id").primaryKey(),
   moduleId: integer("module_id").references(() => modules.id).notNull(),
@@ -97,14 +96,6 @@ export const days = pgTable("days", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
-
-export const daysRelations = relations(days, ({ one, many }) => ({
-  module: one(modules, {
-    fields: [days.moduleId],
-    references: [modules.id],
-  }),
-  content: many(content),
-}));
 
 export const content = pgTable("content", {
   id: serial("id").primaryKey(),
@@ -121,17 +112,6 @@ export const content = pgTable("content", {
   orderIdx: index("content_order_idx").on(table.order),
 }));
 
-export const contentRelations = relations(content, ({ one }) => ({
-  module: one(modules, {
-    fields: [content.moduleId],
-    references: [modules.id],
-  }),
-  day: one(days, {
-    fields: [content.dayId],
-    references: [days.id],
-  }),
-}));
-
 export const enrollments = pgTable("enrollments", {
   id: serial("id").primaryKey(),
   userId: text("user_id").references(() => users.id).notNull(),
@@ -143,17 +123,6 @@ export const enrollments = pgTable("enrollments", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
-
-export const enrollmentsRelations = relations(enrollments, ({ one }) => ({
-  user: one(users, {
-    fields: [enrollments.userId],
-    references: [users.id],
-  }),
-  course: one(courses, {
-    fields: [enrollments.courseId],
-    references: [courses.id],
-  }),
-}));
 
 export const userProgress = pgTable("user_progress", {
   id: serial("id").primaryKey(),
@@ -168,17 +137,6 @@ export const userProgress = pgTable("user_progress", {
 }, (table) => ({
   userIdIdx: index("user_progress_user_id_idx").on(table.userId),
   contentIdIdx: index("user_progress_content_id_idx").on(table.contentId),
-}));
-
-export const userProgressRelations = relations(userProgress, ({ one }) => ({
-  user: one(users, {
-    fields: [userProgress.userId],
-    references: [users.id],
-  }),
-  content: one(content, {
-    fields: [userProgress.contentId],
-    references: [content.id],
-  }),
 }));
 
 export const internshipRegistrations = pgTable("internship_registrations", {
@@ -207,6 +165,80 @@ export const payments = pgTable("payments", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
+
+export const coupons = pgTable("coupons", {
+  id: serial("id").primaryKey(),
+  code: text("code").notNull().unique(),
+  discountAmount: integer("discount_amount").notNull(), // Amount in Rupees
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// RELATIONS DEFINED LAST TO AVOID CIRCULAR DEPENDENCIES
+
+export const coursePlansRelations = relations(coursePlans, ({ one }) => ({
+  course: one(courses, {
+    fields: [coursePlans.courseId],
+    references: [courses.id],
+    relationName: "coursePlans",
+  }),
+}));
+
+export const coursesRelations = relations(courses, ({ many }) => ({
+  modules: many(modules),
+  plans: many(coursePlans, { relationName: "coursePlans" }),
+}));
+
+export const modulesRelations = relations(modules, ({ one, many }) => ({
+  course: one(courses, {
+    fields: [modules.courseId],
+    references: [courses.id],
+  }),
+  days: many(days),
+  content: many(content),
+}));
+
+export const daysRelations = relations(days, ({ one, many }) => ({
+  module: one(modules, {
+    fields: [days.moduleId],
+    references: [modules.id],
+  }),
+  content: many(content),
+}));
+
+export const contentRelations = relations(content, ({ one }) => ({
+  module: one(modules, {
+    fields: [content.moduleId],
+    references: [modules.id],
+  }),
+  day: one(days, {
+    fields: [content.dayId],
+    references: [days.id],
+  }),
+}));
+
+export const enrollmentsRelations = relations(enrollments, ({ one }) => ({
+  user: one(users, {
+    fields: [enrollments.userId],
+    references: [users.id],
+  }),
+  course: one(courses, {
+    fields: [enrollments.courseId],
+    references: [courses.id],
+  }),
+}));
+
+export const userProgressRelations = relations(userProgress, ({ one }) => ({
+  user: one(users, {
+    fields: [userProgress.userId],
+    references: [users.id],
+  }),
+  content: one(content, {
+    fields: [userProgress.contentId],
+    references: [content.id],
+  }),
+}));
 
 export const paymentsRelations = relations(payments, ({ one }) => ({
   user: one(users, {

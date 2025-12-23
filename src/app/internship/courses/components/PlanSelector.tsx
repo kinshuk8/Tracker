@@ -1,16 +1,41 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Check } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { plans } from "../data";
+import { Plan } from "../page";
 
 interface PlanSelectorProps {
   selectedPlan: string;
   onSelect: (planId: string) => void;
+  plans: Plan[];
+  loading: boolean;
 }
 
-export function PlanSelector({ selectedPlan, onSelect }: PlanSelectorProps) {
+export function PlanSelector({ selectedPlan, onSelect, plans, loading }: PlanSelectorProps) {
+  
+  if (loading) {
+      return (
+          <section>
+              <h2 className="text-2xl font-semibold mb-4">2. Select a Plan</h2>
+              <div className="flex justify-center p-8 bg-white rounded-lg border border-slate-200">
+                  <Loader2 className="animate-spin h-6 w-6 text-blue-500" />
+              </div>
+          </section>
+      );
+  }
+
+  if (plans.length === 0) {
+      return (
+          <section>
+              <h2 className="text-2xl font-semibold mb-4">2. Select a Plan</h2>
+              <div className="p-8 bg-white rounded-lg border border-slate-200 text-slate-500 text-center">
+                  No plans available for this course yet or course not selected.
+              </div>
+          </section>
+      );
+  }
+
   return (
     <section>
       <h2 className="text-2xl font-semibold mb-4">2. Select a Plan</h2>
