@@ -29,6 +29,7 @@ interface RegistrationFormProps {
 }
 
 export function RegistrationForm({ selectedCourse, selectedPlan, plans, loadingPlans }: RegistrationFormProps) {
+  const REGISTRATION_OPEN = false; // Set to true to enable
   const { data: session } = authClient.useSession();
   const router = useRouter();
   
@@ -206,6 +207,7 @@ export function RegistrationForm({ selectedCourse, selectedPlan, plans, loadingP
                   razorpay_payment_id: response.razorpay_payment_id,
                   razorpay_signature: response.razorpay_signature,
                   courseId: selectedCourse, // This also needs to be ID probably? Current verify uses ID?
+                  planId: selectedPlan,
                   userDetails: {
                     name: value.name,
                     email: value.email.toLowerCase(), 
@@ -441,6 +443,11 @@ export function RegistrationForm({ selectedCourse, selectedPlan, plans, loadingP
           </div>
 
           <div className="pt-2">
+              {!REGISTRATION_OPEN && (
+                  <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md text-yellow-800 text-sm text-center font-medium">
+                      Registrations are currently closed for this batch. Please check back later.
+                  </div>
+              )}
               <div className="flex justify-between items-center mb-2 font-medium">
                   <span className="text-slate-600">Total Amount:</span>
                   <span className="text-lg">
@@ -457,10 +464,10 @@ export function RegistrationForm({ selectedCourse, selectedPlan, plans, loadingP
               <Button
                 type="submit"
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                disabled={form.state.isSubmitting || !selectedCourse || !selectedPlan}
+                disabled={!REGISTRATION_OPEN || form.state.isSubmitting || !selectedCourse || !selectedPlan}
               >
                 {form.state.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {!selectedCourse ? "Select a Course" : !selectedPlan ? "Select a Plan" : `Pay & Register (₹${finalPrice})`}
+                {!REGISTRATION_OPEN ? "Registrations Closed" : !selectedCourse ? "Select a Course" : !selectedPlan ? "Select a Plan" : `Pay & Register (₹${finalPrice})`}
               </Button>
           </div>
         </form>

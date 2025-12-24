@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ProfileSkeleton } from "@/components/ui/skeletons";
 import { Loader2 } from "lucide-react";
 import { AvatarUpload } from "@/components/ui/avatar-upload";
+import { format } from "date-fns";
+import { Badge } from "@/components/ui/badge";
 
 const profileSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -24,9 +26,23 @@ const profileSchema = z.object({
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
+interface Enrollment {
+  id: number;
+  course: {
+    title: string;
+    slug: string;
+  };
+  plan: string;
+  startDate: string;
+  endDate: string;
+  isActive: boolean;
+}
+
 export default function ProfilePage() {
   const { data: session, isPending: isAuthPending } = authClient.useSession();
   const [isSaving, setIsSaving] = useState(false);
+  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
+  const [loadingEnrollments, setLoadingEnrollments] = useState(true);
 
   // We need to wait for session before initializing form, or update it via useEffect
   // For simplicity, we'll conditionally render the form
@@ -44,6 +60,27 @@ export default function ProfilePage() {
         imageUrl: session?.user?.image || "",
     }
   });
+
+  useEffect(() => {
+    if (session?.user) {
+        fetch("/api/user/enrollments")
+            .then(res => res.json())
+            .then(data => {
+                if (data.enrollments) setEnrollments(data.enrollments);
+            })
+            .catch(err => console.error(err))
+            .finally(() => setLoadingEnrollments(false));
+    }
+  }, [session]);
+
+  const getPlanLabel = (plan: string) => {
+      switch(plan) {
+          case "1_month": return "1 Month";
+          case "3_months": return "3 Months";
+          case "6_months": return "6 Months";
+          return plan;
+      }
+  };
 
   const onSubmit = async (data: ProfileFormValues) => {
     setIsSaving(true);
@@ -80,7 +117,8 @@ export default function ProfilePage() {
           <p className="text-muted-foreground mt-2">Manage your profile and account preferences.</p>
       </div>
 
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <div className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit)}>
         <div className="grid gap-8 md:grid-cols-3">
             {/* Left Column: Avatar & Basic Info */}
             <Card className="md:col-span-1 border-none shadow-md bg-card/80 backdrop-blur-sm">
@@ -148,6 +186,49 @@ export default function ProfilePage() {
             </Card>
         </div>
       </form>
+
+      {/* Enrollments Section */}
+      <Card className="border-none shadow-md bg-card/80 backdrop-blur-sm">
+          <CardHeader>
+              <CardTitle>My Enrollments</CardTitle>
+              <CardDescription>View your active course enrollments.</CardDescription>
+          </CardHeader>
+          <CardContent>
+              {loadingEnrollments ? (
+                  <div className="flex justify-center p-4">
+                      <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+                  </div>
+              ) : enrollments.length === 0 ? (
+                  <div className="text-center p-8 text-slate-500">
+                      No active enrollments found.
+                  </div>
+              ) : (
+                  <div className="space-y-4">
+                      {enrollments.map((enrollment) => (
+                          <div key={enrollment.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-100 gap-4">
+                              <div>
+                                  <h3 className="font-semibold text-lg">{enrollment.course.title}</h3>
+                                  <div className="flex items-center gap-2 mt-1 text-sm text-slate-600">
+                                      <Badge variant="outline" className="bg-white">
+                                          {getPlanLabel(enrollment.plan)}
+                                      </Badge>
+                                      <span>
+                                          Expires: {enrollment.endDate ? format(new Date(enrollment.endDate), "PPP") : "N/A"}
+                                      </span>
+                                  </div>
+                              </div>
+                              <div>
+                                   <Badge className={enrollment.isActive ? "bg-green-100 text-green-700 hover:bg-green-100" : "bg-red-100 text-red-700 hover:bg-red-100"}>
+                                       {enrollment.isActive ? "Active" : "Expired"}
+                                   </Badge>
+                              </div>
+                          </div>
+                      ))}
+                  </div>
+              )}
+          </CardContent>
+      </Card>
+      </div>
     </div>
   );
 }

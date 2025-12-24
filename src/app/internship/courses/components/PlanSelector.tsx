@@ -55,7 +55,14 @@ export function PlanSelector({ selectedPlan, onSelect, plans, loading }: PlanSel
               onClick={() => onSelect(plan.id)}
             >
               <CardHeader className="p-4 flex flex-row items-center justify-between space-y-0">
-                <CardTitle className="text-lg">{plan.title}</CardTitle>
+                <div className="flex flex-col">
+                    <CardTitle className="text-lg">
+                        {plan.id === "1_month" ? "1 Month Access" : 
+                         plan.id === "3_months" ? "3 Months Access" : 
+                         plan.id === "6_months" ? "6 Months Access" : plan.title}
+                    </CardTitle>
+                    <span className="text-xs text-slate-500 font-normal capitalize">{plan.title !== plan.id ? plan.title : "Internship Plan"}</span>
+                </div>
                 <span className="text-xl font-bold">₹{plan.price}</span>
               </CardHeader>
               <CardContent className="p-4 pt-0">

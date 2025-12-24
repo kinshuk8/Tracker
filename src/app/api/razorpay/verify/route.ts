@@ -11,6 +11,7 @@ export async function POST(req: NextRequest) {
       razorpay_payment_id,
       razorpay_signature,
       courseId: courseIdParam, // Rename to avoid confusion
+      planId,
       userDetails,
     } = await req.json();
 
@@ -96,17 +97,22 @@ export async function POST(req: NextRequest) {
       });
 
       if (!existingEnrollment) {
+        let durationMonths = 6;
+        if (planId === "1_month") durationMonths = 1;
+        else if (planId === "3_months") durationMonths = 3;
+        
         await db.insert(enrollments).values({
             userId: userId,
             courseId: resolvedCourseId,
-            plan: "6_months",
+            plan: (planId === "1_month" || planId === "3_months" || planId === "6_months") ? planId : "6_months",
             startDate: new Date(),
-            endDate: new Date(new Date().setMonth(new Date().getMonth() + 6)),
+            endDate: new Date(new Date().setMonth(new Date().getMonth() + durationMonths)),
             isActive: true,
             createdAt: new Date(),
             updatedAt: new Date(),
         });
       }
+
 
       return NextResponse.json({
         message: "Payment verified and enrollment created",

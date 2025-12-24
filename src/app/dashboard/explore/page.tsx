@@ -66,6 +66,15 @@ export default function ExplorePage() {
   const enrolledCourses = courses.filter(c => c.enrollment && c.enrollment.isActive);
   const availableCourses = courses.filter(c => !c.enrollment || !c.enrollment.isActive);
 
+  const getPlanLabel = (plan: string) => {
+      switch(plan) {
+          case "1_month": return "1 Month Access";
+          case "3_months": return "3 Months Access";
+          case "6_months": return "6 Months Access";
+          return "Access";
+      }
+  };
+
   return (
     <div className="container mx-auto py-6 px-4 md:py-10 md:px-8">
       <div className="mb-10">
@@ -99,12 +108,17 @@ export default function ExplorePage() {
                         <BookOpen className="h-10 w-10 text-muted-foreground" />
                       </div>
                     )}
-                    <Badge className="absolute top-2 right-2" variant="default">
-                        Enrolled
-                    </Badge>
+                    <div className="absolute top-2 right-2 flex gap-2">
+                        <Badge variant="secondary" className="bg-white/90 backdrop-blur-sm text-xs">
+                            {course.enrollment ? getPlanLabel(course.enrollment.plan) : "Enrolled"}
+                        </Badge>
+                    </div>
                   </div>
                   <CardHeader>
                     <CardTitle className="line-clamp-1">{course.title}</CardTitle>
+                    <CardDescription className="line-clamp-1 text-xs text-muted-foreground">
+                        Valid until {course.enrollment?.endDate ? new Date(course.enrollment.endDate).toLocaleDateString() : 'N/A'}
+                    </CardDescription>
                   </CardHeader>
                   <CardFooter>
                     <Button className="w-full" asChild>
