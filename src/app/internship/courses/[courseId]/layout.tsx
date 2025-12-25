@@ -44,12 +44,28 @@ export default async function CourseLayout({
     with: {
       content: {
         orderBy: asc(content.order),
+        columns: {
+           id: true,
+           title: true,
+           type: true,
+           moduleId: true,
+           dayId: true,
+           // EXCLUDE data to reduce payload size
+        }
       },
       days: {
         orderBy: asc(modules.order),
         with: {
             content: {
                 orderBy: asc(content.order),
+                columns: {
+                   id: true,
+                   title: true,
+                   type: true,
+                   moduleId: true,
+                   dayId: true,
+                   // EXCLUDE data to reduce payload size
+                }
             }
         }
       }

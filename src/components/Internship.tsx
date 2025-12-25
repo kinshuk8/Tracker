@@ -12,19 +12,19 @@ const internships = [
     icon: <BarChart3 className="h-8 w-8 text-brand-purple" />,
     title: "Power BI Internship",
     desc: "Master data visualization and business intelligence—transform raw data into actionable insights.",
-    img: "/assets/python-internship.png", // Keeping existing image path or need generic one if unavailable, sticking to current set for safety unless I know others exist
+    img: "/assets/powerbi_logo.png", 
   },
   {
     icon: <Code className="h-8 w-8 text-brand-purple" />,
     title: "Python Internship",
     desc: "Build a strong software foundation—work on automation, scripting, backend logic, and real-world Python applications.",
-    img: "/assets/python-internship.png",
+    img: "/assets/python_logo.png",
   },
   {
     icon: <Coffee className="h-8 w-8 text-brand-purple" />,
     title: "Java Internship",
     desc: "Comprehensive Java training for building robust, scalable enterprise applications and backend systems.",
-    img: "/assets/agentic-ai-internship.png", // Reusing existing asset placeholder
+    img: "/assets/java_logo.png", 
   },
 ];
 
@@ -96,6 +96,7 @@ export default function Internship() {
                         src={card.img}
                         alt={card.title}
                         fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         className="object-cover transition-transform duration-500 group-hover/card:scale-110"
                       />
                     </div>

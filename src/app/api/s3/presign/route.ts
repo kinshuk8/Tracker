@@ -23,7 +23,11 @@ export async function GET(request: Request) {
       expiresIn: PRESIGN_EXPIRES,
     });
 
-    return NextResponse.json({ key, url });
+    return NextResponse.json({ key, url }, {
+      headers: {
+        "Cache-Control": "public, max-age=840, s-maxage=840",
+      },
+    });
   } catch (error: any) {
     console.error("Error generating presigned URL:", error);
     return NextResponse.json(

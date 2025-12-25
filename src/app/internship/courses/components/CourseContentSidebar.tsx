@@ -64,6 +64,13 @@ function ModuleItem({
 }) {
   const [isOpen, setIsOpen] = useState(true);
 
+  // Check if module is completed
+  // 1. All Days must be completed
+  // 2. All Direct Content must be completed
+  const isModuleCompleted = module.days.every(day => 
+      day.content.every(c => completedContentIds.has(c.id))
+  ) && module.content.every(c => completedContentIds.has(c.id));
+
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="flex flex-col gap-2">
       <CollapsibleTrigger className="flex items-center gap-2 group cursor-pointer w-full text-left">
@@ -73,7 +80,11 @@ function ModuleItem({
           <ChevronRight className="h-4 w-4 text-neutral-500 transition-transform duration-200" />
         )}
         <h3 className="text-xs font-bold text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 uppercase tracking-wider transition-colors flex items-center gap-2">
-           <Folder className="h-3 w-3" />
+           {isModuleCompleted ? (
+              <CheckCircle className="h-3 w-3 text-green-600" />
+           ) : (
+              <Folder className="h-3 w-3" />
+           )}
            {module.title}
         </h3>
       </CollapsibleTrigger>
@@ -114,6 +125,9 @@ function DayItem({
 }) {
   const [isOpen, setIsOpen] = useState(false);
 
+  // Check if Day is completed (all content in day is completed)
+  const isDayCompleted = day.content.every(item => completedContentIds.has(item.id));
+
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="flex flex-col gap-1 ml-2 mt-2">
       <CollapsibleTrigger className="flex items-center gap-2 py-1 px-2 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors w-full text-left group">
@@ -123,7 +137,11 @@ function DayItem({
            <ChevronRight className="h-3 w-3 text-neutral-400" />
         )}
         <div className="flex items-center gap-2 text-sm font-medium text-neutral-600 dark:text-neutral-300">
-           <Calendar className="h-3 w-3" />
+           {isDayCompleted ? (
+               <CheckCircle className="h-3 w-3 text-green-600" />
+           ) : (
+               <Calendar className="h-3 w-3" />
+           )}
            {day.title}
         </div>
       </CollapsibleTrigger>

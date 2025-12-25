@@ -1,11 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { motion, Variants } from "framer-motion";
+import { motion, Variants, useMotionValue, useMotionTemplate } from "framer-motion";
 import { Button } from "./ui/button";
 import { TypewriterEffectSmooth } from "./ui/typewriter-effect";
-import { useState } from "react";
-
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -32,15 +30,16 @@ const itemVariants: Variants = {
 
 // --- Main Component ---
 export default function HeroSection() {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    setMousePosition({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    });
+    const { left, top } = e.currentTarget.getBoundingClientRect();
+    mouseX.set(e.clientX - left);
+    mouseY.set(e.clientY - top);
   };
+  
+  const background = useMotionTemplate`radial-gradient(600px circle at ${mouseX}px ${mouseY}px, rgba(59, 130, 246, 0.15), transparent 80%)`;
 
   const words = [
     { text: "Transform" },
@@ -67,10 +66,10 @@ export default function HeroSection() {
       </div>
 
       {/* Mouse-following gradient halo */}
-      <div
+      <motion.div
         className="pointer-events-none absolute inset-0 transition-opacity duration-300"
         style={{
-          background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(59, 130, 246, 0.15), transparent 80%)`,
+          background: background,
         }}
       />
 

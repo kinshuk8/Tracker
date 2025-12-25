@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { db } from "@/db";
-import { content, userProgress, users, modules } from "@/db/schema";
-import { eq, and, asc, desc, lt, gt } from "drizzle-orm";
+import { content, userProgress, users, modules, days } from "@/db/schema";
+import { eq, and, asc, desc, lt, gt, isNull } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 
@@ -36,89 +36,205 @@ export default async function ModulePage({
   })();
 
   const contentPromise = (async () => {
+     // Fetch content with its relations
      const cResult = await db.query.content.findFirst({
         where: eq(content.id, contentId),
+        with: {
+            module: {
+                with: { course: true }
+            },
+            day: true
+        }
       });
-      if (!cResult || !cResult.moduleId) return null;
-      
-      const mResult = await db.query.modules.findFirst({
-        where: eq(modules.id, cResult.moduleId),
-        with: { course: true }
-      });
-      
-      if (!mResult) return null;
-      return { ...cResult, module: mResult };
+      return cResult;
   })();
 
   const [session, contentItem] = await Promise.all([sessionPromise, contentPromise]);
 
-  if (!contentItem) {
+  if (!contentItem || !contentItem.module) {
     notFound();
   }
 
-  // --- Navigation Logic ---
-  const currentModuleOrder = contentItem.module.order;
-  const currentContentOrder = contentItem.order;
+  // --- Robust Navigation Logic ---
+  // Hierarchy: Course -> Module -> (Day -> Content) || (Content)
 
-  const [prevContentSameModule, nextContentSameModule] = await Promise.all([
-    db.query.content.findFirst({
-      where: and(
-        eq(content.moduleId, contentItem.moduleId!),
-        lt(content.order, currentContentOrder)
-      ),
-      orderBy: desc(content.order),
-    }),
-    db.query.content.findFirst({
-      where: and(
-        eq(content.moduleId, contentItem.moduleId!),
-        gt(content.order, currentContentOrder)
-      ),
-      orderBy: asc(content.order),
-    })
-  ]);
+  const currentModuleId = contentItem.moduleId!;
+  const currentDayId = contentItem.dayId;
+  const currentOrder = contentItem.order;
 
-  let prevContent = prevContentSameModule;
-  let nextContent = nextContentSameModule;
+  // Helpers to fetch single items
+  const getPrevContentInDay = async (dId: number, order: number) => {
+      return db.query.content.findFirst({
+          where: and(eq(content.dayId, dId), lt(content.order, order)),
+          orderBy: desc(content.order)
+      });
+  };
+  const getNextContentInDay = async (dId: number, order: number) => {
+      return db.query.content.findFirst({
+          where: and(eq(content.dayId, dId), gt(content.order, order)),
+          orderBy: asc(content.order)
+      });
+  };
+  
+  // For modules that have direct content (no days)
+  const getPrevContentInModuleDirect = async (mId: number, order: number) => {
+      return db.query.content.findFirst({
+          where: and(eq(content.moduleId, mId), isNull(content.dayId), lt(content.order, order)), // Assuming direct content implies dayId is null
+          orderBy: desc(content.order)
+      });
+  };
+  const getNextContentInModuleDirect = async (mId: number, order: number) => {
+      return db.query.content.findFirst({
+          where: and(eq(content.moduleId, mId), isNull(content.dayId), gt(content.order, order)),
+          orderBy: asc(content.order)
+      });
+  };
 
-  // Secondary queries only if needed
+  let prevContent = null;
+  let nextContent = null;
+
+  // 1. Find PREVIOUS Content
+  if (currentDayId) {
+      // 1a. Previous in same Day
+      prevContent = await getPrevContentInDay(currentDayId, currentOrder);
+      
+      if (!prevContent) {
+          // 1b. Last content of Previous Day in Same Module
+          const currentDay = await db.query.days.findFirst({ where: eq(days.id, currentDayId)});
+          if (currentDay) {
+              const prevDay = await db.query.days.findFirst({
+                  where: and(eq(days.moduleId, currentModuleId), lt(days.order, currentDay.order)),
+                  orderBy: desc(days.order),
+                  with: {
+                      content: { orderBy: desc(content.order), limit: 1 }
+                  }
+              });
+              if (prevDay && prevDay.content.length > 0) {
+                  prevContent = prevDay.content[0];
+              }
+          }
+      }
+  } else {
+      // No Day ID (Direct Module Content)
+      // 1c. Previous in same Module (Direct)
+      prevContent = await db.query.content.findFirst({
+        where: and(eq(content.moduleId, currentModuleId), isNull(content.dayId), lt(content.order, currentOrder)),
+        orderBy: desc(content.order)
+      });
+      
+      if (!prevContent) {
+          // 1d. Last content of Last Day in Same Module (if we treat direct content as "after" days? usually mixed is bad practice but lets assume direct is at bottom or top. 
+          // Let's assume standard flow: Days first, then Extra content or vice versa. 
+          // Actually layout.tsx separates them: Days processed then Content filtered (null dayId).
+          // So Direct Content usually comes AFTER days or is standalone.
+          // Let's check for Days in this module to find the Last Content of Last Day
+          const lastDay = await db.query.days.findFirst({
+              where: eq(days.moduleId, currentModuleId),
+              orderBy: desc(days.order),
+               with: {
+                  content: { orderBy: desc(content.order), limit: 1 }
+              }
+          });
+          if (lastDay && lastDay.content.length > 0) {
+              prevContent = lastDay.content[0];
+          }
+      }
+  }
+
+  // 1e. If still no prev content, go to Previous Module (Last Content)
   if (!prevContent) {
-    const prevModule = await db.query.modules.findFirst({
-      where: and(
-        eq(modules.courseId, contentItem.module.courseId),
-        lt(modules.order, currentModuleOrder)
-      ),
-      orderBy: desc(modules.order),
-      with: {
-        content: {
-          orderBy: desc(content.order),
-          limit: 1,
-        }
+      const prevModule = await db.query.modules.findFirst({
+          where: and(eq(modules.courseId, contentItem.module.courseId), lt(modules.order, contentItem.module.order)),
+          orderBy: desc(modules.order),
+          with: {
+              days: { orderBy: desc(days.order), with: { content: { orderBy: desc(content.order), limit: 1 } } },
+              content: { orderBy: desc(content.order), limit: 1 } // direct content
+          }
+      });
+
+      if (prevModule) {
+           // Check for direct content first (if it comes after days) OR days.
+           // This depends on "Module Structure". Let's assume Days are main, Direct is fallback or Intro.
+           // A safe bet is checking both and taking max order? But they are different tables/lists.
+           // Based on Sidebar: Days are rendered first, then Direct Content.
+           // So "Previous" from start of next module should be -> Direct Content of Prev Module -> Last Day of Prev Module.
+           
+           // Direct Content of Prev Module
+           const lastDirect = prevModule.content.find(c => c.dayId === null); // limit 1 desc gives last
+           
+           if (lastDirect) {
+               prevContent = lastDirect;
+           } else if (prevModule.days.length > 0) {
+               // Last Day Content
+               const lastDay = prevModule.days[0];
+               if (lastDay.content.length > 0) prevContent = lastDay.content[0];
+           }
       }
-    });
-    if (prevModule && prevModule.content.length > 0) {
-      prevContent = prevModule.content[0];
-    }
   }
 
-  if (!nextContent) {
-    const nextModule = await db.query.modules.findFirst({
-      where: and(
-        eq(modules.courseId, contentItem.module.courseId),
-        gt(modules.order, currentModuleOrder)
-      ),
-      orderBy: asc(modules.order),
-      with: {
-        content: {
-          orderBy: asc(content.order),
-          limit: 1,
-        }
+
+  // 2. Find NEXT Content
+  if (currentDayId) {
+       // 2a. Next in same Day
+      nextContent = await getNextContentInDay(currentDayId, currentOrder);
+      
+      if (!nextContent) {
+          // 2b. First content of Next Day in Same Module
+          const currentDay = await db.query.days.findFirst({ where: eq(days.id, currentDayId)});
+          if (currentDay) {
+              const nextDay = await db.query.days.findFirst({
+                  where: and(eq(days.moduleId, currentModuleId), gt(days.order, currentDay.order)),
+                  orderBy: asc(days.order),
+                  with: {
+                      content: { orderBy: asc(content.order), limit: 1 }
+                  }
+              });
+              if (nextDay && nextDay.content.length > 0) {
+                  nextContent = nextDay.content[0];
+              }
+          }
       }
-    });
-    if (nextModule && nextModule.content.length > 0) {
-      nextContent = nextModule.content[0];
-    }
+      
+      if (!nextContent) {
+          // 2c. Check for Direct Content in Same Module (after days)
+           const firstDirect = await db.query.content.findFirst({
+              where: and(eq(content.moduleId, currentModuleId), isNull(content.dayId)),
+              orderBy: asc(content.order)
+          });
+          if (firstDirect) nextContent = firstDirect;
+      }
+  } else {
+      // 2d. Next in same Module (Direct)
+      nextContent = await db.query.content.findFirst({
+        where: and(eq(content.moduleId, currentModuleId), isNull(content.dayId), gt(content.order, currentOrder)),
+        orderBy: asc(content.order)
+      });
   }
-  // --- End Navigation Logic ---
+
+  // 2e. If still no next content, go to Next Module (First Content)
+  if (!nextContent) {
+      const nextModule = await db.query.modules.findFirst({
+          where: and(eq(modules.courseId, contentItem.module.courseId), gt(modules.order, contentItem.module.order)),
+          orderBy: asc(modules.order),
+          with: {
+              days: { orderBy: asc(days.order), with: { content: { orderBy: asc(content.order), limit: 1 } } },
+              content: { orderBy: asc(content.order), limit: 1 }
+          }
+      });
+      
+      if (nextModule) {
+          // Prefer Days first
+          if (nextModule.days.length > 0) {
+              const firstDay = nextModule.days[0];
+              if (firstDay.content.length > 0) nextContent = firstDay.content[0];
+          }
+          // If no days, or empty days (unlikely), check direct
+          if (!nextContent) {
+               const firstDirect = nextModule.content.find(c => c.dayId === null);
+               if (firstDirect) nextContent = firstDirect;
+          }
+      }
+  }
  
   let isCompleted = false;
   let attempts = 0;
@@ -145,12 +261,6 @@ export default async function ModulePage({
       score = progress?.score || undefined;
 
       // 2. Check Module Locking
-      // Logic: If this is the START of a module (or any content in a module), 
-      // check if the immediately PREVIOUS module is completed.
-      // Optimization: Only check if we are NOT an admin/intern? (assuming regular user flow)
-      
-      // Calculate previous module ID
-      const currentModuleId = contentItem.moduleId!;
       const previousModule = await db.query.modules.findFirst({
         where: and(
           eq(modules.courseId, contentItem.module.courseId),
@@ -158,38 +268,40 @@ export default async function ModulePage({
         ),
         orderBy: desc(modules.order),
         with: {
-           content: true // finish check needs total content
+           content: true 
         }
       });
 
       if (previousModule) {
-         // Check if ALL content in previous module is completed
-         const previousModuleContentIds = previousModule.content.map(c => c.id);
-         const completedCount = await db.$count(
-            userProgress, 
-            and(
-                eq(userProgress.userId, dbUser.id),
-                eq(userProgress.isCompleted, true),
-                // inArray(userProgress.contentId, previousModuleContentIds) // Drizzle doesn't support massive arrays well sometimes, but fine here
-            )
-            // safer manual check if array issue, but let's try clean query first or
-            // simpler: fetch all progress for user for these IDs
-         );
+         // Fetch all completed IDs for previous module
+         // This check is slightly loose as it doesn't account for Days in previous module perfectly 
+         // without a deep fetch, but assuming 'modules.content' relational query might ONLY return direct content?
+         // WAIT: Drizzle 'many(content)' on modules returns ALL content linked to module usually, 
+         // BUT in standard relational setup, content has moduleId.
+         // If `content` table has `moduleId` for ALL items (even those in days), then this works.
+         // Looking at schema: `moduleId` is on content. `dayId` is also there.
+         // Ideally all content has moduleId. Let's assume that for safety.
          
-         // Actually, just fetching all completed IDs for previous module is safer
-         const completedProgress = await db.query.userProgress.findMany({
-             where: and(
-                 eq(userProgress.userId, dbUser.id),
-                 eq(userProgress.isCompleted, true)
-             ),
-             columns: { contentId: true }
+         const previousModuleContentIds = await db.query.content.findMany({
+             where: eq(content.moduleId, previousModule.id),
+             columns: { id: true }
          });
          
-         const completedSet = new Set(completedProgress.map(p => p.contentId));
-         const isPreviousModuleComplete = previousModule.content.every(c => completedSet.has(c.id));
-
-         if (!isPreviousModuleComplete) {
-             isLocked = true;
+         if (previousModuleContentIds.length > 0) {
+             const completedProgress = await db.query.userProgress.findMany({
+                 where: and(
+                     eq(userProgress.userId, dbUser.id),
+                     eq(userProgress.isCompleted, true)
+                 ),
+                 columns: { contentId: true }
+             });
+             
+             const completedSet = new Set(completedProgress.map(p => p.contentId));
+             const isPreviousModuleComplete = previousModuleContentIds.every(c => completedSet.has(c.id));
+    
+             if (!isPreviousModuleComplete) {
+                 isLocked = true;
+             }
          }
       }
     }
@@ -216,7 +328,11 @@ export default async function ModulePage({
     <div className="space-y-8 max-w-4xl mx-auto">
       <div className="flex items-center justify-between border-b border-slate-200 pb-6">
         <div>
-          <h2 className="text-sm font-medium text-blue-600 mb-1">{contentItem.module.title}</h2>
+          <h2 className="text-sm font-medium text-blue-600 mb-1">
+              {contentItem.module.title}
+              {contentItem.day && <span className="text-slate-400 mx-2">•</span>}
+              {contentItem.day && <span className="text-slate-500">{contentItem.day.title}</span>}
+          </h2>
           <h1 className="text-3xl font-bold text-slate-900">{contentItem.title}</h1>
         </div>
         <div className="flex items-center gap-2">
