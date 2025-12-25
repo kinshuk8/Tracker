@@ -7,10 +7,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { ModuleList, ModuleItem } from "./ModuleList";
-import { ChevronLeft, Save, Loader2 } from "lucide-react";
+import { ChevronLeft, Save, Loader2, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import Swal from 'sweetalert2';
 import { S3FilePicker } from "./S3FilePicker";
 
 // Helper component to render S3 images
@@ -62,7 +63,10 @@ interface CourseData {
 }
 
 interface CoursePlan {
-  planType: "1_month" | "3_months" | "6_months";
+  id?: number; // Added ID
+  planType?: string; // Legacy or optional identifier
+  title: string;
+  durationMonths: number;
   price: number;
   isActive: boolean;
 }
@@ -82,9 +86,9 @@ export function CourseEditor({ initialData, isEditing = false }: CourseEditorPro
       imageUrl: "",
       modules: [],
       plans: [
-        { planType: "1_month", price: 199, isActive: true }, // Default enabled 1 month
-        { planType: "3_months", price: 429, isActive: false },
-        { planType: "6_months", price: 1499, isActive: false },
+        { title: "1 Month Access", durationMonths: 1, price: 199, isActive: true, planType: "1_month" },
+        { title: "3 Months Access", durationMonths: 3, price: 429, isActive: false, planType: "3_months" },
+        { title: "6 Months Access", durationMonths: 6, price: 1499, isActive: false, planType: "6_months" },
       ]
     }
   );
@@ -111,10 +115,20 @@ export function CourseEditor({ initialData, isEditing = false }: CourseEditorPro
               body: JSON.stringify(course),
           });
 
+
           if (!res.ok) throw new Error("Failed to save course");
 
           const data = await res.json();
-          toast.success(`Course ${isEditing ? "updated" : "created"} successfully!`);
+          
+          await Swal.fire({
+              title: isEditing ? "Course Updated!" : "Course Created!",
+              text: "Your changes have been saved successfully.",
+              icon: "success",
+              confirmButtonText: "Awesome!",
+              confirmButtonColor: "#4f46e5", // Indigo-600
+              timer: 3000,
+              timerProgressBar: true
+          });
           
           if (!isEditing && data.id) {
               // Redirect to edit page to add modules if this was just a metadata create
@@ -209,66 +223,109 @@ export function CourseEditor({ initialData, isEditing = false }: CourseEditorPro
       {/* PLANS CONFIGURATION */}
       <div className="space-y-4">
           <h2 className="text-xl font-bold">Course Plans & Pricing</h2>
+
           <Card className="p-6">
-              <div className="grid gap-4">
-                  {(["1_month", "3_months", "6_months"] as const).map((planType) => {
-                      const existingPlan = course.plans?.find(p => p.planType === planType) || { planType, price: 0, isActive: false };
-                      const label = planType === "1_month" ? "1 Month" : planType === "3_months" ? "3 Months" : "6 Months";
-                      
-                      return (
-                          <div key={planType} className="flex items-center gap-4 p-4 border rounded-lg bg-slate-50 dark:bg-slate-900/50">
-                              <div className="flex items-center gap-2 min-w-[120px]">
+              <div className="space-y-4">
+                  {(course.plans || []).map((plan, index) => (
+                      <div key={index} className="flex flex-col sm:flex-row gap-4 p-4 border rounded-lg bg-slate-50 dark:bg-slate-900/50 relative group">
+                           {/* Remove Button */}
+                           <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="absolute top-2 right-2 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => {
+                                  const newPlans = [...(course.plans || [])];
+                                  newPlans.splice(index, 1);
+                                  setCourse({ ...course, plans: newPlans });
+                              }}
+                           >
+                              <Trash2 className="w-4 h-4" />
+                           </Button>
+
+                          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                              {/* Title */}
+                              <div className="space-y-1">
+                                  <Label className="text-xs text-slate-500">Plan Title</Label>
+                                  <Input 
+                                      value={plan.title}
+                                      onChange={(e) => {
+                                          const newPlans = [...(course.plans || [])];
+                                          newPlans[index].title = e.target.value;
+                                          setCourse({ ...course, plans: newPlans });
+                                      }}
+                                      placeholder="e.g. Monthly Access"
+                                  />
+                              </div>
+
+                              {/* Duration */}
+                              <div className="space-y-1">
+                                  <Label className="text-xs text-slate-500">Duration (Months)</Label>
+                                  <Input 
+                                      type="number"
+                                      min="1"
+                                      value={plan.durationMonths}
+                                      onChange={(e) => {
+                                          const newPlans = [...(course.plans || [])];
+                                          newPlans[index].durationMonths = parseInt(e.target.value) || 1;
+                                          setCourse({ ...course, plans: newPlans });
+                                      }}
+                                  />
+                              </div>
+
+                              {/* Price */}
+                              <div className="space-y-1">
+                                  <Label className="text-xs text-slate-500">Price (₹)</Label>
+                                  <Input 
+                                      type="number"
+                                      min="0"
+                                      value={plan.price}
+                                      onChange={(e) => {
+                                          const newPlans = [...(course.plans || [])];
+                                          newPlans[index].price = parseInt(e.target.value) || 0;
+                                          setCourse({ ...course, plans: newPlans });
+                                      }}
+                                  />
+                              </div>
+
+                              {/* Active Status */}
+                              <div className="flex items-center gap-2 pt-6">
                                   <input 
                                     type="checkbox"
-                                    id={`plan-${planType}`}
+                                    id={`plan-active-${index}`}
                                     className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                    checked={existingPlan.isActive}
+                                    checked={plan.isActive}
                                     onChange={(e) => {
-                                        const newIsActive = e.target.checked;
                                         const newPlans = [...(course.plans || [])];
-                                        const index = newPlans.findIndex(p => p.planType === planType);
-                                        if (index > -1) {
-                                            newPlans[index].isActive = newIsActive;
-                                        } else {
-                                            newPlans.push({ planType, price: 0, isActive: newIsActive });
-                                        }
+                                        newPlans[index].isActive = e.target.checked;
                                         setCourse({ ...course, plans: newPlans });
                                     }}
                                   />
-                                  <Label htmlFor={`plan-${planType}`} className="font-medium cursor-pointer">{label}</Label>
-                              </div>
-                              
-                              <div className="flex-1 flex items-center gap-2">
-                                  <Label className="text-sm text-slate-500 w-12">Price (₹)</Label>
-                                  <Input 
-                                    type="number"
-                                    min="0"
-                                    value={existingPlan.price}
-                                    onChange={(e) => {
-                                        const newPrice = parseInt(e.target.value) || 0;
-                                        const newPlans = [...(course.plans || [])];
-                                        const index = newPlans.findIndex(p => p.planType === planType);
-                                        if (index > -1) {
-                                            newPlans[index].price = newPrice;
-                                        } else {
-                                            newPlans.push({ planType, price: newPrice, isActive: false });
-                                        }
-                                        setCourse({ ...course, plans: newPlans });
-                                    }}
-                                    disabled={!existingPlan.isActive}
-                                    className="w-32"
-                                  />
-                              </div>
-                              <div className="text-sm text-slate-500">
-                                  {existingPlan.isActive ? (
-                                      <span className="text-green-600 font-medium">Active</span>
-                                  ) : (
-                                      <span className="text-slate-400">Inactive</span>
-                                  )}
+                                  <Label htmlFor={`plan-active-${index}`} className="cursor-pointer">
+                                      {plan.isActive ? <span className="text-green-600 font-medium">Active</span> : <span className="text-slate-400">Inactive</span>}
+                                  </Label>
                               </div>
                           </div>
-                      );
-                  })}
+                      </div>
+                  ))}
+
+                  <Button 
+                      variant="outline" 
+                      onClick={() => {
+                          const newPlans = [...(course.plans || [])];
+                          newPlans.push({
+                              title: "New Plan",
+                              durationMonths: 1,
+                              price: 999,
+                              isActive: true,
+                              planType: `custom_${Date.now()}` // Temporary ID
+                          });
+                          setCourse({ ...course, plans: newPlans });
+                      }}
+                      className="w-full border-dashed"
+                  >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Plan
+                  </Button>
               </div>
           </Card>
       </div>
@@ -281,6 +338,7 @@ export function CourseEditor({ initialData, isEditing = false }: CourseEditorPro
       <div className="space-y-4">
           <ModuleList 
              modules={course.modules}
+             availablePlans={course.plans || []}
              onUpdate={(modules) => setCourse({ ...course, modules })}
           />
       </div>

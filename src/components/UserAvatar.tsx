@@ -43,7 +43,11 @@ export function UserAvatar({ user, className, fallbackClassName }: UserAvatarPro
       ) : null}
       
       <AvatarFallback className={cn("bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300", fallbackClassName)}>
-        {user.name?.charAt(0) || <User className="w-4 h-4" />}
+        {user.name ? (
+            user.name.split(" ").map((n, i, arr) => (i === 0 || i === arr.length - 1) ? n[0] : "").join("").toUpperCase()
+        ) : (
+            <User className="w-4 h-4" />
+        )}
       </AvatarFallback>
     </Avatar>
   );

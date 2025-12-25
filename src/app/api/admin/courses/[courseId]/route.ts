@@ -80,106 +80,104 @@ export async function PUT(
         .where(eq(courses.id, id));
 
       // 1.5 Update Plans
+      // Map to track FrontendID (id or planType) -> OutputID (DB id)
+      const planIdMap = new Map<string | number, number>();
+      
       if (plansData && Array.isArray(plansData)) {
-          // Delete existing plans
-          await tx.delete(coursePlans).where(eq(coursePlans.courseId, id));
+          const incomingIds = plansData.filter(p => p.id).map(p => p.id);
           
-          // Re-insert ACTIVE plans (or all and store status, checking what frontend sends)
-          // Frontend sends all including inactive.
+          // Delete removed plans (careful with FKs - might throw if used)
+          // Simple strategy: Try delete, if fails log? Or assume valid.
+          // Better: Only delete if not used? 
+          // For now, let's delete those not in incomingIds (if they have IDs).
+          // fetch existing first
+          const existingPlans = await tx.query.coursePlans.findMany({ where: eq(coursePlans.courseId, id) });
+          const toDelete = existingPlans.filter(ep => !incomingIds.includes(ep.id)).map(ep => ep.id);
+          
+          if (toDelete.length > 0) {
+              await tx.delete(coursePlans).where(inArray(coursePlans.id, toDelete));
+          }
+
           for (const plan of plansData) {
-              // Only insert if valid? Or insert all. The UI handles toggling isActive.
-              // DB schema has isActive.
-              await tx.insert(coursePlans).values({
-                  courseId: id,
-                  planType: plan.planType,
-                  price: plan.price,
-                  isActive: plan.isActive
-              });
+              let savedId: number;
+              
+              if (plan.id) {
+                  // Update existing
+                  await tx.update(coursePlans).set({
+                      title: plan.title,
+                      durationMonths: plan.durationMonths,
+                      price: plan.price,
+                      isActive: plan.isActive,
+                      // planType: plan.planType // Don't persist legacy or temp planType to DB unless needed
+                  }).where(eq(coursePlans.id, plan.id));
+                  savedId = plan.id;
+              } else {
+                  // Insert new
+                  const [newPlan] = await tx.insert(coursePlans).values({
+                      courseId: id,
+                      title: plan.title,
+                      durationMonths: plan.durationMonths,
+                      price: plan.price,
+                      isActive: plan.isActive,
+                      planType: plan.planType // Optional, can store temp key if needed for debug
+                  }).returning();
+                  savedId = newPlan.id;
+              }
+              
+              // Map both ID and planType (temp key) to the real ID
+              if (plan.id) planIdMap.set(plan.id, savedId);
+              if (plan.planType) planIdMap.set(plan.planType, savedId);
           }
       }
 
-      // 2. Handle Structure Sync if modules provided
-      // This is tricky without existing IDs. 
-      // Strategy:
-      // - If we received full structure, we might need to handle it carefully.
-      // - To keep it simple for this "MVP" request: 
-      //   We will delete old structure and recreate it IF `fullSync` flag is true, 
-      //   OR we accept that this endpoint only updates metadata for now, 
-      //   and we rely on separate "create module", "create day" calls?
-      
-      // Let's implement robust metadata update + optional full sync if needed.
-      // But actually, managing IDs for children in a single JSON blob is hard.
-      // 
-      // ALTERNATIVE: The User asks "when they choose to add a course... add modules.. day wise... after they're done, updated in database".
-      // This suggests a "Form" style submission.
-      //
-      // Let's support a "Full Replace" strategy for the structure for simplicity of this specifc prompt.
-      // Warning: This resets IDs which breaks UserProgress. 
-      // 
-      // REVISED STRATEGY:
-      // We will assume the frontend sends separate API calls for adding items,
-      // OR we implement a smart update.
-      //
-      // Let's stick to Metadata Update Only for GET/PUT on root course level for now.
-      // We'll Create separate routes or handle children in a smart way if the user insists on one big save.
-      // 
-      // User said: "after they're done ... updated in database".
-      // Let's try to do it:
-      
+      // 2. Handle Structure Sync
       if (modulesData && Array.isArray(modulesData)) {
           // Full Structure Replace Strategy
-          // 1. Fetch existing structure to handle cascade delete manually
+          // (Same logic as before but with planIds mapping)
+          
           const existingModules = await tx.query.modules.findMany({
              where: eq(modules.courseId, id),
-             with: {
-                 days: true 
-             }
+             with: { days: true }
           });
-
           const moduleIds = existingModules.map(m => m.id);
           const dayIds = existingModules.flatMap(m => m.days.map(d => d.id));
 
-          // 2. Delete Content Dependencies (User Progress) & Content
+          // Cleanup old content...
           if (moduleIds.length > 0) {
-              const moduleContent = await tx.query.content.findMany({
-                  where: inArray(content.moduleId, moduleIds),
-              });
+              const moduleContent = await tx.query.content.findMany({ where: inArray(content.moduleId, moduleIds) });
               const moduleContentIds = moduleContent.map(c => c.id);
-
               if (moduleContentIds.length > 0) {
                   await tx.delete(userProgress).where(inArray(userProgress.contentId, moduleContentIds));
-                  await tx.delete(content).where(inArray(content.id, moduleContentIds)); // Delete content explicitly to be safe
+                  await tx.delete(content).where(inArray(content.id, moduleContentIds));
               }
-              // Original logic had just delete content by moduleId, but safer to do by ID after progress delete
-              // await tx.delete(content).where(inArray(content.moduleId, moduleIds)); 
           }
           if (dayIds.length > 0) {
-             const dayContent = await tx.query.content.findMany({
-                  where: inArray(content.dayId, dayIds),
-              });
-              const dayContentIds = dayContent.map(c => c.id);
-
-              if (dayContentIds.length > 0) {
-                   await tx.delete(userProgress).where(inArray(userProgress.contentId, dayContentIds));
-                   await tx.delete(content).where(inArray(content.id, dayContentIds));
-              }
-              // await tx.delete(content).where(inArray(content.dayId, dayIds));
+             const dayContent = await tx.query.content.findMany({ where: inArray(content.dayId, dayIds) });
+             const dayContentIds = dayContent.map(c => c.id);
+             if (dayContentIds.length > 0) {
+                  await tx.delete(userProgress).where(inArray(userProgress.contentId, dayContentIds));
+                  await tx.delete(content).where(inArray(content.id, dayContentIds));
+             }
           }
 
-          // 3. Delete Days
-          if (moduleIds.length > 0) {
-              await tx.delete(days).where(inArray(days.moduleId, moduleIds));
-          }
-
-          // 4. Delete Modules
+          if (moduleIds.length > 0) await tx.delete(days).where(inArray(days.moduleId, moduleIds));
           await tx.delete(modules).where(eq(modules.courseId, id));
 
-          // 5. Re-insert
+          // Re-insert
           for (const mod of modulesData) {
+              // Resolve Plan IDs
+              let resolvedPlanIds: number[] = [];
+              if (mod.planIds && Array.isArray(mod.planIds)) {
+                  resolvedPlanIds = mod.planIds
+                      .map((rawId: string | number) => planIdMap.get(rawId))
+                      .filter((id: number | undefined): id is number => id !== undefined);
+              }
+
               const [newMod] = await tx.insert(modules).values({
                   courseId: id,
                   title: mod.title,
-                  order: mod.order
+                  order: mod.order,
+                  planIds: resolvedPlanIds // Save the resolved integer array
               }).returning();
 
               if (mod.days && Array.isArray(mod.days)) {
@@ -193,7 +191,7 @@ export async function PUT(
                       if (day.content && Array.isArray(day.content)) {
                           for (const item of day.content) {
                               await tx.insert(content).values({
-                                  moduleId: newMod.id, // Keep linking to module if needed
+                                  moduleId: newMod.id,
                                   dayId: newDay.id,
                                   title: item.title,
                                   type: item.type,

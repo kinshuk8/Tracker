@@ -87,7 +87,7 @@ export default async function ServicePage({
                 </div>
 
                 <div className="pt-8">
-                     <Button size="lg" className="bg-brand-purple hover:bg-brand-purple/90 text-white shadow-lg shadow-brand-purple/25 text-lg px-8 h-12 rounded-full">
+                     <Button size="lg" className="bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-200 text-white dark:text-black shadow-lg shadow-slate-900/20 text-lg px-8 h-12 rounded-full">
                          Book a Consultation
                      </Button>
                 </div>

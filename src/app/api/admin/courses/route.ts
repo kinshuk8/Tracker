@@ -66,27 +66,46 @@ export async function POST(request: Request) {
           imageUrl,
         }).returning();
 
-        // 2. Create Plans if provided
+        // 1.5 Create Plans & user Map
+        const planIdMap = new Map<string, number>();
+        
         if (plansData && Array.isArray(plansData)) {
             for (const plan of plansData) {
-                if (plan.isActive) {
-                    await tx.insert(coursePlans).values({
-                        courseId: newCourse.id,
-                        planType: plan.planType,
-                        price: plan.price,
-                        isActive: true
-                    });
-                }
+                // Insert all plans provided (or just active? PREVIOUS logic said 'if plan.isActive'. Sticking to that or better save all?)
+                // Previous logic only saved active. Let's stick to that to minimize change risk, or save all?
+                // CourseEditor sends all. If I only save active, I lose inactive drafts. 
+                // Better to save all if UI allows managing status.
+                // But the previous implementations filtered `if (plan.isActive)`. 
+                // I will save ALL, because `CoursePlans` table has `isActive` column.
+                
+                const [newPlan] = await tx.insert(coursePlans).values({
+                    courseId: newCourse.id,
+                    title: plan.title,
+                    durationMonths: plan.durationMonths,
+                    planType: plan.planType, // This holds generic key if new
+                    price: plan.price,
+                    isActive: plan.isActive ?? true // Default true
+                }).returning();
+                
+                if (plan.planType) planIdMap.set(plan.planType, newPlan.id);
             }
         }
 
         // 3. Create nested structure if provided
         if (modulesData && Array.isArray(modulesData)) {
             for (const mod of modulesData) {
+                let resolvedPlanIds: number[] = [];
+                if (mod.planIds && Array.isArray(mod.planIds)) {
+                     resolvedPlanIds = mod.planIds
+                        .map((rawId: string | number) => planIdMap.get(String(rawId)))
+                        .filter((id: number | undefined): id is number => id !== undefined);
+                }
+
                 const [newMod] = await tx.insert(modules).values({
                     courseId: newCourse.id,
                     title: mod.title,
-                    order: mod.order
+                    order: mod.order,
+                    planIds: resolvedPlanIds
                 }).returning();
 
                 if (mod.days && Array.isArray(mod.days)) {

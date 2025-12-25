@@ -9,9 +9,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-  SidebarSeparator,
 } from "@/components/ui/sidebar";
-import { User, Compass, LogOut, Home } from "lucide-react";
+import { User, Compass, LogOut, Home, GalleryVerticalEnd, ChevronsUpDown } from "lucide-react";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
@@ -22,7 +21,6 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { ChevronsUpDown } from "lucide-react";
 
 
 export function AppSidebar() {
@@ -59,72 +57,66 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader>
+      <SidebarHeader className="py-6 group-data-[collapsible=icon]:!py-4">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
+            <SidebarMenuButton size="lg" asChild className="hover:bg-sidebar-accent/50 transition-colors group-data-[collapsible=icon]:!p-0 group-data-[collapsible=icon]:!justify-center">
               <Link href="#">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <Image
-                    src="/assets/company-logo.svg"
-                    width={32}
-                    height={32}
-                    alt="Logo"
-                    className="size-6"
-                  />
+                <div className="flex aspect-square size-10 items-center justify-center rounded-lg text-sidebar-primary-foreground bg-sidebar-primary">
+                  <GalleryVerticalEnd className="size-6" />
                 </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">Edge Mind</span>
-                  <span className="truncate text-xs">Solutions</span>
+                <div className="grid flex-1 text-left text-sm leading-tight pl-3 group-data-[collapsible=icon]:hidden">
+                  <span className="truncate font-bold text-base">Edge Mind</span>
+                  <span className="truncate text-xs opacity-70">Solutions</span>
                 </div>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent>
-        <SidebarMenu>
+      <SidebarContent className="px-4 py-4 group-data-[collapsible=icon]:!p-0">
+        <SidebarMenu className="space-y-3 group-data-[collapsible=icon]:space-y-2 group-data-[collapsible=icon]:items-center">
           {links.map((item) => (
             <SidebarMenuItem key={item.label}>
-              <SidebarMenuButton asChild tooltip={item.label}>
-                <Link href={item.href}>
-                  <item.icon />
-                  <span>{item.label}</span>
+              <SidebarMenuButton asChild tooltip={item.label} className="h-12 px-4 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all rounded-xl group-data-[collapsible=icon]:!size-10 group-data-[collapsible=icon]:!p-0 group-data-[collapsible=icon]:justify-center">
+                <Link href={item.href} className="flex items-center gap-4">
+                  <item.icon className="w-6 h-6 opacity-70 group-data-[collapsible=icon]:!w-6 group-data-[collapsible=icon]:!h-6" />
+                  <span className="font-medium text-base group-data-[collapsible=icon]:hidden">{item.label}</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
       </SidebarContent>
-      <SidebarFooter>
+      <SidebarFooter className="p-4 pb-6 group-data-[collapsible=icon]:!p-2">
         <SidebarMenu>
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton
                   size="lg"
-                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground h-14 rounded-xl border border-transparent hover:border-slate-200 dark:hover:border-slate-800 transition-all group-data-[collapsible=icon]:!size-10 group-data-[collapsible=icon]:!p-0 group-data-[collapsible=icon]:justify-center"
                 >
                     {session?.user?.image ? (
                         <Image
                         src={session.user.image}
-                        className="h-8 w-8 rounded-lg"
-                        width={32}
-                        height={32}
+                        className="h-9 w-9 rounded-full object-cover border border-slate-200 dark:border-slate-700"
+                        width={36}
+                        height={36}
                         alt="Avatar"
                         />
                     ) : (
-                        <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center text-xs font-bold">
+                        <div className="h-9 w-9 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xs font-bold border border-indigo-200 dark:border-indigo-800">
                              {session?.user?.name 
-                                ? session.user.name.split(" ").map((n) => n[0]).join("").substring(0, 2).toUpperCase() 
+                                ? session.user.name.split(" ").map((n, i, arr) => (i === 0 || i === arr.length - 1) ? n[0] : "").join("").toUpperCase() 
                                 : "U"}
                         </div>
                     )}
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">{session?.user?.name || "User"}</span>
-                    <span className="truncate text-xs">{session?.user?.email || ""}</span>
+                  <div className="grid flex-1 text-left text-sm leading-tight pl-2">
+                    <span className="truncate font-semibold text-slate-900 dark:text-slate-100">{session?.user?.name || "User"}</span>
+                    <span className="truncate text-xs text-slate-500">{session?.user?.email || ""}</span>
                   </div>
-                  <ChevronsUpDown className="ml-auto size-4" />
+                  <ChevronsUpDown className="ml-auto size-4 opacity-50" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent
@@ -146,4 +138,3 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
-

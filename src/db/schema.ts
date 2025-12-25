@@ -67,19 +67,27 @@ export const courses = pgTable("courses", {
 export const coursePlans = pgTable("course_plans", {
   id: serial("id").primaryKey(),
   courseId: integer("course_id").references(() => courses.id).notNull(),
-  planType: planEnum("plan_type").notNull(),
+  title: text("title").notNull().default("Monthly Plan"), // Default for migration
+  durationMonths: integer("duration_months").notNull().default(1), // Default for migration
   price: integer("price").notNull(), // IN RUPEES
   isActive: boolean("is_active").default(true).notNull(),
+  // planType: planEnum("plan_type").notNull(), // Deprecated, keeping for safety or removing if confirmed. 
+  // Let's keep planType as text for backward compat if needed, or just rely on title/duration.
+  // transforming enum to text might be tricky in one go without migration script.
+  // For now, I will keep planEnum but make it optional, OR just ignore it in new logic.
+  // Actually, to follow the robust plan:
+  planType: text("plan_type"), // changed from enum to text to allow any value or null
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => ({
-  unq: index("course_plans_course_id_plan_type_idx").on(table.courseId, table.planType),
+  unq: index("course_plans_course_id_idx").on(table.courseId),
 }));
 
 export const modules = pgTable("modules", {
   id: serial("id").primaryKey(),
   courseId: integer("course_id").references(() => courses.id).notNull(),
   title: text("title").notNull(),
+  planIds: integer("plan_ids").array(), // IDs of plans that have access to this module
   order: integer("order").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -116,7 +124,8 @@ export const enrollments = pgTable("enrollments", {
   id: serial("id").primaryKey(),
   userId: text("user_id").references(() => users.id).notNull(),
   courseId: integer("course_id").references(() => courses.id).notNull(),
-  plan: planEnum("plan").notNull(),
+  planId: integer("plan_id").references(() => coursePlans.id), // Link to specific plan
+  plan: text("plan"), // Changed from enum to text, nullable/optional for backward compat
   startDate: timestamp("start_date").defaultNow().notNull(),
   endDate: timestamp("end_date").notNull(),
   isActive: boolean("is_active").default(true).notNull(),

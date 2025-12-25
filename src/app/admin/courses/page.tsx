@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
 import { getCourseStudents } from "./actions";
+import { UserAvatar } from "@/components/UserAvatar";
 
 interface CourseSummary {
   id: number;
@@ -302,13 +303,7 @@ export default function AdminCoursesPage() {
                                    <TableRow key={student.id}>
                                        <TableCell>
                                            <div className="flex items-center gap-3">
-                                               {student.image ? (
-                                                   <img src={student.image} alt={student.name || ""} className="w-8 h-8 rounded-full" />
-                                               ) : (
-                                                   <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500">
-                                                       {student.name?.charAt(0) || "U"}
-                                                   </div>
-                                               )}
+                                               <UserAvatar user={student} className="w-8 h-8" />
                                                <div>
                                                    <div className="font-medium text-slate-900 dark:text-slate-100">{student.name}</div>
                                                    <div className="text-xs text-slate-500">{student.email}</div>

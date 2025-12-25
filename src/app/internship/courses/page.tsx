@@ -13,10 +13,11 @@ import { plans as defaultPlans } from "./data";
 import { courses } from "./data"; 
 
 export interface Plan {
-    id: string; // "1_month", "3_months", etc.
+    id: string; 
     title: string;
     price: number;
     features: string[];
+    courseId?: number;
 }
 
 function CoursesContent() {
@@ -63,13 +64,14 @@ function CoursesContent() {
                       const mappedPlans = data.plans.map((p: any) => {
                           const defPlan = defaultPlans.find(dp => dp.id === p.planType);
                           return {
-                              id: p.planType,
-                              title: defPlan?.title || p.planType,
+                              id: String(p.id), // Use DB ID as string
+                              title: p.title || defPlan?.title || "Course Plan",
                               price: p.price,
-                              features: defPlan?.features || []
+                              features: defPlan?.features || ["Full Course Access", "Certificate of Completion", "Project Support", "24/7 Doubt Support"],
+                              courseId: p.courseId
                           };
                       });
-                      // Sort by price or order
+                      // Sort by price
                        mappedPlans.sort((a: Plan, b: Plan) => a.price - b.price);
                       setAvailablePlans(mappedPlans);
                   } else {
