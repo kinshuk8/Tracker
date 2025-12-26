@@ -352,7 +352,7 @@ export default async function ModulePage({
           {(() => {
             // Priority 2: S3 Resource or File (Video or Download)
             const isS3 = contentItem.data.startsWith("s3://");
-            const isFileLike = !contentItem.data.includes("\n") && /\.(pdf|docx|doc|ppt|pptx|xls|xlsx|zip|png|jpg|jpeg|mp4|mov|avi|wmv)$/i.test(contentItem.data);
+            const isFileLike = !contentItem.data.includes("\n") && /\.(pdf|docx|doc|ppt|pptx|xls|xlsx|zip|png|jpg|jpeg|mp4|mov|avi|wmv|json|xml|sql|txt|csv)$/i.test(contentItem.data);
 
             if (isS3 || isFileLike || contentItem.type === "video") {
                return (
