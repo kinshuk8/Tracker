@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,6 +40,7 @@ interface Enrollment {
 }
 
 export default function ProfilePage() {
+  const router = useRouter();
   const { data: session, isPending: isAuthPending } = authClient.useSession();
   const [isSaving, setIsSaving] = useState(false);
   const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
@@ -94,8 +96,9 @@ export default function ProfilePage() {
       if (!response.ok) throw new Error("Failed to update profile");
 
       toast.success("Profile updated successfully");
-      // Optionally reload session or invalidate cache (Better Auth might handle this if we trigger it, or simple reload)
-       window.location.reload(); 
+      toast.success("Profile updated successfully");
+      // Soft refresh to update server components without full page reload
+      // router.refresh();  <-- Removed as per user request for better UX. Client state already updates. 
     } catch (error) {
       toast.error("An error occurred while saving");
       console.error(error);
@@ -129,7 +132,11 @@ export default function ProfilePage() {
                 <CardContent className="flex flex-col items-center gap-6">
                     <AvatarUpload 
                         value={form.watch("imageUrl") || ""} 
-                        onChange={(val) => form.setValue("imageUrl", val, { shouldDirty: true })}
+                        onChange={(val) => {
+                            form.setValue("imageUrl", val, { shouldDirty: true });
+                            // Auto-save the form when image is uploaded
+                            form.handleSubmit(onSubmit)();
+                        }}
                         name={form.watch("name")}
                     />
                     

@@ -241,6 +241,8 @@ export default function Navbar() {
       </ResizableNavbar>
 
       {/* Alternative Mobile Sheet Menu (Hidden, but keeping for reference) */}
+      {/* This section caused hydration errors due to ID mismatches. Wrapped in false to prevent rendering but keep code. */}
+      {false && (
       <div className="hidden">
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
           <SheetTrigger asChild>
@@ -290,6 +292,7 @@ export default function Navbar() {
           </SheetContent>
         </Sheet>
       </div>
+      )}
     </div>
   );
 }

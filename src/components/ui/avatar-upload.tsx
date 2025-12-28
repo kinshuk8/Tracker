@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { Loader2, Upload, X } from "lucide-react";
+import { useRef, useId } from "react";
+import { Loader2, Upload } from "lucide-react";
+import { useUploadThing } from "@/utils/uploadthing";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import { S3Image } from "@/components/ui/s3-image"; 
-// Note: S3Image handles rendering s3:// urls, but here we might want immediate preview of the File object 
-// or the public URL if we have it. S3Image is async for s3:// keys.
+import { toast } from "sonner"; 
+
 
 interface AvatarUploadProps {
   value?: string;
@@ -17,82 +16,73 @@ interface AvatarUploadProps {
 }
 
 export function AvatarUpload({ value, onChange, name, className }: AvatarUploadProps) {
-  const [isUploading, setIsUploading] = useState(false);
+  const inputId = useId();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
-  // Local preview state for immediate feedback before upload completes
-  // or to show current value.
-  // Actually, 'value' is controlled.
+
+  const { startUpload, isUploading } = useUploadThing("imageUploader", {
+    onClientUploadComplete: (res) => {
+      toast.success("Image uploaded successfully!");
+      if (res && res[0]) {
+        onChange(res[0].url);
+      }
+    },
+    onUploadError: (error: Error) => {
+      console.error(error);
+      toast.error(`Upload failed: ${error.message}`);
+    },
+  });
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("HandleFileSelect triggered");
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+        console.log("No file selected");
+        return;
+    }
+
+    console.log("File selected:", file.name, file.type, file.size);
 
     if (!file.type.startsWith("image/")) {
       toast.error("Please ensure the file is an image.");
+      e.target.value = "";
       return;
     }
 
-    // Max 5MB
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("File size must be less than 5MB.");
+    // Max 4MB (matching core.ts config)
+    if (file.size > 4 * 1024 * 1024) {
+      const errorMsg = "File size must be less than 4MB.";
+      console.error(errorMsg + " Actual size: " + file.size);
+      toast.error(errorMsg);
+      e.target.value = "";
       return;
     }
 
-    setIsUploading(true);
+    // Reset input immediately via event target to be safe
+    e.target.value = "";
+
     try {
-      // 1. Get presigned URL
-      const res = await fetch("/api/s3/upload", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-            fileName: file.name,
-            contentType: file.type 
-        }),
-      });
-
-      if (!res.ok) throw new Error("Failed to get upload URL");
-      
-      const { url, key } = await res.json();
-
-      // 2. Upload file to S3
-      const uploadRes = await fetch(url, {
-        method: "PUT",
-        body: file,
-        headers: {
-          "Content-Type": file.type,
-        },
-      });
-
-      if (!uploadRes.ok) throw new Error("Failed to upload image");
-
-      toast.success("Image uploaded successfully!");
-      onChange(key); // Return the s3:// key
-    } catch (error) {
-      console.error(error);
-      toast.error("Upload failed. Please try again.");
-    } finally {
-      setIsUploading(false);
-      // Reset input so same file can be selected again if needed
-      if (fileInputRef.current) fileInputRef.current.value = "";
+        console.log("Starting upload...");
+        await startUpload([file]);
+        console.log("Upload started");
+    } catch (err) {
+        console.error("Upload error in handler:", err);
     }
+  };
+
+  const triggerUpload = () => {
+    console.log("Triggering upload click");
+    fileInputRef.current?.click();
   };
 
   return (
     <div className={`flex flex-col items-center gap-4 ${className}`}>
-      <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+      <div 
+        className="relative group cursor-pointer" 
+        onClick={triggerUpload}
+      >
         <Avatar className="h-40 w-40 border-4 border-background shadow-xl transition-opacity group-hover:opacity-80">
             {value ? (
-                // Use S3Image if value is s3:// or S3-like, otherwise regular AvatarImage
-                // AvatarImage is standard img, so it won't resolve presigned urls.
-                // We'll use a wrapper since S3Image renders an img or div. 
-                // But Avatar component expects AvatarImage child...
-                // Actually S3Image returns <img ... /> or <Image ... />.
-                // We can't nest S3Image inside AvatarImage.
-                // We should replace AvatarImage with S3Image but keep styling.
-                <div className="w-full h-full overflow-hidden rounded-full">
-                    <S3Image src={value} alt="Avatar" className="object-cover w-full h-full" />
-                </div>
+                <AvatarImage src={value} alt="Avatar" className="object-cover" />
             ) : (
                 <AvatarFallback className="text-4xl bg-primary/10 text-primary uppercase">
                     {name?.charAt(0) || <Upload className="w-8 h-8 text-slate-400" />}
@@ -112,16 +102,8 @@ export function AvatarUpload({ value, onChange, name, className }: AvatarUploadP
         )}
       </div>
 
-      <Button 
-        type="button" 
-        variant="outline" 
-        onClick={() => fileInputRef.current?.click()}
-        disabled={isUploading}
-      >
-        Change Picture
-      </Button>
-
       <input 
+        id={inputId}
         ref={fileInputRef}
         type="file"
         accept="image/*"

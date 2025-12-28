@@ -29,7 +29,7 @@ interface RegistrationFormProps {
 }
 
 export function RegistrationForm({ selectedCourse, selectedPlan, plans, loadingPlans }: RegistrationFormProps) {
-  const REGISTRATION_OPEN = false; // Set to true to enable
+  const REGISTRATION_OPEN = true; // Set to true to enable
   const { data: session } = authClient.useSession();
   const router = useRouter();
   
