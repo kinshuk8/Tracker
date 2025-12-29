@@ -112,10 +112,13 @@ export async function POST(req: NextRequest) {
     }
 
     let finalPrice = price - discount;
+    console.log(`[Razorpay Order] Plan ID: ${planId}, Price: ${price}, Discount: ${discount}, Final: ${finalPrice}, Coupon: ${couponCode}`);
+
     if (finalPrice < 1) finalPrice = 1; // Minimum 1 Rupee
 
     // Razorpay accepts amount in paise
     const amount = finalPrice * 100;
+    console.log(`[Razorpay Order] Creating order for amount: ${amount} paise`);
 
     const options = {
       amount: amount,

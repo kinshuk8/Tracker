@@ -34,6 +34,8 @@ export async function POST(req: NextRequest) {
 
       // 1. Fetch Payment Details to get actual amount
       const paymentDetails = await razorpay.payments.fetch(razorpay_payment_id);
+      console.log(`[Razorpay Verify] Payment Details:`, JSON.stringify(paymentDetails, null, 2));
+      console.log(`[Razorpay Verify] Fetched Amount: ${paymentDetails.amount}`);
       
       // Resolve Course ID (Handle Slug vs ID)
       let resolvedCourseId = parseInt(courseIdParam);

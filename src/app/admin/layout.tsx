@@ -37,10 +37,17 @@ export default async function AdminLayout({
       ),
     },
     {
+      label: "Users",
+      href: "/admin/users",
+      icon: (
+        <Users className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      ),
+    },
+    {
       label: "Internships",
       href: "/admin/internships",
       icon: (
-        <Users className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+        <BookOpen className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
     },
     {
@@ -48,13 +55,6 @@ export default async function AdminLayout({
       href: "/admin/courses",
       icon: (
         <BookOpen className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-      ),
-    },
-    {
-      label: "S3 Files",
-      href: "/admin/s3files",
-      icon: (
-        <Library className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
     },
     {
@@ -76,13 +76,6 @@ export default async function AdminLayout({
       href: "/admin/payments",
       icon: (
         <CreditCard className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-      ),
-    },
-    {
-      label: "New Enrollment",
-      href: "/admin/enroll/new",
-      icon: (
-        <Users className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
     },
   ];

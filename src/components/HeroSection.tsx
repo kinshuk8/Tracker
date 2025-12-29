@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion, Variants, useMotionValue, useMotionTemplate } from "framer-motion";
 import { Button } from "./ui/button";
 import { TypewriterEffectSmooth } from "./ui/typewriter-effect";
+import { authClient } from "@/lib/auth-client";
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -30,6 +31,7 @@ const itemVariants: Variants = {
 
 // --- Main Component ---
 export default function HeroSection() {
+  const { data: session } = authClient.useSession();
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
 
@@ -98,13 +100,15 @@ export default function HeroSection() {
             variants={itemVariants}
             className="mt-8 flex flex-wrap items-center justify-center gap-4 w-full"
           >
-            <Button
-              asChild
-              size="lg"
-              className="min-w-[160px] rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition-all hover:scale-105"
-            >
-              <Link href="/auth/sign-in">Get Started Free</Link>
-            </Button>
+            {!session && (
+              <Button
+                asChild
+                size="lg"
+                className="min-w-[160px] rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition-all hover:scale-105"
+              >
+                <Link href="/auth/sign-in">Get Started Free</Link>
+              </Button>
+            )}
             <Button
               asChild
               variant="outline"

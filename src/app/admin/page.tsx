@@ -3,6 +3,7 @@ import { Users, BookOpen, Activity } from "lucide-react";
 import { db } from "@/db";
 import { internshipRegistrations, courses, enrollments } from "@/db/schema";
 import { count } from "drizzle-orm";
+import { AdminCharts } from "./components/AdminCharts";
 
 export const dynamic = 'force-dynamic';
 
@@ -52,6 +53,8 @@ export default async function AdminDashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      <AdminCharts />
     </div>
   );
 }
