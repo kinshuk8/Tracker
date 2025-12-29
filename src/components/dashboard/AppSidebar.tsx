@@ -21,6 +21,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { UserAvatar } from "@/components/UserAvatar";
 
 
 export function AppSidebar() {
@@ -97,21 +98,11 @@ export function AppSidebar() {
                   size="lg"
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground h-14 rounded-xl border border-transparent hover:border-slate-200 dark:hover:border-slate-800 transition-all group-data-[collapsible=icon]:!size-10 group-data-[collapsible=icon]:!p-0 group-data-[collapsible=icon]:justify-center"
                 >
-                    {session?.user?.image ? (
-                        <Image
-                        src={session.user.image}
-                        className="h-9 w-9 rounded-full object-cover border border-slate-200 dark:border-slate-700"
-                        width={36}
-                        height={36}
-                        alt="Avatar"
-                        />
-                    ) : (
-                        <div className="h-9 w-9 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xs font-bold border border-indigo-200 dark:border-indigo-800">
-                             {session?.user?.name 
-                                ? session.user.name.split(" ").map((n, i, arr) => (i === 0 || i === arr.length - 1) ? n[0] : "").join("").toUpperCase() 
-                                : "U"}
-                        </div>
-                    )}
+                    <UserAvatar 
+                        user={session?.user} 
+                        className="h-9 w-9 border border-slate-200 dark:border-slate-700" 
+                        fallbackClassName="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800"
+                    />
                   <div className="grid flex-1 text-left text-sm leading-tight pl-2">
                     <span className="truncate font-semibold text-slate-900 dark:text-slate-100">{session?.user?.name || "User"}</span>
                     <span className="truncate text-xs text-slate-500">{session?.user?.email || ""}</span>

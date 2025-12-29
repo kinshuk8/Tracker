@@ -97,8 +97,8 @@ export default function ProfilePage() {
 
       toast.success("Profile updated successfully");
       toast.success("Profile updated successfully");
-      // Soft refresh to update server components without full page reload
-      // router.refresh();  <-- Removed as per user request for better UX. Client state already updates. 
+      // Refresh router to update server components and sidebar session
+      router.refresh();
     } catch (error) {
       toast.error("An error occurred while saving");
       console.error(error);

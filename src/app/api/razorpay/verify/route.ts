@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
+import Razorpay from "razorpay";
 import { db } from "@/db";
 import { users, enrollments, payments, courses, coursePlans } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -25,6 +26,15 @@ export async function POST(req: NextRequest) {
     const isAuthentic = expectedSignature === razorpay_signature;
 
     if (isAuthentic) {
+      // Initialize Razorpay
+      const razorpay = new Razorpay({
+        key_id: process.env.RAZORPAY_KEY_ID!,
+        key_secret: process.env.RAZORPAY_KEY_SECRET!,
+      });
+
+      // 1. Fetch Payment Details to get actual amount
+      const paymentDetails = await razorpay.payments.fetch(razorpay_payment_id);
+      
       // Resolve Course ID (Handle Slug vs ID)
       let resolvedCourseId = parseInt(courseIdParam);
       
@@ -42,14 +52,6 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // 1. Create or Get User
-      // ... (Rest of existing user logic)
-      
-      // ... (Inside User Creation Logic - no changes needed there usually, but wait, let's keep the user logic intact)
-      // I need to be careful with replace range. I will insert the resolution logic at the top and update usages.
-      
-      // Let's rewrite the block to be safe.
-      
       // 1. Create or Get User
       let userId = "";
       
@@ -79,9 +81,9 @@ export async function POST(req: NextRequest) {
         paymentId: razorpay_payment_id,
         orderId: razorpay_order_id,
         signature: razorpay_signature,
-        amount: 100,
-        currency: "INR",
-        status: "captured",
+        amount: Number(paymentDetails.amount), // Use actual amount from Razorpay
+        currency: paymentDetails.currency || "INR",
+        status: "captured", // Since we are in verify, it's captured or authorized. Razorpay usually auto-captures.
         userId: userId,
         courseId: resolvedCourseId, // Use resolved ID
         createdAt: new Date(),

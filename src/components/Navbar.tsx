@@ -30,7 +30,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, User, Menu, ShieldCheck } from "lucide-react";
+import { LogOut, User, Menu, ShieldCheck, BookOpen } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -51,7 +51,7 @@ import { UserAvatar } from "@/components/UserAvatar";
 const navLinks = [
   { name: "Home", link: "/" },
   { name: "Services", link: "/services" },
-  { name: "Solutions", link: "/solutions" },
+  { name: "Courses", link: "/internship/courses" },
   { name: "Careers", link: "/careers" },
   { name: "Contact", link: "/contact" },
 ];
@@ -115,6 +115,12 @@ export default function Navbar() {
                       <Link href="/dashboard/profile" className="flex items-center gap-2 py-2">
                         <User className="h-4 w-4" />
                         <span>Profile</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild className="focus:bg-black/5 dark:focus:bg-white/10 rounded-lg cursor-pointer">
+                      <Link href="/dashboard/explore" className="flex items-center gap-2 py-2">
+                        <BookOpen className="h-4 w-4" />
+                        <span>LMS</span>
                       </Link>
                     </DropdownMenuItem>
                     {user.role === "admin" && (
@@ -202,6 +208,12 @@ export default function Navbar() {
                           <Link href="/dashboard/profile" onClick={() => setIsOpen(false)} className="flex items-center gap-2 w-full">
                             <User className="h-4 w-4" />
                             <span>Profile</span>
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild className="cursor-pointer">
+                          <Link href="/dashboard/explore" onClick={() => setIsOpen(false)} className="flex items-center gap-2 w-full">
+                            <BookOpen className="h-4 w-4" />
+                            <span>LMS</span>
                           </Link>
                         </DropdownMenuItem>
                         {user.role === "admin" && (

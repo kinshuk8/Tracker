@@ -6,9 +6,6 @@ import AboutStats from "../components/AboutStats";
 import Services from "../components/Services";
 import Solutions from "../components/Solutions";
 import Footer from "../components/Footer";
-
-
-
 import Projects from "../components/Projects";
 import Testimonials from "../components/Testimonials";
 import Branches from "../components/Branches";
@@ -28,10 +25,10 @@ const LandingPage = () => {
       <HeroSection />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-hidden">
 
-        <Internship />
         <AboutStats />
         <Services />
         <Solutions />
+        <Internship />
         <Projects />
         {/* <Testimonials />
         <Branches /> */}
