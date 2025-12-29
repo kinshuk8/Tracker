@@ -5,13 +5,11 @@ import { useParams, useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { CourseDetailSkeleton } from "@/components/ui/skeletons";
-import { Spinner } from "@/components/ui/spinner";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Loader2, CheckCircle, Lock, BookOpen, Clock, Calendar } from "lucide-react";
 import { S3Image } from "@/components/ui/s3-image";
-import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
 
@@ -35,42 +33,58 @@ interface CourseDetail {
   } | null;
 }
 
+interface CoursePlan {
+  id: number;
+  courseId: number;
+  title: string;
+  durationMonths: number;
+  price: number;
+  isActive: boolean;
+  planType: string | null;
+}
+
 export default function CourseDetailPage() {
   const params = useParams();
   const slug = params.slug as string;
   const { data: session, isPending: isAuthPending } = authClient.useSession();
   const [course, setCourse] = useState<CourseDetail | null>(null);
+  const [plans, setPlans] = useState<CoursePlan[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isEnrolling, setIsEnrolling] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    const fetchCourse = async () => {
+    const fetchCourseAndPlans = async () => {
       try {
-        // We'll need a new endpoint for a single course with modules
-        // For now, let's fetch all and find (not efficient but works given current endpoints)
-        // OR better: create /api/courses/[slug]
-        // Let's assume we create the endpoint or simulate it. 
-        // For this step I'll fetch lists and filter, but I should create the endpoint.
-        // Let's create the endpoint in a parallel tool call.
-        const response = await fetch(`/api/courses/${slug}`);
-        if (response.ok) {
-            const data = await response.json();
-            setCourse(data);
+        // Fetch course details
+        const courseResponse = await fetch(`/api/courses/${slug}`);
+        if (courseResponse.ok) {
+          const courseData = await courseResponse.json();
+          setCourse(courseData);
         } else {
-            toast.error("Failed to load course details");
+          toast.error("Failed to load course details");
+        }
+
+        // Fetch course plans
+        const plansResponse = await fetch(`/api/courses/${slug}/plans`);
+        if (plansResponse.ok) {
+          const plansData = await plansResponse.json();
+          setPlans(plansData.plans || []);
+        } else {
+          console.warn("Failed to load course plans");
+          setPlans([]);
         }
       } catch (error) {
-        console.error("Error fetching course:", error);
+        console.error("Error fetching course data:", error);
       } finally {
         setIsLoading(false);
       }
     };
 
     if (session?.user && !isAuthPending) {
-        fetchCourse();
+      fetchCourseAndPlans();
     } else if (!isAuthPending) {
-        setIsLoading(false);
+      setIsLoading(false);
     }
   }, [slug, session, isAuthPending]);
 
@@ -96,11 +110,7 @@ export default function CourseDetailPage() {
   }
 
   if (isLoading) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <CourseDetailSkeleton />;
   }
 
   if (!course) {
@@ -200,21 +210,30 @@ export default function CourseDetailPage() {
                             <div>
                                 <h3 className="font-semibold mb-2">Select a Plan</h3>
                                 <div className="space-y-3">
-                                    {[
-                                        { id: "1_month", title: "1 Month", price: 199, features: ["Course Access", "Certification"] },
-                                        { id: "3_months", title: "3 Months", price: 429, features: ["Projects", "Assignments"] },
-                                        { id: "6_months", title: "6 Months", price: 1499, features: ["Resume Building", "Priority Support"] },
-                                    ].map((plan) => (
-                                        <div key={plan.id} className="border rounded-lg p-3 hover:border-primary cursor-pointer transition-colors">
-                                            <div className="flex justify-between items-center mb-1">
-                                                <span className="font-medium">{plan.title}</span>
-                                                <span className="font-bold text-lg">₹{plan.price}</span>
-                                            </div>
-                                            <div className="text-xs text-muted-foreground">
-                                                {plan.features.join(" • ")}
-                                            </div>
-                                        </div>
-                                    ))}
+                                    {plans.length > 0 ? (
+                                        plans.map((plan) => {
+                                            // Default features based on duration
+                                            const getFeatures = (duration: number) => {
+                                                if (duration <= 1) return ["Course Access", "Certification"];
+                                                if (duration <= 3) return ["Projects", "Assignments"];
+                                                return ["Resume Building", "Priority Support"];
+                                            };
+
+                                            return (
+                                                <div key={plan.id} className="border rounded-lg p-3 hover:border-primary cursor-pointer transition-colors">
+                                                    <div className="flex justify-between items-center mb-1">
+                                                        <span className="font-medium">{plan.title}</span>
+                                                        <span className="font-bold text-lg">₹{plan.price}</span>
+                                                    </div>
+                                                    <div className="text-xs text-muted-foreground">
+                                                        {getFeatures(plan.durationMonths).join(" • ")}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })
+                                    ) : (
+                                        <p className="text-sm text-muted-foreground">No plans available</p>
+                                    )}
                                 </div>
                             </div>
                             <div className="space-y-2 pt-2">
