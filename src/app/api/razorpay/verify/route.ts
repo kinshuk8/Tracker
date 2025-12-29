@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { db } from "@/db";
-import { users, enrollments, payments, courses } from "@/db/schema";
+import { users, enrollments, payments, courses, coursePlans } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 export async function POST(req: NextRequest) {
@@ -97,14 +97,26 @@ export async function POST(req: NextRequest) {
       });
 
       if (!existingEnrollment) {
-        let durationMonths = 6;
-        if (planId === "1_month") durationMonths = 1;
-        else if (planId === "3_months") durationMonths = 3;
-        
+        // Fetch plan details to get duration
+        let durationMonths = 6; // Default fallback
+        let planTitle = "6_months";
+
+        const numericPlanId = parseInt(planId);
+        if (!isNaN(numericPlanId)) {
+            const plan = await db.query.coursePlans.findFirst({
+                where: eq(coursePlans.id, numericPlanId)
+            });
+            if (plan) {
+                durationMonths = plan.durationMonths;
+                planTitle = plan.title || plan.planType || "Monthly Plan";
+            }
+        }
+
         await db.insert(enrollments).values({
             userId: userId,
             courseId: resolvedCourseId,
-            plan: (planId === "1_month" || planId === "3_months" || planId === "6_months") ? planId : "6_months",
+            planId: !isNaN(numericPlanId) ? numericPlanId : null, // Store the specific plan ID
+            plan: planTitle,
             startDate: new Date(),
             endDate: new Date(new Date().setMonth(new Date().getMonth() + durationMonths)),
             isActive: true,

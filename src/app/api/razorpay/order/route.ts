@@ -67,10 +67,18 @@ export async function POST(req: NextRequest) {
     }
  
     // 2. DYNAMIC PRICING
+    let numericPlanId = Number(planId);
+    if(isNaN(numericPlanId)) {
+        return NextResponse.json(
+             { error: "Invalid Plan ID" },
+             { status: 400 }
+        );
+    }
+
     const plan = await db.query.coursePlans.findFirst({
         where: and(
             eq(coursePlans.courseId, numericCourseId),
-            eq(coursePlans.planType, planId),
+            eq(coursePlans.id, numericPlanId),
             eq(coursePlans.isActive, true)
         )
     });

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Video, FileText, BookOpen, ArrowLeft, CheckCircle } from "lucide-react";
 import { db } from "@/db";
-import { courses, modules, content, userProgress, users } from "@/db/schema";
+import { courses, modules, content, userProgress, users, enrollments } from "@/db/schema";
 import { eq, asc, and } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar-aceternity";
@@ -81,6 +81,7 @@ export default async function CourseLayout({
   const user = session?.user;
 
   const completedContentIds = new Set<number>();
+  let userPlanId: number | null = null;
   
   if (user && user.email) {
     const dbUser = await db.query.users.findFirst({
@@ -95,11 +96,36 @@ export default async function CourseLayout({
         ),
       });
       progress.forEach(p => completedContentIds.add(p.contentId));
+
+      // Fetch Enrollment to check Plan
+      const enrollment = await db.query.enrollments.findFirst({
+        where: and(
+            eq(enrollments.userId, dbUser.id),
+            eq(enrollments.courseId, course.id),
+            eq(enrollments.isActive, true)
+        )
+      });
+      
+      if (enrollment && enrollment.planId) {
+          userPlanId = enrollment.planId;
+      }
     }
   }
 
+  // Filter modules based on Plan
+  const visibleModulesRaw = courseModules.filter(m => {
+      // If module has no specified plans, assume it's open to all enrolled users? 
+      // Or if it's strictly requiring a plan. 
+      // Let's assume: If planIds is null/empty -> Open to all enrolled.
+      // If planIds has values -> User must have one of those matching planId.
+      if (!m.planIds || m.planIds.length === 0) return true;
+      if (!userPlanId) return false; // Enrolled but no planId recorded (legacy?) or not enrolled? 
+      // If not enrolled/no planId, and module restricts, hide it.
+      return m.planIds.includes(userPlanId);
+  });
+
   // Cast to a Type that matches our prop (Drizzle Relation Types can be tricky to infer perfectly without explicit types)
-  const formattedModules = courseModules.map(m => ({
+  const formattedModules = visibleModulesRaw.map(m => ({
      id: m.id,
      title: m.title,
      days: m.days.map(d => ({
