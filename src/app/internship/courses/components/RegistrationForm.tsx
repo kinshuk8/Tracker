@@ -41,6 +41,7 @@ export function RegistrationForm({ selectedCourse, selectedPlan, plans, loadingP
   // Enrollment State
   const [checkingEnrollment, setCheckingEnrollment] = useState(false);
   const [isEnrolled, setIsEnrolled] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   // Check enrollment when selectedCourse (slug) changes
   // Ideally, you need the actual courseId (number) from the backend to check against enrollments table accurately if using courseId integer.
@@ -220,7 +221,8 @@ export function RegistrationForm({ selectedCourse, selectedPlan, plans, loadingP
               const verifyData = await verifyRes.json();
               if (verifyData.success) {
                 toast.success("Enrollment Successful!");
-                router.push("/internship/courses/" + selectedCourse);
+                setIsSuccess(true);
+                // router.push("/internship/courses/" + selectedCourse); // Removed auto-redirect
               } else {
                 toast.error("Payment verification failed");
               }
@@ -301,20 +303,41 @@ export function RegistrationForm({ selectedCourse, selectedPlan, plans, loadingP
     );
   }
 
-  if (isEnrolled) {
+  if (isSuccess) {
       return (
           <Card className="bg-green-50 border-green-200">
             <CardHeader className="text-center">
                 <div className="mx-auto bg-white p-3 rounded-full w-fit mb-2 shadow-sm">
                     <CheckCircle className="w-8 h-8 text-green-600" />
                 </div>
-                <CardTitle className="text-green-800">Already Enrolled</CardTitle>
+                <CardTitle className="text-green-800">Payment Successful!</CardTitle>
                 <CardDescription className="text-green-600">
-                    You have already purchased this course.
+                    You have successfully enrolled in the course.
                 </CardDescription>
             </CardHeader>
             <CardContent>
                 <Button asChild className="w-full bg-green-600 hover:bg-green-700" size="lg">
+                    <Link href={`/internship/courses/${selectedCourse}`}>Start Learning Now</Link>
+                </Button>
+            </CardContent>
+          </Card>
+      );
+  }
+
+  if (isEnrolled) {
+      return (
+          <Card className="bg-blue-50 border-blue-200">
+            <CardHeader className="text-center">
+                <div className="mx-auto bg-white p-3 rounded-full w-fit mb-2 shadow-sm">
+                    <CheckCircle className="w-8 h-8 text-blue-600" />
+                </div>
+                <CardTitle className="text-blue-800">Already Enrolled</CardTitle>
+                <CardDescription className="text-blue-600">
+                    You have already purchased this course.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Button asChild className="w-full bg-blue-600 hover:bg-blue-700" size="lg">
                     <Link href={`/internship/courses/${selectedCourse}`}>Go to Course</Link>
                 </Button>
             </CardContent>

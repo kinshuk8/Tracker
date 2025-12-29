@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Razorpay from "razorpay";
 import { db } from "@/db";
 import { coupons, coursePlans, enrollments, courses } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, gt } from "drizzle-orm";
 import { auth } from "@/lib/auth"; // Verify path
 import { headers } from "next/headers";
 
@@ -55,7 +55,8 @@ export async function POST(req: NextRequest) {
         where: and(
             eq(enrollments.userId, userId),
             eq(enrollments.courseId, numericCourseId),
-            eq(enrollments.isActive, true)
+            eq(enrollments.isActive, true),
+            gt(enrollments.endDate, new Date()) // Only block if course is still valid
         )
     });
 
