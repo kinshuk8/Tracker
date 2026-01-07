@@ -1,4 +1,5 @@
 import { db } from "@/db";
+export const dynamic = 'force-dynamic';
 import { users, enrollments, coursePlans, courses } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -54,6 +55,9 @@ export default async function AdminUsersPage() {
   const totalUsers = enrichedUsers.length;
   const enrolledUsers = enrichedUsers.filter(u => u.isEnrolled).length;
 
+  // 5. Fetch available courses for enrollment actions
+  const availableCourses = await db.select({ id: courses.id, title: courses.title }).from(courses);
+
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8">
       <div className="flex justify-between items-center">
@@ -67,7 +71,7 @@ export default async function AdminUsersPage() {
 
       <UserStats totalUsers={totalUsers} enrolledUsers={enrolledUsers} />
 
-      <UsersTable initialUsers={enrichedUsers} />
+      <UsersTable initialUsers={enrichedUsers} courses={availableCourses} />
     </div>
   );
 }

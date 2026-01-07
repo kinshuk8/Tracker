@@ -179,10 +179,18 @@ export const coupons = pgTable("coupons", {
   id: serial("id").primaryKey(),
   code: text("code").notNull().unique(),
   discountAmount: integer("discount_amount").notNull(), // Amount in Rupees
+  planId: integer("plan_id").references(() => coursePlans.id), // Optional: if null, applies to all plans
   isActive: boolean("is_active").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
+
+export const couponsRelations = relations(coupons, ({ one }) => ({
+  plan: one(coursePlans, {
+    fields: [coupons.planId],
+    references: [coursePlans.id],
+  }),
+}));
 
 // RELATIONS DEFINED LAST TO AVOID CIRCULAR DEPENDENCIES
 

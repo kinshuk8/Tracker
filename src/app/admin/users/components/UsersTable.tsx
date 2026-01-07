@@ -4,10 +4,20 @@ import { useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { CheckCircle2, XCircle, Search, Filter } from "lucide-react";
+import { CheckCircle2, XCircle, Search, Filter, Trash2, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { EnrollAction } from "./EnrollAction";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface User {
   id: string;
@@ -23,11 +33,14 @@ interface User {
 
 interface UsersTableProps {
   initialUsers: User[];
+  courses: { id: number; title: string }[];
 }
 
-export function UsersTable({ initialUsers }: UsersTableProps) {
+export function UsersTable({ initialUsers, courses }: UsersTableProps) {
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const filteredUsers = initialUsers.filter((user) => {
     const matchesSearch =
@@ -41,6 +54,31 @@ export function UsersTable({ initialUsers }: UsersTableProps) {
 
     return matchesSearch && matchesStatus;
   });
+
+  const handleDelete = async (userId: string) => {
+    if (!confirm("Are you sure you want to delete this user? This action cannot be undone and will remove all their data.")) {
+        return;
+    }
+
+    setDeletingId(userId);
+    try {
+        const res = await fetch(`/api/admin/users/${userId}`, {
+            method: "DELETE",
+        });
+
+        if (res.ok) {
+            toast.success("User deleted successfully");
+            router.refresh();
+        } else {
+            const err = await res.json();
+            toast.error(err.error || "Failed to delete user");
+        }
+    } catch (error) {
+        toast.error("Error deleting user");
+    } finally {
+        setDeletingId(null);
+    }
+  };
 
   return (
     <Card className="border-slate-200 dark:border-slate-800 shadow-lg">
@@ -79,20 +117,25 @@ export function UsersTable({ initialUsers }: UsersTableProps) {
         <Table>
           <TableHeader className="bg-slate-50 dark:bg-slate-900/50">
             <TableRow>
-              <TableHead className="pl-6 font-semibold">Name</TableHead>
+              <TableHead className="w-[50px] pl-6 text-center font-bold text-slate-500">#</TableHead>
+              <TableHead className="font-semibold">Name</TableHead>
               <TableHead>Contact Info</TableHead>
               <TableHead>Enrolled?</TableHead>
               <TableHead>Course & Plan</TableHead>
-              <TableHead className="pr-6 text-right">Joined / Enrolled</TableHead>
+              <TableHead className="text-right">Joined / Enrolled</TableHead>
+              <TableHead className="pr-6 text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredUsers.map((user) => (
+            {filteredUsers.map((user, index) => (
               <TableRow
                 key={user.id}
                 className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors"
               >
-                <TableCell className="pl-6">
+                <TableCell className="pl-6 text-center text-slate-500 font-medium w-[50px]">
+                  {index + 1}
+                </TableCell>
+                <TableCell>
                   <div className="flex items-center gap-3">
                     <div className="h-8 w-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-500">
                       {user.name.charAt(0).toUpperCase()}
@@ -145,7 +188,7 @@ export function UsersTable({ initialUsers }: UsersTableProps) {
                     <span className="text-xs text-slate-400 italic">N/A</span>
                   )}
                 </TableCell>
-                <TableCell className="pr-6 text-right">
+                <TableCell className="text-right">
                   <div className="flex flex-col items-end">
                     {user.enrollmentDate ? (
                       <>
@@ -166,12 +209,55 @@ export function UsersTable({ initialUsers }: UsersTableProps) {
                     )}
                   </div>
                 </TableCell>
+                <TableCell className="pr-6 text-right">
+                    <div className="flex items-center justify-end gap-1">
+                      <TooltipProvider>
+                        {!user.isEnrolled && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span tabIndex={0}>
+                                <EnrollAction 
+                                    userId={user.id} 
+                                    userName={user.name} 
+                                    userEmail={user.email} 
+                                    courses={courses} 
+                                />
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Enroll User</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                                onClick={() => handleDelete(user.id)}
+                                disabled={deletingId === user.id}
+                            >
+                                {deletingId === user.id ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                    <Trash2 className="h-4 w-4" />
+                                )}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Delete User</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                </TableCell>
               </TableRow>
             ))}
             {filteredUsers.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={5}
+                  colSpan={7}
                   className="text-center py-16 text-slate-500"
                 >
                   <p className="text-lg font-medium">No users found</p>

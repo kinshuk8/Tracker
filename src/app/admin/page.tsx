@@ -1,14 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, BookOpen, Activity } from "lucide-react";
 import { db } from "@/db";
-import { internshipRegistrations, courses, enrollments } from "@/db/schema";
+import { users, courses, enrollments } from "@/db/schema";
 import { count } from "drizzle-orm";
 import { AdminCharts } from "./components/AdminCharts";
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminDashboardPage() {
-  const [registrationsCount] = await db.select({ value: count() }).from(internshipRegistrations);
+  const [usersCount] = await db.select({ value: count() }).from(users);
   const [coursesCount] = await db.select({ value: count() }).from(courses);
   const [enrollmentsCount] = await db.select({ value: count() }).from(enrollments);
 
@@ -22,12 +22,12 @@ export default async function AdminDashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card className="rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Internship Registrations</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{registrationsCount.value}</div>
-            <p className="text-xs text-muted-foreground">Total applications</p>
+            <div className="text-2xl font-bold">{usersCount.value}</div>
+            <p className="text-xs text-muted-foreground">Registered platform users</p>
           </CardContent>
         </Card>
 

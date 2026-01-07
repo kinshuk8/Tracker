@@ -5,7 +5,7 @@ import { eq, and } from "drizzle-orm";
 
 export async function POST(req: NextRequest) {
   try {
-    const { code } = await req.json();
+    const { code, planId } = await req.json();
 
     if (!code) {
       return NextResponse.json({ valid: false, message: "Code is required" });
@@ -22,10 +22,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ valid: false, message: "Invalid or expired coupon" });
     }
 
+    // Check if coupon is restricted to a specific plan
+    if (coupon.planId) {
+      if (!planId) {
+         return NextResponse.json({ valid: false, message: "This coupon requires a specific plan selection" });
+      }
+      if (Number(coupon.planId) !== Number(planId)) {
+         return NextResponse.json({ valid: false, message: "This coupon is not applicable to the selected plan" });
+      }
+    }
+
     return NextResponse.json({
       valid: true,
       discountAmount: coupon.discountAmount,
       code: coupon.code,
+      planId: coupon.planId
     });
   } catch (error) {
     console.error("Error validating coupon:", error);

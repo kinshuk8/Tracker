@@ -12,6 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import Script from "next/script";
+import { Switch } from "@/components/ui/switch";
+import { authClient } from "@/lib/auth-client";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -19,14 +21,13 @@ const formSchema = z.object({
   phone: z.string().min(10, "Phone number must be at least 10 digits"),
   college: z.string().min(2, "College name is required"),
   courseId: z.string().min(1, "Please select a course"),
+  isFree: z.boolean().default(false).optional(),
 });
 
 interface Course {
   id: number;
   title: string;
 }
-
-import { authClient } from "@/lib/auth-client";
 
 export default function AdminEnrollNewPage() {
   const router = useRouter();
@@ -42,6 +43,7 @@ export default function AdminEnrollNewPage() {
       phone: "",
       college: "",
       courseId: "",
+      isFree: false,
     },
   });
 
@@ -49,18 +51,13 @@ export default function AdminEnrollNewPage() {
     if (session?.user) {
       form.setValue("name", session.user.name || "");
       form.setValue("email", session.user.email || "");
-      // phone and college might not be in session depending on auth provider, but if they are custom fields in user table...
-      // For now we autofill what we can.
     }
   }, [session, form]);
 
   useEffect(() => {
-    // Fetch courses to populate dropdown
     fetch("/api/admin/courses")
       .then((res) => res.json())
       .then((data) => {
-        // Adapt data if structure is different, admin/courses usually returns summary
-        // Assuming data is array of objects with id and title
         setCourses(data);
       })
       .catch((err) => console.error("Failed to load courses", err));
@@ -69,6 +66,24 @@ export default function AdminEnrollNewPage() {
   const handlePayment = async (data: z.infer<typeof formSchema>) => {
     setIsLoading(true);
     try {
+      if (data.isFree) {
+          // GRANT FREE ACCESS
+          const res = await fetch("/api/admin/enroll/free", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(data),
+          });
+          
+          if (!res.ok) {
+              const err = await res.json();
+              throw new Error(err.error || "Failed to grant access");
+          }
+          
+          toast.success("Free access granted successfully!");
+          router.push("/admin/enrollments");
+          return;
+      }
+
       // 1. Create Order
       const orderRes = await fetch("/api/razorpay/order", {
         method: "POST",
@@ -81,11 +96,7 @@ export default function AdminEnrollNewPage() {
 
       // 2. Open Razorpay
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, // Use public key here if creating env var, or fetch from server? 
-        // Usually safe to generic key, but let's assume valid key is available.
-        // Actually best practice is to not hardcode, but for this task I will assume env var.
-        // If not available, we might fail.
-        // Let's rely on window.Razorpay for now.
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, 
         amount: order.amount,
         currency: order.currency,
         name: "Admin Enrollment",
@@ -136,9 +147,9 @@ export default function AdminEnrollNewPage() {
       const paymentObject = new (window as any).Razorpay(options);
       paymentObject.open();
 
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      toast.error("Failed to initiate payment");
+      toast.error(error.message || "Failed to initiate payment");
     } finally {
       setIsLoading(false);
     }
@@ -219,9 +230,20 @@ export default function AdminEnrollNewPage() {
                 )}
             </div>
 
+            <div className="flex items-center space-x-2 pt-2 p-4 bg-slate-50 dark:bg-slate-900 rounded-md border border-slate-200 dark:border-slate-800">
+                <Switch 
+                    id="isFree" 
+                    checked={form.watch("isFree")} 
+                    onCheckedChange={(checked) => form.setValue("isFree", checked)} 
+                />
+                <Label htmlFor="isFree" className="text-base font-medium cursor-pointer flex-1">
+                    Grant Free Access (Bypass Payment)
+                </Label>
+            </div>
+
             <div className="pt-4">
               <Button type="submit" size="lg" className="w-full h-12 text-lg font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/20 transition-all hover:scale-[1.01]" disabled={isLoading}>
-                {isLoading ? "Processing..." : "Pay & Enroll (₹1)"}
+                {isLoading ? "Processing..." : form.watch("isFree") ? "Enroll for Free" : "Pay & Enroll (₹1)"}
               </Button>
             </div>
           </form>

@@ -271,7 +271,7 @@ export function RegistrationForm({ selectedCourse, selectedPlan, plans, loadingP
       const res = await fetch("/api/coupons/validate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: couponCode }),
+        body: JSON.stringify({ code: couponCode, planId: selectedPlan }), // Pass selectedPlan for validation
       });
       const data = await res.json();
       

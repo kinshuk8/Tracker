@@ -48,7 +48,7 @@ export default function SignInForm({ hideCard = false }: { hideCard?: boolean })
     }, {
       onSuccess: () => {
         toast.success("Sign in successful! Redirecting...");
-        router.replace("/");
+        router.replace("/internship/courses");
       },
       onError: (ctx) => {
         toast.error(ctx.error.message);
