@@ -3,7 +3,7 @@ import Razorpay from "razorpay";
 import { db } from "@/db";
 import { coupons, coursePlans, enrollments, courses } from "@/db/schema";
 import { eq, and, gt } from "drizzle-orm";
-import { auth } from "@/lib/auth"; // Verify path
+import { auth } from "@/lib/auth"; 
 import { headers } from "next/headers";
 
 export async function POST(req: NextRequest) {
@@ -125,6 +125,8 @@ export async function POST(req: NextRequest) {
       currency: "INR",
       receipt: `receipt_order_${Date.now()}`,
       notes: {
+        userId: userId,
+        courseSlug: courseId.toString(),
         courseId: numericCourseId.toString(),
         planId: planId.toString(),
         couponCode: appliedCouponCode || "",

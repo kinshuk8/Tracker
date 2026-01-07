@@ -7,14 +7,24 @@ import { eq } from "drizzle-orm";
 
 export async function POST(req: NextRequest) {
   try {
-    const {
-      razorpay_order_id,
-      razorpay_payment_id,
-      razorpay_signature,
-      courseId: courseIdParam, // Rename to avoid confusion
-      planId,
-      userDetails,
-    } = await req.json();
+    let razorpay_order_id, razorpay_payment_id, razorpay_signature, courseIdParam, planId, userDetails, userIdFromBody;
+
+    const contentType = req.headers.get("content-type") || "";
+    if (contentType.includes("application/x-www-form-urlencoded")) {
+      const formData = await req.formData();
+      razorpay_order_id = formData.get("razorpay_order_id") as string;
+      razorpay_payment_id = formData.get("razorpay_payment_id") as string;
+      razorpay_signature = formData.get("razorpay_signature") as string;
+    } else {
+      const body = await req.json();
+      razorpay_order_id = body.razorpay_order_id;
+      razorpay_payment_id = body.razorpay_payment_id;
+      razorpay_signature = body.razorpay_signature;
+      courseIdParam = body.courseId;
+      planId = body.planId;
+      userDetails = body.userDetails;
+      userIdFromBody = body.userId; // If passed from frontend explicitly
+    }
 
     const body = razorpay_order_id + "|" + razorpay_payment_id;
 
@@ -32,80 +42,98 @@ export async function POST(req: NextRequest) {
         key_secret: process.env.RAZORPAY_KEY_SECRET!,
       });
 
-      // 1. Fetch Payment Details to get actual amount
+      // 1. Fetch Payment Details to get actual amount and notes
       const paymentDetails = await razorpay.payments.fetch(razorpay_payment_id);
       console.log(`[Razorpay Verify] Payment Details:`, JSON.stringify(paymentDetails, null, 2));
-      console.log(`[Razorpay Verify] Fetched Amount: ${paymentDetails.amount}`);
       
-      // Resolve Course ID (Handle Slug vs ID)
+      const notes = paymentDetails.notes as any;
+
+      // Resolve Context (Handle Callback Flow where body params are missing)
       let resolvedCourseId = parseInt(courseIdParam);
-      
-      if (isNaN(resolvedCourseId)) {
+      let resolvedPlanId = planId;
+      let resolvedUserId = userIdFromBody;
+
+      if (!resolvedUserId && notes?.userId) {
+          resolvedUserId = notes.userId;
+      }
+      if (isNaN(resolvedCourseId) && notes?.courseId) {
+          resolvedCourseId = parseInt(notes.courseId);
+      }
+      if (!resolvedPlanId && notes?.planId) {
+          resolvedPlanId = notes.planId;
+      }
+
+      // 1b. If we still don't have user ID, check if we can find user by email from payment details (fallback)
+      // typically paymentDetails.email or paymentDetails.contact might exist if prefilled
+      if (!resolvedUserId && userDetails?.email) {
+           const existingUser = await db.query.users.findFirst({
+                where: eq(users.email, userDetails.email.toLowerCase()),
+           });
+           if (existingUser) resolvedUserId = existingUser.id;
+      }
+
+      if (!resolvedCourseId || !resolvedUserId) {
+         console.error("[Razorpay Verify] MISSING CONTEXT (Course or User). Cannot verify enrollment.");
+         // If callback, redirect to error page
+         if (contentType.includes("application/x-www-form-urlencoded")) {
+            return NextResponse.redirect(new URL(`/internship/courses?error=payment_failed_context`, req.url));
+         }
+         return NextResponse.json({ success: false, message: "Missing context" }, { status: 400 });
+      }
+
+      // Resolve Course ID logic (if param was slug)
+      if (isNaN(resolvedCourseId) && typeof courseIdParam === 'string') {
         const course = await db.query.courses.findFirst({
           where: eq(courses.slug, courseIdParam),
         });
         if (course) {
           resolvedCourseId = course.id;
         } else {
-           return NextResponse.json(
-            { message: "Invalid Course ID", success: false },
-            { status: 400 }
-          );
+             // Failed to resolve course
+             console.error("Failed to resolve course from slug:", courseIdParam);
         }
       }
 
-      // 1. Create or Get User
-      let userId = "";
+      // If User doesn't exist (rare in this flow as they must be logged in to order), create them?
+      // Actually, standard flow requires login.
+      // We will perform updates assuming user exists or creation logic if `userDetails` was present.
+      // But in callback flow `userDetails` is missing. We rely on `resolvedUserId` existing in DB.
       
-      const existingUser = await db.query.users.findFirst({
-        where: eq(users.email, userDetails.email.toLowerCase()),
-      });
-
-      if (existingUser) {
-        userId = existingUser.id;
-      } else {
-        userId = crypto.randomUUID();
-        await db.insert(users).values({
-          id: userId,
-          name: userDetails.name,
-          email: userDetails.email.toLowerCase(),
-          emailVerified: false,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          role: "user",
-          college: userDetails.college,
-          phoneNumber: userDetails.phone,
-        });
-      }
-
       // 2. Create Payment Record
-      await db.insert(payments).values({
-        paymentId: razorpay_payment_id,
-        orderId: razorpay_order_id,
-        signature: razorpay_signature,
-        amount: Number(paymentDetails.amount), // Use actual amount from Razorpay
-        currency: paymentDetails.currency || "INR",
-        status: "captured", // Since we are in verify, it's captured or authorized. Razorpay usually auto-captures.
-        userId: userId,
-        courseId: resolvedCourseId, // Use resolved ID
-        createdAt: new Date(),
-        updatedAt: new Date(),
+      // Check if payment already exists to avoid duplicates (idempotency)
+      const existingPayment = await db.query.payments.findFirst({
+          where: eq(payments.paymentId, razorpay_payment_id)
       });
+
+      if (!existingPayment) {
+          await db.insert(payments).values({
+            paymentId: razorpay_payment_id,
+            orderId: razorpay_order_id,
+            signature: razorpay_signature,
+            amount: Number(paymentDetails.amount),
+            currency: paymentDetails.currency || "INR",
+            status: "captured",
+            userId: resolvedUserId,
+            courseId: resolvedCourseId,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          });
+      }
 
       // 3. Create Enrollment
       const existingEnrollment = await db.query.enrollments.findFirst({
         where: (enrollments, { and, eq }) => and(
-          eq(enrollments.userId, userId),
+          eq(enrollments.userId, resolvedUserId),
           eq(enrollments.courseId, resolvedCourseId)
         ),
       });
 
       if (!existingEnrollment) {
         // Fetch plan details to get duration
-        let durationMonths = 6; // Default fallback
+        let durationMonths = 6; 
         let planTitle = "6_months";
 
-        const numericPlanId = parseInt(planId);
+        const numericPlanId = parseInt(resolvedPlanId);
         if (!isNaN(numericPlanId)) {
             const plan = await db.query.coursePlans.findFirst({
                 where: eq(coursePlans.id, numericPlanId)
@@ -117,9 +145,9 @@ export async function POST(req: NextRequest) {
         }
 
         await db.insert(enrollments).values({
-            userId: userId,
+            userId: resolvedUserId,
             courseId: resolvedCourseId,
-            planId: !isNaN(numericPlanId) ? numericPlanId : null, // Store the specific plan ID
+            planId: !isNaN(numericPlanId) ? numericPlanId : null,
             plan: planTitle,
             startDate: new Date(),
             endDate: new Date(new Date().setMonth(new Date().getMonth() + durationMonths)),
@@ -129,12 +157,24 @@ export async function POST(req: NextRequest) {
         });
       }
 
+      const isCallback = contentType.includes("application/x-www-form-urlencoded");
+      
+      if (isCallback) {
+          // Redirect to course page with success flag
+          const slug = notes?.courseSlug || resolvedCourseId;
+          const redirectUrl = new URL(`/internship/courses/${slug}?payment_success=true`, req.url);
+          return NextResponse.redirect(redirectUrl);
+      }
 
       return NextResponse.json({
         message: "Payment verified and enrollment created",
         success: true,
       });
     } else {
+       const isCallback = contentType.includes("application/x-www-form-urlencoded");
+       if(isCallback) {
+             return NextResponse.redirect(new URL(`/internship/courses?error=invalid_signature`, req.url));
+       }
       return NextResponse.json(
         { message: "Invalid signature", success: false },
         { status: 400 }
@@ -142,6 +182,8 @@ export async function POST(req: NextRequest) {
     }
   } catch (error) {
     console.error("Error verifying payment:", error);
+    // In callback flow, we should probably redirect to an error page instead of JSON 500
+    // But req might not be available if error is early?
     return NextResponse.json(
       { message: "Internal server error", success: false },
       { status: 500 }

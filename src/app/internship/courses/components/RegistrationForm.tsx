@@ -85,6 +85,17 @@ export function RegistrationForm({ selectedCourse, selectedPlan, plans, loadingP
   // If isEnrolled is true, show message.
   
   useEffect(() => {
+    // Check for URL query params (callback flow success)
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("payment_success") === "true") {
+        setIsSuccess(true);
+        toast.success("Enrollment Successful!");
+        // Clean up URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
+
+  useEffect(() => {
       if (!selectedCourse || !session) return;
       
       const checkEnrollment = async () => {
@@ -239,6 +250,8 @@ export function RegistrationForm({ selectedCourse, selectedPlan, plans, loadingP
           theme: {
             color: "#3399cc",
           },
+          callback_url: `${window.location.origin}/api/razorpay/verify`, // CRITICAL: For Mobile/3DS redirects
+          redirect: true,
         };
 
         const paymentObject = new (window as any).Razorpay(options);
