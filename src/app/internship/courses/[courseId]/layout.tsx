@@ -82,9 +82,10 @@ export default async function CourseLayout({
 
   const completedContentIds = new Set<number>();
   let userPlanId: number | null = null;
+  let dbUser: typeof users.$inferSelect | undefined;
   
   if (user && user.email) {
-    const dbUser = await db.query.users.findFirst({
+    dbUser = await db.query.users.findFirst({
       where: eq(users.email, user.email),
     });
 
@@ -114,6 +115,9 @@ export default async function CourseLayout({
 
   // Filter modules based on Plan
   const visibleModulesRaw = courseModules.filter(m => {
+      // Admins see everything
+      if (dbUser?.role === 'admin') return true;
+
       // If module has no specified plans, assume it's open to all enrolled users? 
       // Or if it's strictly requiring a plan. 
       // Let's assume: If planIds is null/empty -> Open to all enrolled.
