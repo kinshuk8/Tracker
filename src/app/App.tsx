@@ -12,6 +12,8 @@ import Testimonials from "../components/Testimonials";
 import Branches from "../components/Branches";
 import CallToAction from "../components/CallToAction";
 import Internship from "../components/Internship";
+import OurClients from "../components/OurClients";
+import DigitalClients from "../components/DigitalClients";
 
 const LandingPage = () => {
   return (
@@ -28,10 +30,13 @@ const LandingPage = () => {
 
         <AboutStats />
         <CEOMessage />
+        <OurClients />
+        <DigitalClients />
         <Services />
         <Solutions />
-        <Internship />
         <Projects />
+        <Internship />
+
         {/* <Testimonials />
         <Branches /> */}
         <CallToAction />
