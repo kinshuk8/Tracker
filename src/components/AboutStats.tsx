@@ -8,6 +8,7 @@ const stats = [
   { value: 10, suffix: "+", label: "Projects Completed" },
   { value: 10, suffix: "+", label: "Trusted Clients" },
   { value: 99, suffix: "%", label: "Satisfaction Rate" },
+  { value: 3, suffix: "+", label: "Digital Marketing Projects" },
 ];
 
 export default function AboutStats() {
@@ -29,7 +30,7 @@ export default function AboutStats() {
           </p>
 
           {/* Stats */}
-          <div className="mt-10 flex flex-wrap gap-8 sm:gap-12">
+          <div className="mt-10 grid grid-cols-2 gap-8 sm:gap-x-12 sm:gap-y-10">
             {stats.map((stat) => (
               <div key={stat.label}>
                 <p className="text-3xl sm:text-4xl font-extrabold text-brand-purple">
