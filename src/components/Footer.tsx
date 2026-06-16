@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Meteors } from "@/components/ui/meteors";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -21,8 +22,16 @@ export default function Footer() {
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4 md:gap-12">
           {/* Column 1: Brand Info */}
           <div className="flex flex-col items-start">
-            <Link href="/" className="flex items-center gap-3 mb-4">
-              <span className="text-white font-semibold">
+            <Link href="/" className="flex flex-col items-start gap-4 mb-4">
+              <div className="relative w-40 h-20 sm:w-48 sm:h-24 md:w-56 md:h-28 -ml-2 transition-all duration-300">
+                <Image 
+                  src="/assets/white logo.png" 
+                  alt="VMK Edgemind Solutions Logo" 
+                  fill
+                  className="object-contain object-left"
+                />
+              </div>
+              <span className="text-white font-semibold text-lg tracking-wide">
                 VMK EDGEMIND SOLUTIONS
               </span>
             </Link>
