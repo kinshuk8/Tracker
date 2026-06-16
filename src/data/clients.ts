@@ -127,7 +127,8 @@ export const clients: Client[] = [
             "Lead Generation System",
             "Responsive Web & Mobile Application",
             "Admin Management Dashboard"
-        ]
+        ],
+        websiteUrl: "https://quickpropertyservices.in/"
     },
     {
         id: "aquapuerto-ro-purifiers",
@@ -216,5 +217,25 @@ export const digitalClients: Client[] = [
             "Content Creation & Branding",
             "Marketing Analytics & Reporting"
         ]
+    }
+];
+
+export const technicalClients: Client[] = [
+    {
+        id: "quick-property-services",
+        name: "Quick Property Services",
+        logo: "/assets/qps.png",
+        industry: "Real Estate & Property Management",
+        description: "A comprehensive property services platform developed for Quick Property Services to streamline property listings, customer inquiries, property management operations, and client engagement. The solution enables efficient handling of real estate services through a modern and user-friendly digital platform.",
+        softwareProvided: [
+            "Property Listing Management System",
+            "Property Search Platform",
+            "Customer Inquiry Management",
+            "Property Portfolio Showcase",
+            "Lead Generation System",
+            "Responsive Web & Mobile Application",
+            "Admin Management Dashboard"
+        ],
+        websiteUrl: "https://quickpropertyservices.in/"
     }
 ];

@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, ExternalLink, CheckCircle } from "lucide-react";
-import { clients, digitalClients } from "../../../data/clients";
+import { clients, digitalClients, technicalClients } from "../../../data/clients";
 import Navbar from "../../../components/Navbar";
 import Footer from "../../../components/Footer";
 
@@ -75,9 +75,23 @@ export default async function ClientPage({ params }: PageProps) {
             <div className="p-10 flex flex-col md:flex-row gap-12">
               <div className="md:w-2/3">
                 <h2 className="text-xl font-bold text-slate-900 mb-4">About the Brand</h2>
-                <p className="text-slate-600 leading-relaxed text-lg">
+                <p className="text-slate-600 leading-relaxed text-lg mb-8">
                   {client.description}
                 </p>
+
+                {technicalClients.some(c => c.id === client.id) && (
+                  <div className="mt-10">
+                    <h3 className="text-xl font-bold text-slate-900 mb-4">Technical Partnership</h3>
+                    <div className="relative w-full aspect-[4/3] sm:aspect-video rounded-3xl overflow-hidden border-4 border-white shadow-lg bg-slate-100">
+                      <Image 
+                        src={client.id === "quick-property-services" ? "/assets/ramu.jpg" : "/assets/ceokarthik.png"} 
+                        alt="Technical Partnership Agreement" 
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="md:w-1/3">

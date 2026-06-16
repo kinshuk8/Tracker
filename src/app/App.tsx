@@ -14,6 +14,7 @@ import CallToAction from "../components/CallToAction";
 import Internship from "../components/Internship";
 import OurClients from "../components/OurClients";
 import DigitalClients from "../components/DigitalClients";
+import TechnicalClients from "../components/TechnicalClients";
 
 const LandingPage = () => {
   return (
@@ -32,6 +33,7 @@ const LandingPage = () => {
         <CEOMessage />
         <OurClients />
         <DigitalClients />
+        <TechnicalClients />
         <Services />
         <Solutions />
         <Projects />

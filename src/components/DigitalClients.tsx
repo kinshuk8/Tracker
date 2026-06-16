@@ -28,7 +28,7 @@ const DigitalClients = () => {
         <div className="text-center mb-16">
           <h2 className="text-base text-orange-600 font-semibold tracking-wide uppercase">Digital Marketing Clients</h2>
           <p className="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-slate-900 sm:text-4xl">
-            Our Marketing Partners
+            Our Marketing Clients
           </p>
           <p className="mt-4 max-w-2xl text-xl text-slate-500 mx-auto">
             Empowering brands to reach their full potential through strategic digital marketing.
