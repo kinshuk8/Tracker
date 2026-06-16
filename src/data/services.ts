@@ -56,5 +56,14 @@ export const services: Service[] = [
         iconName: "BrainCircuit",
         features: ["Predictive Analytics", "Natural Language Processing", "Computer Vision", "AI Chatbots"],
         image: "https://images.unsplash.com/photo-1555255707-c07966088b7b?q=80&w=1000&auto=format&fit=crop"
+    },
+    {
+        slug: "digital-marketing",
+        title: "Digital Marketing",
+        shortDescription: "Strategic digital marketing to grow your brand's online presence and reach.",
+        description: "Elevate your brand with our comprehensive digital marketing solutions. We provide data-driven SEO, social media management, content marketing, and targeted advertising campaigns to drive traffic, engage your audience, and maximize your ROI.",
+        iconName: "Megaphone",
+        features: ["Search Engine Optimization (SEO)", "Social Media Marketing", "Pay-Per-Click (PPC)", "Content Strategy"],
+        image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=1000&auto=format&fit=crop"
     }
 ];
