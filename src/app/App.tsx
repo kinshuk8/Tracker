@@ -3,6 +3,7 @@
 import Navbar from "../components/Navbar";
 import HeroSection from "../components/HeroSection";
 import AboutStats from "../components/AboutStats";
+import PartnerSection from "../components/PartnerSection";
 import CEOMessage from "../components/CEOMessage";
 import Services from "../components/Services";
 import Solutions from "../components/Solutions";
@@ -30,6 +31,7 @@ const LandingPage = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-hidden">
 
         <AboutStats />
+        <PartnerSection />
         <CEOMessage />
         <OurClients />
         <DigitalClients />
