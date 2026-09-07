@@ -163,6 +163,20 @@ export const clients: Client[] = [
             "Subscriber Analytics Dashboard",
             "Mobile & Web Application"
         ]
+    },
+    {
+        id: "vayyarri-jewellery",
+        name: "Vayyarri Jewellery",
+        logo: "/assets/img-20260626-wa0014.jpg-BNcrD11Hts8dIXc0.png",
+        industry: "Jewellery & E-commerce",
+        description: "Vayyarri Jewellery is a premium jewellery brand offering exquisite collections. We established a comprehensive e-commerce platform to showcase their products, manage inventory, and provide a seamless online shopping experience for their customers.",
+        softwareProvided: [
+            "E-commerce Platform",
+            "Inventory Management System",
+            "Secure Payment Gateway Integration",
+            "Responsive Online Storefront"
+        ],
+        websiteUrl: "https://vayyarii.in/"
     }
 ];
 
@@ -217,6 +231,52 @@ export const digitalClients: Client[] = [
             "Content Creation & Branding",
             "Marketing Analytics & Reporting"
         ]
+    },
+    {
+        id: "rcoverseas",
+        name: "Rcoverseas",
+        logo: "/assets/RC.png",
+        industry: "Overseas Education & Consulting",
+        description: "Rcoverseas is a premier education consulting firm guiding students to pursue higher education in the US, UK, Germany, and other countries. We partnered with them to amplify their digital reach, attract prospective students, and build a strong online presence through targeted digital marketing.",
+        servicesProvided: [
+            "Social Media Management",
+            "Video Editing & Videography",
+            "Brand Promotion & Awareness",
+            "Creative Content & Poster Design",
+            "Online Reputation Management",
+            "Educational Consultancy Promotion"
+        ]
+    },
+    {
+        id: "sri-gayathri-electricals",
+        name: "Sri Gayathri Electricals",
+        logo: "/assets/WhatsApp Image 2026-07-27 at 3.25.56 AM.jpeg",
+        industry: "Electrical Goods & Retail",
+        description: "Sri Gayathri Electricals is a trusted provider of high-quality electrical goods and supplies. We partnered with them to elevate their digital presence through comprehensive digital marketing, enhancing brand visibility and engaging their audience with tailored content.",
+        servicesProvided: [
+            "Search Engine Optimization (SEO)",
+            "Video Editing & Videography",
+            "Creative Poster Design",
+            "Digital Marketing Campaigns",
+            "Social Media Management",
+            "Brand Promotion & Awareness"
+        ]
+    },
+    {
+        id: "prime-constructions",
+        name: "Prime Constructions - Prime Grandeur",
+        logo: "/assets/Prime.png",
+        industry: "Real Estate & Construction",
+        description: "Prime Constructions is a leading real estate developer known for their premium project, Prime Grandeur. We provided them with end-to-end digital marketing solutions, dedicated telecalling services for lead conversion, and built a custom CRM tool to streamline their customer relationship management and sales processes.",
+        servicesProvided: [
+            "Comprehensive Digital Marketing",
+            "Telecalling & Lead Conversion Services",
+            "Custom CRM Tool Development",
+            "Social Media Management",
+            "Brand Promotion & Awareness",
+            "Lead Generation Campaigns"
+        ],
+        websiteUrl: "https://primeconstructions.com/"
     }
 ];
 
