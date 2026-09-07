@@ -5,10 +5,10 @@ import { TextGenerateEffect } from "@/components/ui/text-generate-effect";
 import CountUp from "@/components/CountUp";
 
 const stats = [
-  { value: 10, suffix: "+", label: "Projects Completed" },
-  { value: 10, suffix: "+", label: "Trusted Clients" },
-  { value: 99, suffix: "%", label: "Satisfaction Rate" },
-  { value: 3, suffix: "+", label: "Digital Marketing Projects" },
+  { value: 12, suffix: "+", label: "Projects Completed" },
+  { value: 17, suffix: "+", label: "Trusted Clients" },
+  { value: 100, suffix: "%", label: "Satisfaction Rate" },
+  { value: 5, suffix: "+", label: "Digital Marketing Projects" },
 ];
 
 export default function AboutStats() {
