@@ -60,6 +60,7 @@ export function StepApplicant({ values: v, errors: e, set }: StepProps) {
         <TextField id="fullName" label="Full name" required autoComplete="name" placeholder="e.g. Priya Sharma"
           value={v.fullName} onChange={(x) => set("fullName", x)} error={e.fullName} />
         <TextField id="email" label="Email" type="email" required autoComplete="email" placeholder="e.g. priya@gmail.com"
+          hint="One submission per email address. Got more than one idea? Use a different email, or send the details to ramu@vmkedgemindsolutions.com."
           value={v.email} onChange={(x) => set("email", x)} error={e.email} />
         <TextField id="phone" label="Phone" type="tel" required autoComplete="tel" inputMode="tel" placeholder="e.g. +91 98765 43210"
           value={v.phone} onChange={(x) => set("phone", x)} error={e.phone} />
@@ -145,9 +146,9 @@ export function StepIdea({ values: v, errors: e, set }: StepProps) {
 }
 
 const STAGE_REACTIONS: Record<string, string> = {
-  BUSINESS_PLAN: "You can upload the plan or add a link in the last step.",
-  PITCH_DECK: "You can upload the deck or add a link in the last step.",
-  FIGMA_DESIGN: "You can add your Figma link in the last step.",
+  IDEA: "That's a perfectly good place to start. If you have a deck, designs or research, you can attach them in the last step.",
+  PROTOTYPE: "You can add your prototype or Figma link in the last step.",
+  EXISTING_PRODUCT: "Tell us below where it lives, and we'll take a look.",
 };
 
 export function StepStage({ values: v, errors: e, set }: StepProps) {
@@ -159,7 +160,7 @@ export function StepStage({ values: v, errors: e, set }: StepProps) {
         subtitle="Pick the stage that fits best. You can submit even if it's only an idea for now."
       />
       <ChoiceCards id="currentStage" label="Current stage" required options={STAGES}
-        columns="sm:grid-cols-2" value={v.currentStage} onChange={(x) => set("currentStage", x)}
+        columns="grid-cols-1" value={v.currentStage} onChange={(x) => set("currentStage", x)}
         error={e.currentStage} />
       <Reaction message={STAGE_REACTIONS[v.currentStage]} />
 
@@ -239,10 +240,13 @@ export function StepRequirements({ values: v, errors: e, set }: StepProps) {
         hint={isStudent ? "Student projects are welcome, even if you don't have a budget yet." : "A rough range is enough."}
         value={v.budget} onChange={(x) => set("budget", x as string)} error={e.budget} />
 
-      <ChipSelect id="preferredCollaboration" label="Preferred collaboration" options={COLLABORATION}
-        hint="This only tells us your preference. It isn't a commitment."
+      {/* ChoiceCards rather than ChipSelect: chips only render labels, and each
+          arrangement needs a line explaining what it actually means. */}
+      <ChoiceCards id="preferredCollaboration" label="Preferred collaboration" options={COLLABORATION}
+        columns="grid-cols-1"
+        hint="Just your preference, not a commitment — the final engagement is agreed during the 1:1 discussion."
         value={v.preferredCollaboration}
-        onChange={(x) => set("preferredCollaboration", x === v.preferredCollaboration ? "" : (x as string))}
+        onChange={(x) => set("preferredCollaboration", x)}
         error={e.preferredCollaboration} />
     </div>
   );

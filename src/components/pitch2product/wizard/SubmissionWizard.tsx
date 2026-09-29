@@ -2,10 +2,13 @@
 
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { signInAnonymously } from "firebase/auth";
+import { ref, uploadBytes } from "firebase/storage";
 import { ArrowLeft, ArrowRight, Check, Info, Loader2, Lock, PartyPopper, RotateCcw, Send } from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
+import { auth, storage } from "@/lib/firebase/client";
 import { APPLICANT_TYPES, STUDENT_BUDGETS } from "@/lib/pitch2product/options";
 import {
   STEPS,
@@ -15,6 +18,7 @@ import {
   validateStep,
   type FieldErrors,
   type FieldName,
+  type FileRef,
   type FormValues,
 } from "@/lib/pitch2product/schema";
 import { track, type P2PEvent } from "@/lib/pitch2product/analytics";
@@ -55,6 +59,41 @@ function focusField(errors: FieldErrors) {
     el?.focus({ preventScroll: true });
     el?.scrollIntoView({ behavior: "smooth", block: "center" });
   }, 80);
+}
+
+/**
+ * Uploads supporting files directly from the browser to Firebase Storage — never
+ * through our own API route, which can't accept large request bodies in production
+ * (Vercel's serverless functions hard-cap request bodies at 4.5MB). Applicants aren't
+ * logged in, so this signs them in anonymously first; Storage security rules gate
+ * writes on that anonymous uid plus per-file type/size checks.
+ */
+async function uploadSubmissionFiles(uploads: UploadItem[]): Promise<FileRef[]> {
+  if (!uploads.length) return [];
+  const user = auth.currentUser ?? (await signInAnonymously(auth)).user;
+  // Force a fresh ID token before uploading. signInAnonymously() resolving doesn't
+  // guarantee the Storage SDK's own auth-token listener has synced yet — starting an
+  // upload immediately can occasionally race ahead of it and go out unauthenticated,
+  // which Storage's security rules correctly reject with a 403 even though sign-in
+  // itself succeeded. Awaiting getIdToken() first closes that window.
+  await user.getIdToken();
+  return Promise.all(
+    uploads.map(async (u) => {
+      const safeName = u.file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+      const path = `pitch2product/${user.uid}/${u.id}-${safeName}`;
+      const fileRef = ref(storage, path);
+      // Plain single-shot upload, not uploadBytesResumable: our files are small (the
+      // whole submission is capped at 10MB total), so resumable's chunking buys
+      // nothing here and a single PUT keeps the Storage rules evaluation simple.
+      await uploadBytes(fileRef, u.file, { contentType: u.file.type });
+      // Deliberately no getDownloadURL() here: that's a *read* against the object,
+      // which storage.rules denies so the bucket stays genuinely private. The server
+      // mints a short-lived signed URL instead, via the Admin SDK (which bypasses
+      // rules), so no permanently-public tokened URL ever exists. `path` is the
+      // durable reference the server resolves.
+      return { name: u.file.name, url: "", path, size: u.file.size, type: u.file.type, description: u.description.trim() };
+    }),
+  );
 }
 
 export default function SubmissionWizard() {
@@ -174,11 +213,20 @@ export default function SubmissionWizard() {
 
     setSubmitting(true);
     try {
-      const body = new FormData();
-      body.append("payload", JSON.stringify({ ...values, fileDescriptions: uploads.map((u) => u.description.trim()) }));
-      uploads.forEach((u) => body.append("files", u.file));
+      let files: FileRef[];
+      try {
+        files = await uploadSubmissionFiles(uploads);
+      } catch (err) {
+        console.error("Pitch2Product file upload failed:", err);
+        toast.error("We couldn't upload your files. Please check your connection and try again.");
+        return;
+      }
 
-      const res = await fetch("/api/pitch2product", { method: "POST", body });
+      const res = await fetch("/api/pitch2product", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ values, files }),
+      });
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {

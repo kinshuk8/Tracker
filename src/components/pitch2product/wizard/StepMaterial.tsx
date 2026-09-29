@@ -7,7 +7,7 @@ import { FileImage, FileSpreadsheet, FileText, Presentation, UploadCloud, X } fr
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { LINK_FIELDS } from "@/lib/pitch2product/options";
-import { FILE_RULES, validateFile } from "@/lib/pitch2product/schema";
+import { FILE_RULES, validateFile, validateTotalSize } from "@/lib/pitch2product/schema";
 import { track } from "@/lib/pitch2product/analytics";
 import { ConsentCheck, Reaction, StepIntro, SubSection, TextField } from "./fields";
 import type { StepProps } from "./Steps";
@@ -15,7 +15,7 @@ import type { StepProps } from "./Steps";
 export type UploadItem = { id: string; file: File; description: string };
 
 const formatSize = (bytes: number) =>
-  bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+  bytes === 0 ? "0 KB" : bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 
 function FileIcon({ name }: { name: string }) {
   const ext = name.split(".").pop()?.toLowerCase() ?? "";
@@ -43,21 +43,28 @@ export function StepMaterial({
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [fileErrors, setFileErrors] = useState<string[]>([]);
-  const remaining = FILE_RULES.maxFiles - uploads.length;
+  const totalBytes = uploads.reduce((sum, u) => sum + u.file.size, 0);
+  const capBytes = FILE_RULES.maxTotalSizeMb * 1024 * 1024;
 
   const addFiles = (list: FileList | null) => {
     if (!list) return;
     const errors: string[] = [];
     const accepted: UploadItem[] = [];
+    let runningBytes = totalBytes;
     for (const file of Array.from(list)) {
-      if (uploads.length + accepted.length >= FILE_RULES.maxFiles) {
-        errors.push(`You can upload up to ${FILE_RULES.maxFiles} files. Remove one to add another.`);
-        break;
-      }
       if (uploads.some((u) => u.file.name === file.name && u.file.size === file.size)) continue;
       const err = validateFile(file);
-      if (err) errors.push(err);
-      else accepted.push({ id: crypto.randomUUID(), file, description: "" });
+      if (err) {
+        errors.push(err);
+        continue;
+      }
+      const sizeErr = validateTotalSize([{ size: runningBytes + file.size }]);
+      if (sizeErr) {
+        errors.push(`${file.name}: adding this would put you over the ${FILE_RULES.maxTotalSizeMb} MB total. Remove something first.`);
+        continue;
+      }
+      runningBytes += file.size;
+      accepted.push({ id: crypto.randomUUID(), file, description: "" });
     }
     if (accepted.length) {
       setUploads((prev) => [...prev, ...accepted]);
@@ -90,7 +97,7 @@ export function StepMaterial({
         className={cn(
           "relative flex flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed px-6 py-10 text-center transition-all",
           dragging ? "scale-[1.01] border-indigo-500 bg-indigo-50" : "border-slate-300 bg-white/70 hover:border-indigo-400",
-          remaining <= 0 && "pointer-events-none opacity-60",
+          totalBytes >= capBytes && "pointer-events-none opacity-60",
         )}
       >
         <motion.div
@@ -114,8 +121,7 @@ export function StepMaterial({
           </button>
         </p>
         <p className="mt-3 text-xs text-slate-400">
-          PDF, PPT, DOC, XLS, PNG, JPG · up to {FILE_RULES.maxSizeMb} MB each · {uploads.length}/{FILE_RULES.maxFiles}{" "}
-          files
+          PDF, PPT, DOC, XLS, PNG, JPG · any number of files · {formatSize(totalBytes)} / {FILE_RULES.maxTotalSizeMb} MB used
         </p>
         <input
           ref={inputRef}

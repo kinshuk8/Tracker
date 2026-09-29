@@ -239,9 +239,21 @@ export function stepCompletion(step: number, v: FormValues) {
   return fields.length ? filled.length / fields.length : 1;
 }
 
+// Shape of an uploaded file once it's on Firebase Storage — this, not the raw File
+// object, is what travels from the browser to /api/pitch2product and into Firestore.
+export type FileRef = {
+  name: string;
+  url: string;
+  path: string;
+  size: number;
+  type: string;
+  description: string;
+};
+
 export const FILE_RULES = {
-  maxFiles: 5,
-  maxSizeMb: 20,
+  // No cap on how many files — only on their combined size. A single file is
+  // implicitly capped at the total too, since it can't exceed it on its own.
+  maxTotalSizeMb: 10,
   accept: ".pdf,.ppt,.pptx,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg",
   mimeByExt: {
     pdf: ["application/pdf"],
@@ -268,8 +280,17 @@ export function validateFile(file: { name: string; size: number; type: string })
     return `${file.name}: the file type doesn't match its name (e.g. .pdf, .docx). Please save it again and re-upload.`;
   }
   if (file.size === 0) return `${file.name}: this file is empty. Please pick another.`;
-  if (file.size > FILE_RULES.maxSizeMb * 1024 * 1024) {
-    return `${file.name}: please keep each file under ${FILE_RULES.maxSizeMb} MB.`;
+  return null;
+}
+
+// Authoritative "any number of files, ~10MB combined" check — used identically on the
+// client (StepMaterial.tsx, for instant feedback), in the Firebase Storage upload
+// security rules (storage.rules, a per-file backstop only), and server-side in
+// /api/pitch2product (the real gate, checked against each file's actual stored size).
+export function validateTotalSize(files: { size: number }[]): string | null {
+  const totalBytes = files.reduce((sum, f) => sum + f.size, 0);
+  if (totalBytes > FILE_RULES.maxTotalSizeMb * 1024 * 1024) {
+    return `Your files add up to more than ${FILE_RULES.maxTotalSizeMb} MB combined. Please remove something and try again.`;
   }
   return null;
 }

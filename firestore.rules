@@ -1,0 +1,14 @@
+rules_version = '2';
+
+// Every read/write to this project's Firestore data goes through the Admin SDK from
+// our own API routes (which is privileged and bypasses these rules entirely), so
+// there's no legitimate reason for a browser to talk to Firestore directly here.
+// Locking everything down is simpler and safer than writing granular per-collection
+// rules for a database that should never be touched client-side.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -39,17 +39,25 @@ export const INDUSTRIES = [
 ] as const satisfies readonly Option[];
 
 export const STAGES = [
-  { value: "IDEA_ONLY", label: "Idea only", hint: "Just the idea, nothing built yet" },
-  { value: "BUSINESS_PLAN", label: "Business plan", hint: "You've written down how it works" },
-  { value: "PITCH_DECK", label: "Pitch deck", hint: "You have slides ready" },
-  { value: "FIGMA_DESIGN", label: "Figma / design", hint: "Screens are designed" },
-  { value: "PROTOTYPE", label: "Prototype", hint: "Something you can click through or demo" },
-  { value: "MVP", label: "MVP", hint: "A working first version" },
-  { value: "LIVE_PRODUCT", label: "Live product", hint: "People are already using it" },
-  { value: "EXISTING_BUSINESS", label: "Existing business", hint: "A running business that needs technology" },
+  {
+    value: "IDEA",
+    label: "An idea",
+    hint: "Nothing built yet. Fine whether it's only in your head or you already have designs, a deck, user research or survey results.",
+  },
+  {
+    value: "PROTOTYPE",
+    label: "A prototype",
+    hint: "Something exists to look at or click through — functional or not. Includes Figma prototypes, demos and early working versions.",
+  },
+  {
+    value: "EXISTING_PRODUCT",
+    label: "An existing product",
+    hint: "Already built or live, and now needs improvements, new features, a rebuild or scaling up.",
+  },
 ] as const satisfies readonly Option[];
 
-export const LAUNCHED_STAGES: readonly string[] = ["PROTOTYPE", "MVP", "LIVE_PRODUCT", "EXISTING_BUSINESS"];
+// Stages where asking for a product/demo link and usage numbers actually makes sense.
+export const LAUNCHED_STAGES: readonly string[] = ["PROTOTYPE", "EXISTING_PRODUCT"];
 
 export const REVENUE_RANGES = [
   { value: "UNDER_1L_MONTH", label: "Under ₹1L / month" },
@@ -122,12 +130,35 @@ export const BUDGETS = [
   { value: "25L_PLUS", label: "₹25L+" },
 ] as const satisfies readonly Option[];
 
+// Hints deliberately mirror the hedged language used in the Collaboration section on
+// the landing page: these describe what each arrangement *could* look like, and none
+// of them is settled until the 1:1 discussion and a signed agreement.
 export const COLLABORATION = [
-  { value: "NOT_SURE", label: "Not sure yet" },
-  { value: "PAID_DEVELOPMENT", label: "Paid development" },
-  { value: "EQUITY_BASED", label: "Equity based" },
-  { value: "DEFERRED_PAYMENT", label: "Deferred payment" },
-  { value: "OPEN_TO_DISCUSSION", label: "Open to discussion" },
+  {
+    value: "PAID_DEVELOPMENT",
+    label: "Paid development",
+    hint: "A conventional engagement: you fund the build, we develop it to an agreed scope and timeline.",
+  },
+  {
+    value: "EQUITY_BASED",
+    label: "Equity / stake",
+    hint: "We contribute development and technical resources in exchange for an agreed stake, instead of full payment upfront.",
+  },
+  {
+    value: "DEFERRED_PAYMENT",
+    label: "Deferred payment",
+    hint: "We start building now, with payment deferred until an agreed milestone such as your funding round.",
+  },
+  {
+    value: "OPEN_TO_DISCUSSION",
+    label: "Open to any of these",
+    hint: "You'd consider any of the above — we'll suggest whichever fits the idea best.",
+  },
+  {
+    value: "NOT_SURE",
+    label: "Not sure yet",
+    hint: "Perfectly fine. We'll walk you through the options on the call.",
+  },
 ] as const satisfies readonly Option[];
 
 export const LINK_FIELDS = [
