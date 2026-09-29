@@ -6,22 +6,6 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-[
-  {
-    "StartLine": 87,
-    "EndLine": 94,
-    "TargetContent": "                  <DropdownMenuTrigger asChild>\n                    <Avatar className=\"h-9 w-9 cursor-pointer border-2 border-white/20 hover:border-white/40 transition-colors shadow-sm\">\n                      <AvatarImage src={user.image || \"\"} alt={user.name || \"User\"} className=\"object-cover\" />\n                      <AvatarFallback className=\"bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300\">\n                        {user.name?.charAt(0) || \"U\"}\n                      </AvatarFallback>\n                    </Avatar>\n                  </DropdownMenuTrigger>",
-    "ReplacementContent": "                  <DropdownMenuTrigger asChild>\n                    <div className=\"outline-none\">\n                        <UserAvatar user={user} className=\"h-9 w-9 border-2 hover:border-white/40 transition-colors\" />\n                    </div>\n                  </DropdownMenuTrigger>",
-    "AllowMultiple": false
-  },
-  {
-    "StartLine": 202,
-    "EndLine": 205,
-    "TargetContent": "                          <Avatar className=\"h-8 w-8\">\n                              <AvatarImage src={user.image || \"\"} />\n                              <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>\n                          </Avatar>",
-    "ReplacementContent": "                          <UserAvatar user={user} className=\"h-8 w-8\" />",
-    "AllowMultiple": false
-  }
-]
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -51,6 +35,7 @@ import { UserAvatar } from "@/components/UserAvatar";
 const navLinks = [
   { name: "Home", link: "/" },
   { name: "Services", link: "/services" },
+  { name: "Pitch2Product", link: "/pitch2product" },
   { name: "Courses", link: "/internship/courses" },
   { name: "Careers", link: "/careers" },
   { name: "Contact", link: "/contact" },

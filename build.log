@@ -1,0 +1,151 @@
+﻿
+> my-tracker-app@0.1.0 build
+> next build --turbopack
+
+node.exe : ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (⚠ Warning: Next...not be correct.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+ We detected multiple lockfiles and selected the directory of C:\Users\sRamu\Documents\AI Agents\Shark 
+Finder\Pitch2Product\package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if 
+it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * C:\Users\sRamu\Documents\AI Agents\Shark Finder\Pitch2Product\Tracker\package-lock.json
+
+▲ Next.js 16.1.3 (Turbopack)
+- Environments: .env
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 90s
+  Running TypeScript ...
+  Collecting page data using 7 workers ...
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  override existing env vars with { override: true }
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  override existing env vars with { override: true }
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  suppress all logs with { quiet: true }
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 📡 add observability to secrets: https://dotenvx.com/ops
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 🗂️ backup and recover secrets: https://dotenvx.com/ops
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔄 add secrets lifecycle management: https://dotenvx.com/ops
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  override existing env vars with { override: true }
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 📡 add observability to secrets: https://dotenvx.com/ops
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 🗂️ backup and recover secrets: https://dotenvx.com/ops
+  Generating static pages using 7 workers (0/58) ...
+  Generating static pages using 7 workers (14/58) 
+  Generating static pages using 7 workers (28/58) 
+Failed to fetch courses: Error: Failed query: select "id", "title", "description", "slug", "image_url", "created_at", 
+"updated_at" from "courses"
+params: 
+    at o.queryWithCache (C:\Users\sRamu\Documents\AI Agents\Shark 
+Finder\Pitch2Product\Tracker\.next\server\chunks\ssr\Tracker_9fc1da0e._.js:8:40067)
+    at async (C:\Users\sRamu\Documents\AI Agents\Shark 
+Finder\Pitch2Product\Tracker\.next\server\chunks\ssr\Tracker_9fc1da0e._.js:8:43631)
+    at async j (C:\Users\sRamu\Documents\AI Agents\Shark 
+Finder\Pitch2Product\Tracker\.next\server\chunks\ssr\[root-of-the-server]__2d181fe7._.js:1:1531)
+    at async k (C:\Users\sRamu\Documents\AI Agents\Shark 
+Finder\Pitch2Product\Tracker\.next\server\chunks\ssr\[root-of-the-server]__2d181fe7._.js:1:1656) {
+  query: 'select "id", "title", "description", "slug", "image_url", "created_at", "updated_at" from "courses"',
+  params: [],
+  [cause]: AggregateError: 
+      at async (C:\Users\sRamu\Documents\AI Agents\Shark 
+Finder\Pitch2Product\Tracker\.next\server\chunks\ssr\Tracker_9fc1da0e._.js:8:43846)
+      at async o.queryWithCache (C:\Users\sRamu\Documents\AI Agents\Shark 
+Finder\Pitch2Product\Tracker\.next\server\chunks\ssr\Tracker_9fc1da0e._.js:8:40042)
+      at async (C:\Users\sRamu\Documents\AI Agents\Shark 
+Finder\Pitch2Product\Tracker\.next\server\chunks\ssr\Tracker_9fc1da0e._.js:8:43631)
+      at async j (C:\Users\sRamu\Documents\AI Agents\Shark 
+Finder\Pitch2Product\Tracker\.next\server\chunks\ssr\[root-of-the-server]__2d181fe7._.js:1:1531)
+      at async k (C:\Users\sRamu\Documents\AI Agents\Shark 
+Finder\Pitch2Product\Tracker\.next\server\chunks\ssr\[root-of-the-server]__2d181fe7._.js:1:1656) {
+    code: 'ECONNREFUSED'
+  }
+}
+  Generating static pages using 7 workers (43/58) 
+✓ Generating static pages using 7 workers (58/58) in 3.2s
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /admin
+├ ƒ /admin/coupons
+├ ƒ /admin/courses
+├ ƒ /admin/courses/[courseId]/edit
+├ ƒ /admin/courses/new
+├ ƒ /admin/enroll/new
+├ ƒ /admin/enrollments
+├ ƒ /admin/internships
+├ ƒ /admin/payments
+├ ƒ /admin/s3files
+├ ƒ /admin/users
+├ ƒ /api/admin/coupons
+├ ƒ /api/admin/coupons/[couponId]
+├ ƒ /api/admin/courses
+├ ƒ /api/admin/courses/[courseId]
+├ ƒ /api/admin/enroll/free
+├ ƒ /api/admin/internships
+├ ƒ /api/admin/plans
+├ ƒ /api/admin/users/[userId]
+├ ƒ /api/auth/[...all]
+├ ƒ /api/contact
+├ ƒ /api/coupons/validate
+├ ƒ /api/courses
+├ ƒ /api/courses/[slug]
+├ ƒ /api/courses/[slug]/plans
+├ ƒ /api/dashboard/courses
+├ ƒ /api/debug
+├ ƒ /api/internship/register
+├ ƒ /api/pitch2product
+├ ƒ /api/razorpay/order
+├ ƒ /api/razorpay/verify
+├ ƒ /api/register
+├ ƒ /api/s3/list
+├ ƒ /api/s3/presign
+├ ƒ /api/s3/upload
+├ ƒ /api/uploadthing
+├ ƒ /api/user/enrollments
+├ ƒ /api/user/enrollments/check
+├ ƒ /api/user/update
+├ ƒ /api/webhooks/razorpay
+├ ○ /auth/forgot-password
+├ ○ /auth/reset-password
+├ ○ /auth/sign-in
+├ ○ /auth/sign-up
+├ ○ /cancellation-refund
+├ ○ /careers
+├ ƒ /clients/[id]
+├ ○ /contact
+├ ○ /dashboard
+├ ○ /dashboard/explore
+├ ƒ /dashboard/explore/[slug]
+├ ○ /dashboard/profile
+├ ƒ /internship
+├ ○ /internship/courses
+├ ƒ /internship/courses/[courseId]
+├ ƒ /internship/courses/[courseId]/[moduleId]
+├ ○ /pitch2product
+├ ○ /pitch2product/submit
+├ ○ /privacy-policy
+├ ○ /services
+├ ● /services/[slug]
+│ ├ /services/software-development
+│ ├ /services/web-development
+│ ├ /services/mobile-development
+│ └ [+3 more paths]
+├ ○ /shipping-delivery
+├ ○ /solutions
+└ ○ /terms-conditions
+
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses generateStaticParams)
+ƒ  (Dynamic)  server-rendered on demand
+
