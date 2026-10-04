@@ -5,9 +5,7 @@ import * as dotenv from "dotenv";
 
 dotenv.config({ path: ".env" });
 
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL is missing in .env");
-}
+const connectionString = process.env.DATABASE_URL || "postgresql://dummy:dummy@localhost:5432/dummy";
 
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -22,9 +20,9 @@ let db: DB;
 
 if (isProduction) {
     const pool = new Pool({
-        connectionString: process.env.DATABASE_URL,
+        connectionString,
         connectionTimeoutMillis: 10000,
-        ssl: {
+        ssl: connectionString.includes("localhost") ? false : {
             rejectUnauthorized: false
         },
     });
@@ -32,9 +30,9 @@ if (isProduction) {
 } else {
     if (!globalForDb.db) {
         const pool = new Pool({
-            connectionString: process.env.DATABASE_URL,
+            connectionString,
             connectionTimeoutMillis: 10000,
-            ssl: {
+            ssl: connectionString.includes("localhost") ? false : {
                 rejectUnauthorized: false
             },
         });
