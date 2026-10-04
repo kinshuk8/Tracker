@@ -11,7 +11,11 @@ import ApplicantConfirmation from "@/emails/pitch2product/ApplicantConfirmation"
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const REF_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-const NOTIFY_EMAIL = process.env.PITCH2PRODUCT_NOTIFY_EMAIL || "ramu@vmkedgemindsolutions.com";
+const NOTIFY_EMAILS = (process.env.PITCH2PRODUCT_NOTIFY_EMAIL || "ramu@vmkedgemindsolutions.com,md@vmkedgemindsolutions.com")
+  .split(",")
+  .map((e) => e.trim())
+  .filter(Boolean);
+const PRIMARY_NOTIFY_EMAIL = NOTIFY_EMAILS[0] || "ramu@vmkedgemindsolutions.com";
 // Local part is a deliberate choice, not just a leftover default — swap once the
 // vmkedgemindsolutions.com domain is verified in Resend (see the backend plan).
 const FROM_ADDRESS = "Pitch2Product <notifications@vmkedgemindsolutions.com>";
@@ -95,7 +99,7 @@ export async function POST(req: Request) {
       await cleanupFiles(paths);
       return NextResponse.json(
         {
-          error: `We've already received a submission from ${email}. If you have another idea to submit, please use a different email address, or send us the details at ${NOTIFY_EMAIL} and we'll take it from there.`,
+          error: `We've already received a submission from ${email}. If you have another idea to submit, please use a different email address, or send us the details at ${PRIMARY_NOTIFY_EMAIL} and we'll take it from there.`,
           fieldErrors: { email: "This email has already been used for a submission." },
         },
         { status: 409 },
@@ -236,7 +240,7 @@ export async function POST(req: Request) {
   await Promise.allSettled([
     resend.emails.send({
       from: FROM_ADDRESS,
-      to: [NOTIFY_EMAIL],
+      to: NOTIFY_EMAILS,
       subject: `New Pitch2Product submission: ${values.projectName}`,
       html: await render(
         AdminNotification({
@@ -265,7 +269,7 @@ export async function POST(req: Request) {
           referenceNumber,
           firstName: firstName(values.fullName),
           projectName: values.projectName,
-          contactEmail: NOTIFY_EMAIL,
+          contactEmail: PRIMARY_NOTIFY_EMAIL,
         }),
       ),
     }),

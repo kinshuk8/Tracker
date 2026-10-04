@@ -7,6 +7,7 @@ import {
   LogOut,
   CreditCard,
   TicketPercent,
+  Rocket,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -34,6 +35,13 @@ export default async function AdminLayout({
       href: "/admin",
       icon: (
         <LayoutDashboard className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      ),
+    },
+    {
+      label: "Pitch2Product",
+      href: "/admin/pitch2product",
+      icon: (
+        <Rocket className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
     },
     {
