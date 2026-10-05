@@ -16,9 +16,11 @@ function getAdminApp(): App {
 
   const projectId = process.env.FIREBASE_PROJECT_ID;
   const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-  // Service-account private keys are stored in .env with literal "\n" sequences
-  // (real newlines break most .env parsers), so they need to be unescaped here.
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n");
+  const rawKey = process.env.FIREBASE_PRIVATE_KEY;
+  const privateKey = rawKey
+    ?.trim()
+    .replace(/^["']|["']$/g, "")
+    .replace(/\\n/g, "\n");
 
   if (!projectId || !clientEmail || !privateKey) {
     throw new Error(

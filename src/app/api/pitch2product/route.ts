@@ -224,7 +224,8 @@ export async function POST(req: Request) {
       referenceNumber,
       createdAt: FieldValue.serverTimestamp(),
     });
-  } catch {
+  } catch (err) {
+    console.error("Pitch2Product: save submission failed:", err);
     return NextResponse.json(
       { error: "We couldn't save your submission. Your answers are still here, so please try again." },
       { status: 500 },
