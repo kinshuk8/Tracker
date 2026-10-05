@@ -51,14 +51,35 @@ function firstErrorStep(v: FormValues) {
   return null;
 }
 
-function focusField(errors: FieldErrors) {
+function focusField(errors: FieldErrors, delay = 100) {
   const key = Object.keys(errors)[0];
   if (!key) return;
+
+  const tryFocus = () => {
+    const el =
+      document.getElementById(key) ||
+      document.querySelector(`[name="${key}"]`) ||
+      document.querySelector(`[data-field="${key}"]`) ||
+      document.querySelector(`[aria-describedby*="${key}"]`);
+
+    if (el && el instanceof HTMLElement) {
+      el.focus({ preventScroll: true });
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+
+      el.classList.add("ring-4", "ring-rose-500/40", "transition-all", "duration-300");
+      setTimeout(() => {
+        el.classList.remove("ring-4", "ring-rose-500/40");
+      }, 2500);
+      return true;
+    }
+    return false;
+  };
+
   setTimeout(() => {
-    const el = document.getElementById(key);
-    el?.focus({ preventScroll: true });
-    el?.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, 80);
+    if (!tryFocus()) {
+      setTimeout(tryFocus, 250);
+    }
+  }, delay);
 }
 
 /**
@@ -181,10 +202,10 @@ export default function SubmissionWizard() {
     });
   }, []);
 
-  const goTo = (target: number) => {
+  const goTo = (target: number, newErrors?: FieldErrors) => {
     setDirection(target > step ? 1 : -1);
     setStep(target);
-    setErrors({});
+    setErrors(newErrors ?? {});
     requestAnimationFrame(() => cardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
   };
 
@@ -192,7 +213,9 @@ export default function SubmissionWizard() {
     const stepErrors = validateStep(step, values);
     if (Object.keys(stepErrors).length) {
       setErrors(stepErrors);
-      focusField(stepErrors);
+      focusField(stepErrors, 60);
+      const firstErrorMsg = Object.values(stepErrors)[0];
+      toast.error(firstErrorMsg || "Please fill in all required fields.");
       return;
     }
     track(`step_${step + 1}_completed` as P2PEvent);
@@ -204,10 +227,10 @@ export default function SubmissionWizard() {
   const submit = async () => {
     const invalid = firstErrorStep(values);
     if (invalid) {
-      if (invalid.step !== step) goTo(invalid.step);
-      setErrors(invalid.errors);
-      focusField(invalid.errors);
-      toast.error("Some answers are missing or need a change. Please check the marked fields.");
+      goTo(invalid.step, invalid.errors);
+      focusField(invalid.errors, 300);
+      const firstErrorMsg = Object.values(invalid.errors)[0];
+      toast.error(firstErrorMsg || "Some answers are missing or need a change. Please check the marked fields.");
       return;
     }
 
@@ -232,9 +255,9 @@ export default function SubmissionWizard() {
       if (!res.ok) {
         if (data.fieldErrors) {
           const serverInvalid = firstErrorStep(values);
-          if (serverInvalid && serverInvalid.step !== step) goTo(serverInvalid.step);
-          setErrors(data.fieldErrors);
-          focusField(data.fieldErrors);
+          const targetStep = serverInvalid ? serverInvalid.step : 0;
+          goTo(targetStep, data.fieldErrors);
+          focusField(data.fieldErrors, 300);
         }
         toast.error(data.error || "We couldn't send your submission. Your answers are still here, so please try again.");
         return;
