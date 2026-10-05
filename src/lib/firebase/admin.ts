@@ -14,7 +14,23 @@ function getAdminApp(): App {
   if (globalForFirebaseAdmin.firebaseAdminApp) return globalForFirebaseAdmin.firebaseAdminApp;
   if (getApps().length) return getApps()[0];
 
-  const projectId = process.env.FIREBASE_PROJECT_ID;
+  // Check if a full service account JSON was provided
+  const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT_KEY || process.env.FIREBASE_SERVICE_ACCOUNT;
+  if (serviceAccountJson) {
+    try {
+      const parsed = typeof serviceAccountJson === "string" ? JSON.parse(serviceAccountJson) : serviceAccountJson;
+      const app = initializeApp({
+        credential: cert(parsed),
+        storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || `${parsed.project_id}.firebasestorage.app`,
+      });
+      globalForFirebaseAdmin.firebaseAdminApp = app;
+      return app;
+    } catch (e) {
+      console.error("Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY JSON:", e);
+    }
+  }
+
+  const projectId = process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
   const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
   const rawKey = process.env.FIREBASE_PRIVATE_KEY;
   const privateKey = rawKey
@@ -23,8 +39,12 @@ function getAdminApp(): App {
     .replace(/\\n/g, "\n");
 
   if (!projectId || !clientEmail || !privateKey) {
+    const missing: string[] = [];
+    if (!projectId) missing.push("FIREBASE_PROJECT_ID");
+    if (!clientEmail) missing.push("FIREBASE_CLIENT_EMAIL");
+    if (!privateKey) missing.push("FIREBASE_PRIVATE_KEY");
     throw new Error(
-      "Firebase Admin credentials are missing. Set FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL and FIREBASE_PRIVATE_KEY in .env.",
+      `Firebase Admin credentials missing: ${missing.join(", ")}. Please add them to your deployment Environment Variables in Vercel.`,
     );
   }
 
