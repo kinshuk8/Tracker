@@ -42,12 +42,12 @@ export default function OngoingProjects() {
               >
                 {/* Subtle background glow effect on hover */}
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#673DE6]/[0.03] rounded-[2rem] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                
+
                 <div className="relative z-10 flex flex-col items-center">
                   <div className="w-12 h-12 md:w-14 md:h-14 mb-4 rounded-2xl bg-[#673DE6]/10 dark:bg-[#673DE6]/20 flex items-center justify-center text-[#673DE6] dark:text-[#8b65ff] group-hover:scale-110 group-hover:-translate-y-1 transition-transform duration-300">
                     <Icon className="w-5 h-5 md:w-6 md:h-6" strokeWidth={2.5} />
                   </div>
-                  
+
                   <p className="text-4xl md:text-5xl font-black text-[#673DE6] mb-2 tabular-nums">
                     <CountUp
                       from={0}
@@ -57,7 +57,7 @@ export default function OngoingProjects() {
                       duration={1.5}
                     />
                   </p>
-                  
+
                   <p className="text-[10px] md:text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 group-hover:text-slate-800 dark:group-hover:text-slate-200 transition-colors text-center">
                     {stat.label}
                   </p>
